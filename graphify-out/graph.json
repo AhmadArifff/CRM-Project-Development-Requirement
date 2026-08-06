@@ -10,7 +10,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "eslint_config",
-      "community": 11,
+      "community": 10,
       "norm_label": "eslint.config.mjs"
     },
     {
@@ -20,7 +20,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "eslint_config_eslintconfig",
-      "community": 11,
+      "community": 10,
       "norm_label": "eslintconfig"
     },
     {
@@ -30,7 +30,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "next_config",
-      "community": 12,
+      "community": 11,
       "norm_label": "next.config.ts"
     },
     {
@@ -40,7 +40,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "next_config_nextconfig",
-      "community": 12,
+      "community": 11,
       "norm_label": "nextconfig"
     },
     {
@@ -920,7 +920,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "postcss_config",
-      "community": 13,
+      "community": 12,
       "norm_label": "postcss.config.mjs"
     },
     {
@@ -930,7 +930,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "postcss_config_config",
-      "community": 13,
+      "community": 12,
       "norm_label": "config"
     },
     {
@@ -940,7 +940,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "prisma_seed",
-      "community": 10,
+      "community": 9,
       "norm_label": "seed.ts"
     },
     {
@@ -950,7 +950,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "prisma_seed_prisma",
-      "community": 10,
+      "community": 9,
       "norm_label": "prisma"
     },
     {
@@ -960,7 +960,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "prisma_seed_main",
-      "community": 10,
+      "community": 9,
       "norm_label": "main()"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_landing_ratecalculatorsection",
-      "community": 4,
+      "community": 5,
       "norm_label": "ratecalculatorsection.tsx"
     },
     {
@@ -1630,7 +1630,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_components_landing_ratecalculatorsection_ratecalculatorsection",
-      "community": 4,
+      "community": 5,
       "norm_label": "ratecalculatorsection()"
     },
     {
@@ -1810,7 +1810,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_supabase",
-      "community": 9,
+      "community": 4,
       "norm_label": "supabase.ts"
     },
     {
@@ -1820,7 +1820,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_lib_supabase_supabase",
-      "community": 9,
+      "community": 4,
       "norm_label": "supabase"
     },
     {
@@ -1830,7 +1830,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_lib_supabase_supabase_buckets",
-      "community": 9,
+      "community": 4,
       "norm_label": "supabase_buckets"
     },
     {
@@ -1840,7 +1840,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_lib_supabase_getsupabaseadminclient",
-      "community": 9,
+      "community": 4,
       "norm_label": "getsupabaseadminclient()"
     },
     {
@@ -1857,7 +1857,7 @@
       "label": "DealItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "_origin": "ast",
       "id": "src_store_useadminstore_dealitem",
       "community": 0,
@@ -1867,7 +1867,7 @@
       "label": "TaskChecklistItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "src_store_useadminstore_taskchecklistitem",
       "community": 0,
@@ -1877,7 +1877,7 @@
       "label": "TaskLabelItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L21",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "src_store_useadminstore_tasklabelitem",
       "community": 0,
@@ -1887,7 +1887,7 @@
       "label": "TaskAttachmentItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "src_store_useadminstore_taskattachmentitem",
       "community": 0,
@@ -1897,7 +1897,7 @@
       "label": "TaskCommentItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "_origin": "ast",
       "id": "src_store_useadminstore_taskcommentitem",
       "community": 0,
@@ -1907,7 +1907,7 @@
       "label": "TaskItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L42",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "src_store_useadminstore_taskitem",
       "community": 0,
@@ -1917,17 +1917,37 @@
       "label": "LeadItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "src_store_useadminstore_leaditem",
       "community": 0,
       "norm_label": "leaditem"
     },
     {
+      "label": "AiProviderItem",
+      "file_type": "code",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L74",
+      "_origin": "ast",
+      "id": "src_store_useadminstore_aiprovideritem",
+      "community": 0,
+      "norm_label": "aiprovideritem"
+    },
+    {
+      "label": "AiProviderConfig",
+      "file_type": "code",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L85",
+      "_origin": "ast",
+      "id": "src_store_useadminstore_aiproviderconfig",
+      "community": 0,
+      "norm_label": "aiproviderconfig"
+    },
+    {
       "label": "ActivityItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L71",
+      "source_location": "L87",
       "_origin": "ast",
       "id": "src_store_useadminstore_activityitem",
       "community": 0,
@@ -1937,107 +1957,57 @@
       "label": "NotificationItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L80",
+      "source_location": "L96",
       "_origin": "ast",
       "id": "src_store_useadminstore_notificationitem",
       "community": 0,
       "norm_label": "notificationitem"
     },
     {
-      "label": "AiProviderConfig",
+      "label": "SystemPromptConfig",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L89",
+      "source_location": "L106",
       "_origin": "ast",
-      "id": "src_store_useadminstore_aiproviderconfig",
+      "id": "src_store_useadminstore_systempromptconfig",
       "community": 0,
-      "norm_label": "aiproviderconfig"
+      "norm_label": "systempromptconfig"
     },
     {
-      "label": "AdminStore",
+      "label": "AdminState",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L100",
+      "source_location": "L113",
       "_origin": "ast",
-      "id": "src_store_useadminstore_adminstore",
+      "id": "src_store_useadminstore_adminstate",
       "community": 0,
-      "norm_label": "adminstore"
+      "norm_label": "adminstate"
     },
     {
-      "label": "initialMasterLabels",
+      "label": "defaultAdminUser",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L157",
+      "source_location": "L187",
       "_origin": "ast",
-      "id": "src_store_useadminstore_initialmasterlabels",
+      "id": "src_store_useadminstore_defaultadminuser",
       "community": 0,
-      "norm_label": "initialmasterlabels"
+      "norm_label": "defaultadminuser"
     },
     {
-      "label": "initialDeals",
+      "label": "defaultSystemPromptObj",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L165",
+      "source_location": "L196",
       "_origin": "ast",
-      "id": "src_store_useadminstore_initialdeals",
+      "id": "src_store_useadminstore_defaultsystempromptobj",
       "community": 0,
-      "norm_label": "initialdeals"
-    },
-    {
-      "label": "initialTasks",
-      "file_type": "code",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L173",
-      "_origin": "ast",
-      "id": "src_store_useadminstore_initialtasks",
-      "community": 0,
-      "norm_label": "initialtasks"
-    },
-    {
-      "label": "initialLeads",
-      "file_type": "code",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L303",
-      "_origin": "ast",
-      "id": "src_store_useadminstore_initialleads",
-      "community": 0,
-      "norm_label": "initialleads"
-    },
-    {
-      "label": "initialActivities",
-      "file_type": "code",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L309",
-      "_origin": "ast",
-      "id": "src_store_useadminstore_initialactivities",
-      "community": 0,
-      "norm_label": "initialactivities"
-    },
-    {
-      "label": "initialNotifications",
-      "file_type": "code",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L315",
-      "_origin": "ast",
-      "id": "src_store_useadminstore_initialnotifications",
-      "community": 0,
-      "norm_label": "initialnotifications"
-    },
-    {
-      "label": "initialAiProviders",
-      "file_type": "code",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L321",
-      "_origin": "ast",
-      "id": "src_store_useadminstore_initialaiproviders",
-      "community": 0,
-      "norm_label": "initialaiproviders"
+      "norm_label": "defaultsystempromptobj"
     },
     {
       "label": "useAdminStore",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L329",
+      "source_location": "L203",
       "_origin": "ast",
       "id": "src_store_useadminstore_useadminstore",
       "community": 0,
@@ -2057,7 +2027,7 @@
       "label": "TestimonialCMSItem",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "_origin": "ast",
       "id": "src_store_uselandingcontentstore_testimonialcmsitem",
       "community": 4,
@@ -2067,37 +2037,27 @@
       "label": "LandingContentState",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "_origin": "ast",
       "id": "src_store_uselandingcontentstore_landingcontentstate",
       "community": 4,
       "norm_label": "landingcontentstate"
     },
     {
-      "label": "defaultTestimonialsList",
+      "label": "initialDefaultState",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L93",
+      "source_location": "L107",
       "_origin": "ast",
-      "id": "src_store_uselandingcontentstore_defaulttestimonialslist",
+      "id": "src_store_uselandingcontentstore_initialdefaultstate",
       "community": 4,
-      "norm_label": "defaulttestimonialslist"
-    },
-    {
-      "label": "defaultLandingContent",
-      "file_type": "code",
-      "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L144",
-      "_origin": "ast",
-      "id": "src_store_uselandingcontentstore_defaultlandingcontent",
-      "community": 4,
-      "norm_label": "defaultlandingcontent"
+      "norm_label": "initialdefaultstate"
     },
     {
       "label": "useLandingContentStore",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L209",
+      "source_location": "L199",
       "_origin": "ast",
       "id": "src_store_uselandingcontentstore_uselandingcontentstore",
       "community": 4,
@@ -2499,7 +2459,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_admin_panel_crm",
-      "community": 14,
+      "community": 13,
       "norm_label": "admin panel crm (protected)"
     },
     {
@@ -2538,7 +2498,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_captcha_protection",
-      "community": 17,
+      "community": 16,
       "norm_label": "captcha protection"
     },
     {
@@ -2551,7 +2511,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_questionnaire",
-      "community": 27,
+      "community": 26,
       "norm_label": "non-technical questionnaire"
     },
     {
@@ -2564,7 +2524,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_rate_calculator",
-      "community": 28,
+      "community": 27,
       "norm_label": "rate calculator"
     },
     {
@@ -2577,7 +2537,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_submission_form",
-      "community": 30,
+      "community": 29,
       "norm_label": "prd submission form"
     },
     {
@@ -2590,7 +2550,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_confirmation_page",
-      "community": 18,
+      "community": 17,
       "norm_label": "confirmation page"
     },
     {
@@ -2603,7 +2563,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_auth_login_logout",
-      "community": 16,
+      "community": 15,
       "norm_label": "admin login/logout (better auth + jwt)"
     },
     {
@@ -2616,7 +2576,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_dashboard",
-      "community": 19,
+      "community": 18,
       "norm_label": "admin dashboard"
     },
     {
@@ -2629,7 +2589,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_deals_pipeline_kanban",
-      "community": 20,
+      "community": 19,
       "norm_label": "deals pipeline kanban board"
     },
     {
@@ -2642,7 +2602,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_project_task_board",
-      "community": 25,
+      "community": 24,
       "norm_label": "project task board (trello-style)"
     },
     {
@@ -2655,7 +2615,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_leads_contact_management",
-      "community": 22,
+      "community": 21,
       "norm_label": "leads contact management"
     },
     {
@@ -2668,7 +2628,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_sales_activity_logs",
-      "community": 29,
+      "community": 28,
       "norm_label": "sales activity logs & schedule"
     },
     {
@@ -2681,7 +2641,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_notifications",
-      "community": 23,
+      "community": 22,
       "norm_label": "notifications"
     },
     {
@@ -2694,7 +2654,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_profile_settings",
-      "community": 24,
+      "community": 23,
       "norm_label": "profile & settings"
     },
     {
@@ -2707,7 +2667,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_ai_assistant_settings",
-      "community": 15,
+      "community": 14,
       "norm_label": "admin ai assistant & api key management"
     },
     {
@@ -2720,7 +2680,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_prompt_injection_setting",
-      "community": 26,
+      "community": 25,
       "norm_label": "system prompt injection & scope guardrails"
     },
     {
@@ -2733,7 +2693,7 @@
       "author": null,
       "contributor": null,
       "id": "prd_dynamic_rate_setting",
-      "community": 21,
+      "community": 20,
       "norm_label": "dynamic rate & pricing rule injection"
     }
   ],
@@ -6157,10 +6117,58 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_store_useadminstore",
+      "target": "src_lib_supabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useLandingContentStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_store_uselandingcontentstore",
+      "target": "src_lib_supabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_store_useadminstore",
+      "target": "src_lib_supabase_supabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useLandingContentStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_store_uselandingcontentstore",
+      "target": "src_lib_supabase_supabase",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L71",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6171,18 +6179,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L100",
+      "source_location": "L113",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_adminstore",
+      "target": "src_store_useadminstore_adminstate",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L89",
+      "source_location": "L85",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6193,7 +6201,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L3",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_store_useadminstore",
+      "target": "src_store_useadminstore_aiprovideritem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6204,84 +6223,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L309",
+      "source_location": "L187",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialactivities",
+      "target": "src_store_useadminstore_defaultadminuser",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L321",
+      "source_location": "L196",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialaiproviders",
+      "target": "src_store_useadminstore_defaultsystempromptobj",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L165",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialdeals",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L303",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialleads",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L157",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialmasterlabels",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L315",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialnotifications",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L173",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialtasks",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6292,7 +6256,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L80",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6303,7 +6267,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L27",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_store_useadminstore",
+      "target": "src_store_useadminstore_systempromptconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6314,7 +6289,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6325,7 +6300,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6336,7 +6311,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6347,7 +6322,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6358,7 +6333,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L329",
+      "source_location": "L203",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_useadminstore",
@@ -6369,29 +6344,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L144",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_uselandingcontentstore",
-      "target": "src_store_uselandingcontentstore_defaultlandingcontent",
+      "target": "src_store_uselandingcontentstore_initialdefaultstate",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L93",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_store_uselandingcontentstore",
-      "target": "src_store_uselandingcontentstore_defaulttestimonialslist",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_uselandingcontentstore",
@@ -6402,7 +6366,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_uselandingcontentstore",
@@ -6413,7 +6377,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L209",
+      "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_store_uselandingcontentstore",
@@ -6836,5 +6800,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d0cf3378b6784a00d4b54e64f1a6b6a29459139f"
+  "built_at_commit": "5c23238a98febf3a0a74ef6d9fffdef3e3c08d55"
 }
