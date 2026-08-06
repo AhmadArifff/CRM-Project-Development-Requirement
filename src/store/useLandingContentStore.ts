@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
 
 export interface TestimonialCMSItem {
   id: string;
@@ -98,7 +97,7 @@ export interface LandingContentState {
   updateTestimonialItem: (id: string, item: Partial<TestimonialCMSItem>) => void;
   removeTestimonialItem: (id: string) => void;
   
-  // Supabase Live Sync
+  // Supabase Live Sync (Names kept for compatibility)
   fetchContentFromSupabase: () => Promise<void>;
   saveSectionToSupabase: (sectionKey: string, payload: any) => Promise<void>;
   resetToDefault: () => void;
@@ -194,6 +193,21 @@ const initialDefaultState = {
     contactPhone: '+62 812-3456-7890',
     copyrightText: '© 2026 DevPulse Studio. Developed by Ahmad Arif.',
   },
+};
+
+// Helper fetch to add authorization token for API requests
+const apiFetch = async (url: string, options: RequestInit = {}) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('devpulse_token') : null;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+  
+  const res = await fetch(url, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'API request failed');
+  return data;
 };
 
 export const useLandingContentStore = create<LandingContentState>((set, get) => ({
@@ -295,49 +309,54 @@ export const useLandingContentStore = create<LandingContentState>((set, get) => 
   updateTestimonialItem: (id, item) => get().updateTestimonial(id, item),
   removeTestimonialItem: (id) => get().deleteTestimonial(id),
 
+  // These functions keep their name for backward compatibility with React components
+  // but they now talk to Express backend instead of Supabase directly.
   saveSectionToSupabase: async (sectionKey: string, payload: any) => {
     try {
-      if (!supabase) return;
-      await supabase
-        .from('LandingContent')
-        .upsert(
-          {
-            sectionKey,
-            contentJson: payload,
-            updatedAt: new Date().toISOString(),
-          },
-          { onConflict: 'sectionKey' }
-        );
+      await apiFetch(`/api/v1/landing-content/${sectionKey}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ contentJson: payload }),
+      });
     } catch (err) {
-      console.warn('Supabase save error:', err);
+      console.warn('API landing content save error:', err);
     }
   },
 
   fetchContentFromSupabase: async () => {
     try {
-      if (!supabase) return;
-      const { data, error } = await supabase.from('LandingContent').select('*');
-      if (error || !data || data.length === 0) return;
+      const response = await apiFetch('/api/v1/landing-content').catch(() => null);
+      if (!response || !response.success || !response.contents || response.contents.length === 0) return;
+      
+      const data = response.contents;
 
       const newHero = data.find((d: any) => d.sectionKey === 'HERO')?.contentJson;
       const newConsulting = data.find((d: any) => d.sectionKey === 'CONSULTING')?.contentJson;
       const newCalculator = data.find((d: any) => d.sectionKey === 'CALCULATOR')?.contentJson;
       const newProcess = data.find((d: any) => d.sectionKey === 'PROCESS')?.contentJson;
       const newTestimonials = data.find((d: any) => d.sectionKey === 'TESTIMONIALS')?.contentJson;
+      const newTestimonialsHeader = data.find((d: any) => d.sectionKey === 'TESTIMONIALS_HEADER')?.contentJson;
       const newFooter = data.find((d: any) => d.sectionKey === 'FOOTER')?.contentJson;
 
-      set((state) => ({
-        hero: newHero ? { ...state.hero, ...newHero } : state.hero,
-        consulting: newConsulting ? { ...state.consulting, ...newConsulting } : state.consulting,
-        rateCalculator: newCalculator ? { ...state.rateCalculator, ...newCalculator } : state.rateCalculator,
-        process: newProcess ? { ...state.process, ...newProcess } : state.process,
-        testimonials: newTestimonials
-          ? { ...state.testimonials, items: newTestimonials }
-          : state.testimonials,
-        footer: newFooter ? { ...state.footer, ...newFooter } : state.footer,
-      }));
+      set((state) => {
+        let updatedTestimonials = state.testimonials;
+        if (newTestimonialsHeader) {
+          updatedTestimonials = { ...updatedTestimonials, ...newTestimonialsHeader };
+        }
+        if (newTestimonials) {
+          updatedTestimonials = { ...updatedTestimonials, items: newTestimonials };
+        }
+
+        return {
+          hero: newHero ? { ...state.hero, ...newHero } : state.hero,
+          consulting: newConsulting ? { ...state.consulting, ...newConsulting } : state.consulting,
+          rateCalculator: newCalculator ? { ...state.rateCalculator, ...newCalculator } : state.rateCalculator,
+          process: newProcess ? { ...state.process, ...newProcess } : state.process,
+          testimonials: updatedTestimonials,
+          footer: newFooter ? { ...state.footer, ...newFooter } : state.footer,
+        };
+      });
     } catch (err) {
-      console.warn('Supabase fetch error:', err);
+      console.warn('API landing content fetch error:', err);
     }
   },
 
