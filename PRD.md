@@ -125,6 +125,10 @@ Platform web dengan **dua modul utama** yang saling terhubung:
 | 19 | Landing Page — Questionnaire AI Smart Recommendations | P0 (Must) | Landing | Fitur rekomendasi AI kontekstual pada questionnaire: autofill input esay & highlight pilihan ganda |
 | 20 | Landing Page — Client Testimonials & Verified Reviews | P0 (Must) | Landing | Section review & testimoni klien terverifikasi dengan rating 5 bintang, foto avatar, filter kategori proyek, & metrik kepuasan estimasi |
 | 21 | Admin — Landing Page Content CMS & Figma Studio Editor | P0 (Must) | CRM | Workspace admin ala Figma untuk mengedit 100% elemen landing page (teks, tombol CTA, grid icon picker, & upload file gambar lokal/URL) dengan preview canvas live split-screen & device viewport toggle |
+| 22 | Admin — Dynamic Master Data Management | P0 (Must) | CRM | Pengelolaan Master Data secara dinamis dari UI Admin Panel (Labels, Categories, & Priorities) tanpa hardcoded data di codebase |
+| 23 | Admin — 1-Click Lead-to-Deal Conversion System | P0 (Must) | CRM | Konversi data propek klien dari kuisioner langsung menjadi deal proyek CRM dalam 1 klik |
+| 24 | Admin — Rich Trello WYSIWYG Editor Toolbar | P0 (Must) | CRM | Editor teks kaya pada detail card Trello dengan toolbar formatting Markdown, checklist interaktif, gambar, & live preview |
+| 25 | Admin — Auto-Scroll Smooth Focus Canvas | P0 (Must) | CRM | Canvas preview otomatis meluncur halus ke bagian paling atas viewport saat section dipilih di Layers Tree |
 
 ### 4.3 User Flow
 
@@ -639,12 +643,108 @@ Step 1: Admin navigasi ke /admin/login
 **As a** admin/owner,
 **I want to** mengatur System Prompt / System Instructions, pembatasan scope topik (guardrails), dan rate harga pengembangan di admin panel,
 **So that** AI pada Landing Page hanya memproses percakapan seputar proyek aplikasi, menolak topik di luar proyek secara sopan, serta menjawab estimasi biaya sesuai aturan rate harga yang saya tentukan.
+- [ ] **Given** saya berada di menu /admin/ai-assistant, **When** saya berpindah ke tab "System Prompt & Rules", **Then** saya melihat editor System Prompt, Scope Guardrails, dan Setting Rate Harga
+- [ ] **Given** admin mengisi rate per jam, **When** disimpan, **Then** rate ini digunakan untuk mengkalkulasi estimasi biaya di AI chat dan Rate Calculator landing page
+
+---
+
+### Epic 12: Admin Panel — Figma Studio Visual Landing CMS
+
+#### Story 12.1: Workspace 3 Kolom ala Figma Studio & Viewport Selectors
+**As a** admin/owner,
+**I want to** mengedit isian konten landing page melalui workspace 3 kolom ala Figma Studio (`/admin/landing-content`),
+**So that** saya memiliki fleksibilitas penuh mengelola teks, tombol CTA, ikon, dan media secara visual.
+
+**Priority:** P0 | **Estimate:** L
+
+**Acceptance Criteria:**
+- [x] **Given** admin di `/admin/landing-content`, **When** dimuat, **Then** tampil layout 3 kolom: Left Layers Tree, Center Live Canvas, & Right Properties Inspector
+- [x] **Given** bar header atas, **When** admin memilih device toggle (`Laptop Desktop`, `Tablet`, `Mobile`), **Then** viewport canvas menyesuaikan lebar frame secara akurat
+- [x] **Given** tombol zoom, **When** diubah (`50%`, `75%`, `100%`), **Then** skala canvas menyesuaikan secara proporsional
+
+#### Story 12.2: Live Canvas Auto-Scroll Focus to Top
+**As a** admin/owner,
+**I want to** canvas preview otomatis meluncur halus (*smooth scroll*) membawa section aktif ke bagian paling atas viewport,
+**So that** saya langsung melihat hasil perubahan real-time tanpa perlu scroll manual.
 
 **Priority:** P0 | **Estimate:** M
 
 **Acceptance Criteria:**
-- [ ] **Given** saya berada di menu /admin/ai-assistant, **When** saya berpindah ke tab "System Prompt & Rules", **Then** saya melihat editor System Prompt, Scope Guardrails, dan Setting Rate Harga
-- [ ] **Given** saya mengisi System Prompt & Rules, **When** simpan, **Then** instruksi diinjeksi secara server-side ke pesan `system` pada AI chat landing page
+- [x] **Given** admin memilih layer pada Layers Tree (misal `Rate Calculator`), **When** diklik, **Then** canvas otomatis scroll meluncur ke bagian paling atas viewport
+- [x] **Given** section aktif di canvas, **When** disorot, **Then** terdapat badge `📌 Section (Focused Top)` dan ring glow border tebal
+
+#### Story 12.3: Upload File Gambar Lokal & Manager Avatar (`ImageUploadPicker`)
+**As a** admin/owner,
+**I want to** meng-upload file gambar dari komputer atau menempelkan URL gambar untuk foto testimoni klien dan elemen media lainnya,
+**So that** saya dapat memperbarui gambar secara mandiri.
+
+**Priority:** P0 | **Estimate:** M
+
+**Acceptance Criteria:**
+- [x] **Given** inspector properti gambar, **When** admin menekan `📷 Upload File Gambar`, **Then** dialog pemilih file komputer lokal terbuka
+- [x] **Given** file gambar (PNG/JPG/WebP) dipilih, **When** diproses, **Then** `FileReader` mengonversi gambar menjadi Data URL persistent dan langsung di-render di canvas
+- [x] **Given** opsi URL Link, **When** admin menempelkan URL (`https://...`), **Then** gambar ter-update secara instan
+
+---
+
+### Epic 13: Admin Panel — Dynamic Master Data Management
+
+#### Story 13.1: Pengelolaan Master Data Dinamis via UI
+**As a** admin/owner,
+**I want to** mengelola Master Data Labels, Categories, dan Priorities langsung dari UI Admin Panel,
+**So that** tidak ada data yang ter-hardcode di codebase dan mencegah miskonsepsi data kategori.
+
+**Priority:** P0 | **Estimate:** M
+
+**Acceptance Criteria:**
+- [x] **Given** modal "+ Kelola Master Label", **When** admin menambah label baru beserta warna preset, **Then** label baru tersimpan di master state dan langsung dapat dipilih di semua form task
+- [x] **Given** admin menghapus label, **When** dikonfirmasi, **Then** label terhapus dari master list tanpa merusak integritas task yang sudah ada
+
+---
+
+### Epic 14: Admin Panel — 1-Click Lead-to-Deal Conversion System
+
+#### Story 14.1: Konversi Prospect Lead menjadi Deal Pipeline
+**As a** admin/owner,
+**I want to** mengonversi data lead hasil kuisioner klien menjadi deal proyek CRM hanya dalam 1 klik,
+**So that** alur follow-up sales menjadi seamless.
+
+**Priority:** P0 | **Estimate:** S
+
+**Acceptance Criteria:**
+- [x] **Given** tabel data di `/admin/leads`, **When** admin menekan tombol "Convert to Deal", **Then** data lead otomatis dipindahkan ke Deals Pipeline Kanban dengan stage awal `New Lead`
+
+---
+
+### Epic 15: Admin Panel — Rich Trello WYSIWYG Editor Toolbar
+
+#### Story 15.1: Editor Formatting Deskripsi Task Modal
+**As a** admin/owner,
+**I want to** menggunakan toolbar formatting WYSIWYG lengkap pada deskripsi task board Trello,
+**So that** dokumen spesifikasi tugas tim developer tersusun rapi dengan heading, bold, italic, code block, tabel, dan checklist.
+
+**Priority:** P0 | **Estimate:** M
+
+**Acceptance Criteria:**
+- [x] **Given** modal detail task di `/admin/tasks`, **When** admin mengedit deskripsi, **Then** tersedia toolbar formatting (`Tt`, `B`, `I`, `~`, `` ` ``, `-`, `- [ ]`, `Link`, `Image`, `Note`, `Table`, `M↓ Preview`)
+- [x] **Given** mode preview `M↓`, **When** diaktifkan, **Then** hasil formatting markdown ter-render dengan rapi ala Notion
+
+---
+
+### Epic 16: Developer Guidelines — Git Merge Threshold Policy (10 Commits)
+
+#### Story 16.1: Kebijakan Merge Threshold Dev ke Main
+**As a** team developer & agent AI,
+**I want to** mematuhi aturan merge 10 commits dari branch `dev` ke branch `main`,
+**So that** branch rilis produksi `main` selalu stabil dan hanya di-update pada milestone tertentu.
+
+**Priority:** P0 | **Estimate:** S
+
+**Acceptance Criteria:**
+- [x] **Active Development**: Seluruh pekerjaan harian wajib di-commit dan di-push ke branch `dev` (`git push origin dev`)
+- [x] **10-Commit Threshold**: Merging ke branch `main` (`git checkout main && git merge dev && git push origin main`) HANYA dilakukan setiap kali terkumpul 10 commit di branch `dev`
+
+---
 - [ ] **Given** rule pembatasan scope diaktifkan, **When** user mencoba bertanya topik di luar proyek aplikasi (contoh: pertanyaan umum, resep, matematika dasar, dll), **Then** AI menolak secara sopan: *"Maaf, saya adalah AI PRD Consultant yang khusus membantu perancangan requirement proyek aplikasi. Mari kembali fokus ke pembahasan fitur dan kebutuhan aplikasi Anda."*
 - [ ] **Given** saya mengatur Rate Harga (contoh: Rp 250.000 / jam), **When** user meminta estimasi biaya di AI chat landing page, **Then** AI menggunakan rate harga tersebut secara konsisten dalam jawabannya
 - [ ] **Given** ada fitur "Test Guardrail Simulator", **When** admin mengetikkan sample chat user, **Then** simulator menampilkan hasil respon AI untuk menguji efektivitas prompt injection sebelum dipublish ke landing page
