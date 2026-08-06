@@ -69,8 +69,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start Express Server
-app.listen(PORT, () => {
-  console.log(`🚀 DevPulse Studio Express API Server running on port ${PORT}`);
+app.listen(Number(PORT), '127.0.0.1', () => {
+  console.log(`🚀 DevPulse Studio Express API Server running on http://127.0.0.1:${PORT}`);
 });
 
 export default app;

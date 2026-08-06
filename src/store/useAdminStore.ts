@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
 
 export interface DealItem {
   id: string;
@@ -179,7 +178,7 @@ export interface AdminState {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
 
-  // Supabase Fetch
+  // API Fetch
   fetchFromSupabase: () => Promise<void>;
 }
 
@@ -197,20 +196,19 @@ const defaultSystemPromptObj: SystemPromptConfig = {
   hourlyRate: 250000,
 };
 
-// Helper: get token from localStorage (client-side only)
-const getStoredToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('devpulse_token');
-};
-
-const getStoredUser = (): AdminUser | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem('devpulse_user');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+// Helper fetch to add authorization token
+const apiFetch = async (url: string, options: RequestInit = {}) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('devpulse_token') : null;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+  
+  const res = await fetch(url, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'API request failed');
+  return data;
 };
 
 export const useAdminStore = create<AdminState>((set, get) => ({
@@ -221,7 +219,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   currentUser: guestUser,
   systemPrompt: defaultSystemPromptObj,
 
-  // ALL data starts empty — populated from database via fetchFromSupabase()
+  // ALL data starts empty — populated from database via API
   activities: [],
   notifications: [],
   leads: [],
@@ -244,6 +242,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       token,
       user,
       currentUser: user,
+      systemPrompt: { ...get().systemPrompt, hourlyRate: user.hourlyRate || 250000 }
     });
   },
 
@@ -291,41 +290,29 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addLead: async (leadData) => {
-    const newLead: LeadItem = {
-      ...leadData,
-      id: `lead-${Date.now()}`,
-      createdAt: new Date().toLocaleString(),
-    };
-    set((state) => ({ leads: [newLead, ...state.leads] }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Lead').insert({
-        id: newLead.id,
-        name: newLead.name,
-        company: newLead.company,
-        email: newLead.email,
-        phone: newLead.phone,
-        status: newLead.status,
-        source: newLead.source,
-        notes: newLead.notes,
-        appTitle: newLead.appTitle,
+      const data = await apiFetch('/api/v1/leads', {
+        method: 'POST',
+        body: JSON.stringify(leadData),
       });
+      const newLead = { ...data.lead, id: data.lead.id, createdAt: new Date(data.lead.createdAt).toLocaleString() };
+      set((state) => ({ leads: [newLead, ...state.leads] }));
     } catch (err) {
-      console.warn('Supabase lead save warning:', err);
+      console.warn('API lead save warning:', err);
     }
   },
 
-  updateLeadStatus: async (id, status = 'CONTACTED') => {
+  updateLeadStatus: async (id, status = 'CONTACTED', notes) => {
     set((state) => ({
-      leads: state.leads.map((l) => (l.id === id ? { ...l, status } : l)),
+      leads: state.leads.map((l) => (l.id === id ? { ...l, status, notes: notes || l.notes } : l)),
     }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Lead').update({ status }).eq('id', id);
+      await apiFetch(`/api/v1/leads/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, notes }),
+      });
     } catch (err) {
-      console.warn('Supabase lead status update warning:', err);
+      console.warn('API lead status update warning:', err);
     }
   },
 
@@ -333,35 +320,25 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const lead = get().leads.find((l) => l.id === leadId);
     if (!lead) return;
 
-    const newDeal: DealItem = {
-      id: `deal-${Date.now()}`,
-      title: `Deal — ${lead.appTitle || lead.company || lead.name}`,
-      clientName: lead.name,
-      company: lead.company || 'N/A',
-      value: dealValue,
-      stage: 'NEW_LEAD',
-      expectedClose: '2026-09-15',
-      notes: `Konversi otomatis dari Prospect Lead (${lead.email}). Notes: ${lead.notes || 'N/A'}`,
-    };
-
     set((state) => ({
-      deals: [newDeal, ...state.deals],
       leads: state.leads.map((l) => (l.id === leadId ? { ...l, status: 'CONVERTED' } : l)),
     }));
 
     try {
-      if (!supabase) return;
-      await supabase.from('Lead').update({ status: 'CONVERTED' }).eq('id', leadId);
-      await supabase.from('Deal').insert({
-        id: newDeal.id,
-        title: newDeal.title,
-        value: newDeal.value,
-        stage: newDeal.stage,
-        leadId: leadId,
-        description: newDeal.notes,
-      });
+      const data = await apiFetch(`/api/v1/leads/${leadId}/convert`, { method: 'POST' });
+      const newDeal = {
+        id: data.deal.id,
+        title: data.deal.title,
+        clientName: lead.name,
+        company: lead.company || 'N/A',
+        value: data.deal.value,
+        stage: data.deal.stage,
+        expectedClose: '2026-09-15',
+        notes: data.deal.description,
+      };
+      set((state) => ({ deals: [newDeal, ...state.deals] }));
     } catch (err) {
-      console.warn('Supabase deal convert warning:', err);
+      console.warn('API deal convert warning:', err);
     }
   },
 
@@ -370,23 +347,24 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addDeal: async (dealData) => {
-    const newDeal: DealItem = {
-      ...dealData,
-      id: `deal-${Date.now()}`,
-    };
-    set((state) => ({ deals: [newDeal, ...state.deals] }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Deal').insert({
-        id: newDeal.id,
-        title: newDeal.title,
-        value: newDeal.value,
-        stage: newDeal.stage,
-        description: newDeal.notes,
+      const data = await apiFetch('/api/v1/deals', {
+        method: 'POST',
+        body: JSON.stringify(dealData),
       });
+      const newDeal = {
+        id: data.deal.id,
+        title: data.deal.title,
+        clientName: dealData.clientName || 'N/A',
+        company: dealData.company || 'N/A',
+        value: data.deal.value,
+        stage: data.deal.stage,
+        expectedClose: '2026-09-15',
+        notes: data.deal.description,
+      };
+      set((state) => ({ deals: [newDeal, ...state.deals] }));
     } catch (err) {
-      console.warn('Supabase deal insert warning:', err);
+      console.warn('API deal insert warning:', err);
     }
   },
 
@@ -394,12 +372,13 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set((state) => ({
       deals: state.deals.map((d) => (d.id === dealId ? { ...d, stage } : d)),
     }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Deal').update({ stage }).eq('id', dealId);
+      await apiFetch(`/api/v1/deals/${dealId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ stage }),
+      });
     } catch (err) {
-      console.warn('Supabase deal stage update warning:', err);
+      console.warn('API deal stage update warning:', err);
     }
   },
 
@@ -410,37 +389,34 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addTask: async (taskData) => {
-    const currentUser = get().currentUser;
-    const newTask: TaskItem = {
-      title: taskData.title || 'Task Baru',
-      description: taskData.description || '',
-      status: taskData.status || 'BACKLOG',
-      priority: taskData.priority || 'MEDIUM',
-      dueDate: taskData.dueDate || new Date().toISOString().slice(0, 10),
-      assignee: taskData.assignee || currentUser.name,
-      projectName: taskData.projectName || 'DevPulse Studio',
-      coverGradient: taskData.coverGradient || 'from-blue-600 to-indigo-600',
-      labels: taskData.labels || [],
-      checklists: taskData.checklists || [],
-      comments: taskData.comments || [],
-      attachments: taskData.attachments || [],
-      id: `task-${Date.now()}`,
-    };
-    set((state) => ({ tasks: [newTask, ...state.tasks] }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Task').insert({
-        id: newTask.id,
-        title: newTask.title,
-        description: newTask.description,
-        status: newTask.status,
-        priority: newTask.priority,
-        dueDate: newTask.dueDate,
-        projectId: 'proj_default_001',
+      const currentUser = get().currentUser;
+      const data = await apiFetch('/api/v1/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...taskData,
+          assigneeId: currentUser.id || 'usr_admin_ahmad_001'
+        }),
       });
+      
+      const newTask: TaskItem = {
+        id: data.task.id,
+        title: data.task.title,
+        description: data.task.description || '',
+        status: data.task.status,
+        priority: data.task.priority,
+        dueDate: data.task.dueDate,
+        assignee: currentUser.name,
+        projectName: 'DevPulse Studio',
+        coverGradient: 'from-blue-600 to-indigo-600',
+        labels: [],
+        checklists: [],
+        comments: [],
+        attachments: [],
+      };
+      set((state) => ({ tasks: [newTask, ...state.tasks] }));
     } catch (err) {
-      console.warn('Supabase task insert warning:', err);
+      console.warn('API task insert warning:', err);
     }
   },
 
@@ -448,74 +424,106 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set((state) => ({
       tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, status } : t)),
     }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Task').update({ status }).eq('id', taskId);
+      await apiFetch(`/api/v1/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
     } catch (err) {
-      console.warn('Supabase task status update warning:', err);
+      console.warn('API task status update warning:', err);
     }
   },
 
   moveTask: async (taskId, targetStatus) => get().updateTaskStatus(taskId, targetStatus),
 
   toggleChecklistItem: async (taskId, checklistId) => {
+    let newStatus = false;
     set((state) => ({
       tasks: state.tasks.map((t) => {
         if (t.id !== taskId) return t;
         return {
           ...t,
-          checklists: t.checklists.map((c) =>
-            c.id === checklistId ? { ...c, isCompleted: !c.isCompleted } : c
-          ),
+          checklists: t.checklists.map((c) => {
+            if (c.id === checklistId) {
+              newStatus = !c.isCompleted;
+              return { ...c, isCompleted: newStatus };
+            }
+            return c;
+          }),
         };
       }),
     }));
+    try {
+      await apiFetch(`/api/v1/tasks/checklists/${checklistId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ completed: newStatus }),
+      });
+    } catch (err) {
+      console.warn('API task checklist update warning:', err);
+    }
   },
 
   addChecklistItem: async (taskId, text) => {
-    const newChecklist: TaskChecklistItem = {
-      id: `chk-${Date.now()}`,
-      text,
-      isCompleted: false,
-    };
-
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return { ...t, checklists: [...t.checklists, newChecklist] };
-      }),
-    }));
+    try {
+      const data = await apiFetch(`/api/v1/tasks/${taskId}/checklists`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+      });
+      
+      const newChecklist = { id: data.checklist.id, text, isCompleted: false };
+      set((state) => ({
+        tasks: state.tasks.map((t) => {
+          if (t.id !== taskId) return t;
+          return { ...t, checklists: [...t.checklists, newChecklist] };
+        }),
+      }));
+    } catch (err) {
+      console.warn('API task checklist add warning:', err);
+    }
   },
 
   addTaskComment: async (taskId, text, author, avatar) => {
-    const currentUser = get().currentUser;
-    const newComment: TaskCommentItem = {
-      id: `cmt-${Date.now()}`,
-      author: author || currentUser.name,
-      avatar: avatar || currentUser.avatar || '',
-      text,
-      timestamp: 'Sekarang',
-    };
+    try {
+      const currentUser = get().currentUser;
+      const data = await apiFetch(`/api/v1/tasks/${taskId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({
+          text,
+          authorName: author || currentUser.name,
+          authorAvatar: avatar || currentUser.avatar,
+        }),
+      });
+      
+      const newComment = {
+        id: data.comment.id,
+        author: data.comment.authorName,
+        avatar: data.comment.authorAvatar || '',
+        text,
+        timestamp: 'Baru saja',
+      };
 
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return { ...t, comments: [...t.comments, newComment] };
-      }),
-    }));
+      set((state) => ({
+        tasks: state.tasks.map((t) => {
+          if (t.id !== taskId) return t;
+          return { ...t, comments: [...t.comments, newComment] };
+        }),
+      }));
+    } catch (err) {
+      console.warn('API task comment add warning:', err);
+    }
   },
 
   updateTaskDescription: async (taskId, description) => {
     set((state) => ({
       tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, description } : t)),
     }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('Task').update({ description }).eq('id', taskId);
+      await apiFetch(`/api/v1/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ description }),
+      });
     } catch (err) {
-      console.warn('Supabase task description update warning:', err);
+      console.warn('API task description update warning:', err);
     }
   },
 
@@ -527,25 +535,15 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const name = typeof labelData === 'string' ? labelData : labelData.name;
     const color = typeof labelData === 'string' ? colorArg : (labelData.color || colorArg);
 
-    const newLabel: TaskLabelItem = {
-      id: `lbl-${Date.now()}`,
-      name,
-      color,
-    };
-    set((state) => ({ masterLabels: [...state.masterLabels, newLabel] }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('MasterLabel').insert({
-        id: newLabel.id,
-        name: newLabel.name,
-        color: newLabel.color,
-        bgClass: 'bg-cyan-500/20',
-        textClass: 'text-cyan-300',
-        borderClass: 'border-cyan-500/30',
+      const data = await apiFetch('/api/v1/tasks/master-labels', {
+        method: 'POST',
+        body: JSON.stringify({ name, color, bgClass: 'bg-cyan-500/20', textClass: 'text-cyan-300', borderClass: 'border-cyan-500/30' }),
       });
+      const newLabel = { id: data.label.id, name: data.label.name, color: data.label.color };
+      set((state) => ({ masterLabels: [...state.masterLabels, newLabel] }));
     } catch (err) {
-      console.warn('Supabase label insert warning:', err);
+      console.warn('API label insert warning:', err);
     }
   },
 
@@ -553,12 +551,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set((state) => ({
       masterLabels: state.masterLabels.filter((l) => l.id !== id),
     }));
-
     try {
-      if (!supabase) return;
-      await supabase.from('MasterLabel').delete().eq('id', id);
+      await apiFetch(`/api/v1/tasks/master-labels/${id}`, { method: 'DELETE' });
     } catch (err) {
-      console.warn('Supabase label delete warning:', err);
+      console.warn('API label delete warning:', err);
     }
   },
 
@@ -569,25 +565,25 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addActivity: async (actData) => {
-    const newAct: ActivityItem = {
-      ...actData,
-      id: `act-${Date.now()}`,
-      date: new Date().toLocaleString(),
-    };
-    set((state) => ({ activities: [newAct, ...state.activities] }));
-
     try {
-      if (!supabase) return;
       const currentUser = get().currentUser;
-      await supabase.from('Activity').insert({
-        id: newAct.id,
-        type: (newAct.type || 'NOTE').toUpperCase(),
-        title: newAct.title,
-        description: newAct.description || '',
-        userId: currentUser.id || 'usr_admin_ahmad_001',
+      const data = await apiFetch('/api/v1/activities', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...actData,
+          userId: currentUser.id || 'usr_admin_ahmad_001'
+        }),
       });
+      const newAct = {
+        id: data.data.id,
+        type: data.data.type,
+        title: data.data.title,
+        description: data.data.description || '',
+        date: new Date().toLocaleString(),
+      };
+      set((state) => ({ activities: [newAct, ...state.activities] }));
     } catch (err) {
-      console.warn('Supabase activity insert warning:', err);
+      console.warn('API activity insert warning:', err);
     }
   },
 
@@ -599,15 +595,16 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)),
     }));
-
     try {
-      if (!supabase) return;
       const target = get().aiProviders.find((p) => p.id === id);
       if (target) {
-        await supabase.from('AiProvider').update({ isActive: target.isActive }).eq('id', id);
+        await apiFetch('/api/v1/ai/providers', {
+          method: 'POST',
+          body: JSON.stringify({ ...target, isActive: target.isActive }),
+        });
       }
     } catch (err) {
-      console.warn('Supabase provider toggle warning:', err);
+      console.warn('API provider toggle warning:', err);
     }
   },
 
@@ -621,67 +618,79 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, apiKey } : p)),
     }));
+    try {
+      const target = get().aiProviders.find((p) => p.id === id);
+      if (target) {
+        await apiFetch('/api/v1/ai/providers', {
+          method: 'POST',
+          body: JSON.stringify({ ...target, apiKey }),
+        });
+      }
+    } catch (err) {
+      console.warn('API provider update API key warning:', err);
+    }
   },
 
   updateAiSelectedModel: async (id, selectedModel) => {
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, selectedModel } : p)),
     }));
+    try {
+      const target = get().aiProviders.find((p) => p.id === id);
+      if (target) {
+        await apiFetch('/api/v1/ai/providers', {
+          method: 'POST',
+          body: JSON.stringify({ ...target, selectedModel }),
+        });
+      }
+    } catch (err) {
+      console.warn('API provider update model warning:', err);
+    }
   },
 
   // =====================================================================
   // NOTIFICATIONS
   // =====================================================================
 
-  markAsRead: (id) => {
+  markAsRead: async (id) => {
     set((state) => ({
       notifications: state.notifications.map((n) =>
         n.id === id ? { ...n, read: true, isRead: true } : n
       ),
     }));
-
-    // Sync to database
     try {
-      if (supabase) {
-        supabase.from('Notification').update({ isRead: true }).eq('id', id).then(() => {});
-      }
+      await apiFetch(`/api/v1/notifications/${id}/read`, { method: 'PATCH' });
     } catch {}
   },
 
-  markAllAsRead: () => {
+  markAllAsRead: async () => {
     set((state) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true, isRead: true })),
     }));
-
-    // Sync to database
     try {
-      if (supabase) {
-        supabase.from('Notification').update({ isRead: true }).neq('isRead', true).then(() => {});
-      }
+      await apiFetch('/api/v1/notifications/read-all', { method: 'PATCH' });
     } catch {}
   },
 
   // =====================================================================
-  // FETCH ALL DATA FROM SUPABASE DATABASE
+  // FETCH ALL DATA FROM API (Not direct Supabase SDK)
   // =====================================================================
 
   fetchFromSupabase: async () => {
     try {
-      if (!supabase) return;
-
       const [leadsRes, dealsRes, tasksRes, labelsRes, aiRes, activitiesRes, notificationsRes] = await Promise.all([
-        supabase.from('Lead').select('*').order('createdAt', { ascending: false }),
-        supabase.from('Deal').select('*').order('createdAt', { ascending: false }),
-        supabase.from('Task').select('*, TaskChecklist(*), TaskComment(*)').order('createdAt', { ascending: false }),
-        supabase.from('MasterLabel').select('*').order('name', { ascending: true }),
-        supabase.from('AiProvider').select('*').order('providerKey', { ascending: true }),
-        supabase.from('Activity').select('*, Lead(name)').order('createdAt', { ascending: false }),
-        supabase.from('Notification').select('*').order('createdAt', { ascending: false }),
+        apiFetch('/api/v1/leads').catch(() => ({ leads: [] })),
+        apiFetch('/api/v1/deals').catch(() => ({ deals: [] })),
+        apiFetch('/api/v1/tasks').catch(() => ({ tasks: [] })),
+        apiFetch('/api/v1/tasks/master-labels').catch(() => ({ labels: [] })),
+        apiFetch('/api/v1/ai/providers').catch(() => ({ providers: [] })),
+        apiFetch('/api/v1/activities').catch(() => ({ data: [] })),
+        apiFetch('/api/v1/notifications').catch(() => ({ data: [] })),
       ]);
 
       // Map Leads
-      if (leadsRes.data && leadsRes.data.length > 0) {
-        const leads: LeadItem[] = leadsRes.data.map((l: any) => ({
+      if (leadsRes.leads && leadsRes.leads.length > 0) {
+        const leads: LeadItem[] = leadsRes.leads.map((l: any) => ({
           id: l.id,
           name: l.name,
           company: l.company || '',
@@ -698,12 +707,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       }
 
       // Map Deals
-      if (dealsRes.data && dealsRes.data.length > 0) {
-        const deals: DealItem[] = dealsRes.data.map((d: any) => ({
+      if (dealsRes.deals && dealsRes.deals.length > 0) {
+        const deals: DealItem[] = dealsRes.deals.map((d: any) => ({
           id: d.id,
           title: d.title,
-          clientName: d.clientName || d.title,
-          company: d.company || '',
+          clientName: d.lead?.name || d.title,
+          company: d.lead?.company || '',
           value: Number(d.value) || 0,
           stage: d.stage,
           expectedClose: d.expectedClose || '',
@@ -712,30 +721,26 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         set({ deals });
       }
 
-      // Map Tasks with checklists & comments
-      if (tasksRes.data && tasksRes.data.length > 0) {
+      // Map Tasks
+      if (tasksRes.tasks && tasksRes.tasks.length > 0) {
         const currentUser = get().currentUser;
-        const tasks: TaskItem[] = tasksRes.data.map((t: any) => ({
+        const tasks: TaskItem[] = tasksRes.tasks.map((t: any) => ({
           id: t.id,
           title: t.title,
           description: t.description || '',
           status: t.status,
           priority: t.priority,
           dueDate: t.dueDate || '',
-          assignee: t.assigneeName || currentUser.name,
+          assignee: t.assignee?.name || currentUser.name,
           projectName: t.projectName || 'DevPulse Studio',
           coverGradient: t.coverGradient || 'from-blue-600 to-indigo-600',
-          labels: (t.labels || []).map((labelName: string, idx: number) => ({
-            id: `lbl-db-${idx}`,
-            name: labelName,
-            color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-          })),
-          checklists: (t.TaskChecklist || []).map((c: any) => ({
+          labels: [],
+          checklists: (t.checklists || []).map((c: any) => ({
             id: c.id,
             text: c.text,
             isCompleted: c.completed,
           })),
-          comments: (t.TaskComment || []).map((c: any) => ({
+          comments: (t.comments || []).map((c: any) => ({
             id: c.id,
             author: c.authorName,
             avatar: c.authorAvatar || '',
@@ -747,9 +752,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         set({ tasks });
       }
 
-      // Map Master Labels
-      if (labelsRes.data && labelsRes.data.length > 0) {
-        const masterLabels: TaskLabelItem[] = labelsRes.data.map((l: any) => ({
+      // Map Labels
+      if (labelsRes.labels && labelsRes.labels.length > 0) {
+        const masterLabels: TaskLabelItem[] = labelsRes.labels.map((l: any) => ({
           id: l.id,
           name: l.name,
           color: l.color,
@@ -757,9 +762,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         set({ masterLabels });
       }
 
-      // Map AI Providers
-      if (aiRes.data && aiRes.data.length > 0) {
-        const aiProviders: AiProviderItem[] = aiRes.data.map((p: any) => ({
+      // Map AI
+      if (aiRes.providers && aiRes.providers.length > 0) {
+        const aiProviders: AiProviderItem[] = aiRes.providers.map((p: any) => ({
           id: p.id,
           providerKey: p.providerKey,
           name: p.name,
@@ -780,7 +785,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           title: a.title,
           description: a.description || '',
           date: a.date || a.createdAt,
-          leadName: a.Lead?.name || undefined,
+          leadName: a.leadName,
         }));
         set({ activities });
       }
@@ -789,33 +794,17 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       if (notificationsRes.data && notificationsRes.data.length > 0) {
         const notifications: NotificationItem[] = notificationsRes.data.map((n: any) => ({
           id: n.id,
-          type: n.type === 'NEW_LEAD' ? 'lead' : n.type === 'DEAL_UPDATE' ? 'deal' : n.type === 'TASK_ASSIGNED' ? 'task' : 'system',
+          type: n.type,
           title: n.title,
           message: n.message,
-          time: n.createdAt,
-          read: n.isRead,
+          time: n.time,
+          read: n.read,
           isRead: n.isRead,
         }));
         set({ notifications });
       }
-
-      // Fetch AI System Prompt
-      try {
-        const promptRes = await supabase.from('AiSystemPrompt').select('*').limit(1).single();
-        if (promptRes.data) {
-          set({
-            systemPrompt: {
-              systemInstruction: promptRes.data.systemInstruction,
-              scopeRestriction: promptRes.data.scopeRestriction,
-              offTopicMessage: promptRes.data.offTopicMessage,
-              hourlyRate: Number(promptRes.data.hourlyRate) || 250000,
-            },
-          });
-        }
-      } catch {}
-
-    } catch (err) {
-      console.warn('Supabase store fetch warning:', err);
+    } catch (error) {
+      console.error('Failed to fetch from API:', error);
     }
   },
 }));

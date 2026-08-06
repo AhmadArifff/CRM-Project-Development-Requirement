@@ -11,13 +11,40 @@ export default function AdminProfilePage() {
   const [rate, setRate] = useState(systemPrompt.hourlyRate);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSystemPrompt({ hourlyRate: Number(rate) });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  };
+  const [isSaving, setIsSaving] = useState(false);
 
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('devpulse_token');
+      const res = await fetch('/api/v1/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          hourlyRate: Number(rate)
+        })
+      });
+
+      if (res.ok) {
+        setSystemPrompt({ hourlyRate: Number(rate) });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        alert('Gagal menyimpan profile');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Terjadi kesalahan koneksi');
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
@@ -86,10 +113,11 @@ export default function AdminProfilePage() {
         <div className="pt-4 border-t border-slate-800 flex justify-end">
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold shadow-lg hover:scale-105 transition-all"
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100"
           >
             <Save className="w-4 h-4" />
-            <span>Simpan Perubahan</span>
+            <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
           </button>
         </div>
       </form>
