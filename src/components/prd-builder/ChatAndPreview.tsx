@@ -496,8 +496,8 @@ Revisi \`${text}\` telah berhasil di-inject ke dokumen **PRD.md**.
             {/* Notion Cover Gradient Banner */}
             <div className="h-28 bg-gradient-to-r from-blue-900 via-indigo-950 to-purple-900 relative overflow-hidden">
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]" />
-              <div className="absolute bottom-2 right-4 text-[10px] text-slate-400/80 font-mono">
-                Notion Document ID: prd-ref-{Date.now().toString().slice(-6)}
+              <div className="absolute bottom-2 right-4 text-[10px] text-slate-400/80 font-mono" suppressHydrationWarning>
+                Notion Document ID: prd-ref-889900
               </div>
             </div>
 
