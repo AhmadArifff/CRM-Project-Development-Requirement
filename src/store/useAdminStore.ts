@@ -185,11 +185,11 @@ export interface AdminState {
 }
 
 const defaultAdminUser = {
-  name: 'Andi — Developer Konsultan',
-  email: 'andi@devpulsestudio.dev',
+  name: 'Ahmad Arif',
+  email: 'ahmadarif@devpulsestudio.dev',
   role: 'ADMIN',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-  bio: 'Senior Fullstack Consultant & Lead Developer at DevPulse Studio.',
+  bio: 'Lead Developer & Founder at DevPulse Studio.',
   hourlyRate: 250000,
 };
 

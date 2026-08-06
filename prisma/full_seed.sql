@@ -1,25 +1,17 @@
 -- ==============================================================================
--- DEVPULSE STUDIO — COMPLETE SUPABASE SEED DATA SCRIPT
+-- DEVPULSE STUDIO — COMPLETE SUPABASE SEED DATA SCRIPT FOR AHMAD ARIF
 -- Target Database: Supabase PostgreSQL (Project Ref: ydpmuauskndowontbfhx)
 -- Copy & Paste this script after running full_schema_migration.sql!
 -- ==============================================================================
 
--- 1. Seed Admin User
+-- 1. Seed Admin Users (Ahmad Arif)
 INSERT INTO "User" (
     "id", "name", "email", "password", "avatar", "bio", "hourlyRate", "timezone", "role", "createdAt", "updatedAt"
-) VALUES (
-    'usr_admin_devpulse_001',
-    'Andi — Developer Konsultan',
-    'andi@devpulsestudio.dev',
-    '$2a$12$e8UvWk0Z9/5L4jN2B0V5y.Xw9Z2Y.X9X9X9X9X9X9X9X9X9X9X9X',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-    'Senior Fullstack Consultant & Lead Developer at DevPulse Studio.',
-    250000.00,
-    'Asia/Jakarta',
-    'ADMIN',
-    NOW(),
-    NOW()
-) ON CONFLICT ("email") DO UPDATE SET "role" = EXCLUDED."role";
+) VALUES 
+('usr_admin_ahmad_001', 'Ahmad Arif', 'ahmadarif@devpulsestudio.dev', '$2a$10$w3U6UaJ9K5L4jN2B0V5y.e.0J3K0J3K0J3K0J3K0J3K0J3K0J', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80', 'Lead Developer & Founder at DevPulse Studio.', 250000.00, 'Asia/Jakarta', 'ADMIN', NOW(), NOW()),
+('usr_admin_devpulse_002', 'Ahmad Arif (Admin)', 'admin@devpulsestudio.dev', '$2a$10$w3U6UaJ9K5L4jN2B0V5y.e.0J3K0J3K0J3K0J3K0J3K0J3K0J', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80', 'Founder at DevPulse Studio.', 250000.00, 'Asia/Jakarta', 'ADMIN', NOW(), NOW()),
+('usr_admin_ahmad_003', 'Ahmad Arif', 'ahmadarifff@gmail.com', '$2a$10$w3U6UaJ9K5L4jN2B0V5y.e.0J3K0J3K0J3K0J3K0J3K0J3K0J', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80', 'Developer & Founder at DevPulse Studio.', 250000.00, 'Asia/Jakarta', 'ADMIN', NOW(), NOW())
+ON CONFLICT ("email") DO UPDATE SET "name" = EXCLUDED."name", "role" = EXCLUDED."role";
 
 -- 2. Seed Master Labels
 INSERT INTO "MasterLabel" ("id", "name", "color", "bgClass", "textClass", "borderClass", "createdAt", "updatedAt") VALUES
