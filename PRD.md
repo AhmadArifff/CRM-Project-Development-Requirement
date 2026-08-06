@@ -1183,6 +1183,63 @@ model AiSystemPrompt {
   offTopicMessage   String   @default("Maaf, saya adalah AI PRD Consultant yang khusus membantu perancangan requirement proyek aplikasi. Mari fokus pada pembahasan fitur dan kebutuhan aplikasi Anda.")
   updatedAt         DateTime @updatedAt
 }
+
+// ─── Master Data Management ─────────────────
+model MasterLabel {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "Frontend", "Backend", "UI/UX", "Security", "AI/ML"
+  color     String   // Color hex e.g. "#3b82f6"
+  bgClass   String   // Tailwind class e.g. "bg-blue-500/20"
+  textClass String   // Tailwind class e.g. "text-blue-300"
+  borderClass String // Tailwind class e.g. "border-blue-500/30"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Landing Page Content CMS ───────────────
+model LandingContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // "HERO", "CONSULTING", "CALCULATOR", "PROCESS", "TESTIMONIALS", "FOOTER"
+  contentJson Json     // Full JSON state for section elements (text, icons, buttons, cards)
+  updatedAt   DateTime @updatedAt
+}
+
+model TestimonialItem {
+  id        String   @id @default(cuid())
+  author    String
+  role      String
+  company   String
+  avatarUrl String   @db.Text // Data URL or Image URL
+  category  String   // "E-Commerce", "SaaS Web App", "Mobile App", "CRM Platform"
+  rating    Int      @default(5)
+  quote     String   @db.Text
+  metrics   String?
+  date      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Task Sub-Checklists & Comments ─────────
+model TaskChecklist {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  text      String
+  completed Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model TaskComment {
+  id           String   @id @default(cuid())
+  taskId       String
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorName   String
+  authorAvatar String?
+  text         String   @db.Text
+  createdAt    DateTime @default(now())
+}
 ```
 
 ### 8.4 API Endpoints Design
@@ -1250,6 +1307,12 @@ model AiSystemPrompt {
 | GET | `/api/admin/ai-prompts` | Get current system prompt, scope guardrails & pricing rules | JWT |
 | PATCH | `/api/admin/ai-prompts` | Save/Update system prompt injection & pricing rules | JWT |
 | POST | `/api/admin/ai-prompts/simulate` | Test guardrails against sample user inputs | JWT |
+| POST | `/api/leads/:id/convert` | 1-Click convert lead to deal pipeline | JWT |
+| GET | `/api/admin/master-labels` | Get dynamic master labels list | JWT |
+| POST | `/api/admin/master-labels` | Create new master label with color preset | JWT |
+| DELETE | `/api/admin/master-labels/:id` | Delete master label | JWT |
+| GET | `/api/admin/landing-content` | Get landing page CMS section content JSON | JWT |
+| PATCH | `/api/admin/landing-content` | Update landing page CMS section content JSON | JWT |
 
 ### 8.5 Git Branching Strategy
 
