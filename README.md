@@ -80,12 +80,13 @@
 
 ---
 
-## 📂 Struktur Repositori (Branch Overview)
+## 🔀 Kebijakan Branching & Git Merge Rule (10 Commits Threshold)
 
-Repositori ini dikelola dengan 2 branch utama:
+Proyek ini menggunakan 2 branch utama dengan aturan merge milestone yang ketat:
 
-- **`main`**: Branch stabil utama (*production ready branch*).
-- **`dev`**: Branch pengembangan aktif (*development branch*).
+- **`dev`**: Branch pengembangan aktif utama (*active working branch*). Seluruh pengerjaan fitur, bugfix, dan commit harian wajib di-push ke branch `dev`.
+- **`main`**: Branch rilis stabil produksi (*stable production branch*). 
+- 📌 **Aturan Threshold Merge**: Penggabungan (merge) dari branch `dev` ke branch `main` **HANYA dilakukan apabila commit di branch `dev` sudah mencapai kelipatan 10 kali commit/perubahan fitur** (`git checkout main && git merge dev && git push origin main`).
 
 ---
 
