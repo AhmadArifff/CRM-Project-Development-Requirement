@@ -781,7 +781,7 @@
       "label": "app",
       "file_type": "code",
       "source_file": "server/index.ts",
-      "source_location": "L14",
+      "source_location": "L16",
       "_origin": "ast"
     },
     {
@@ -789,7 +789,7 @@
       "label": "apiLimiter",
       "file_type": "code",
       "source_file": "server/index.ts",
-      "source_location": "L28",
+      "source_location": "L30",
       "_origin": "ast"
     },
     {
@@ -798,6 +798,22 @@
       "file_type": "code",
       "source_file": "server/lib/prisma.ts",
       "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_activities_routes",
+      "label": "activities.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_activities_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L4",
       "_origin": "ast"
     },
     {
@@ -877,6 +893,22 @@
       "label": "router",
       "file_type": "code",
       "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_notifications_routes",
+      "label": "notifications.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_notifications_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/notifications.routes.ts",
       "source_location": "L4",
       "_origin": "ast"
     },
@@ -1577,19 +1609,27 @@
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_adminstate",
-      "label": "AdminState",
+      "id": "src_store_useadminstore_adminuser",
+      "label": "AdminUser",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
       "source_location": "L113",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_defaultadminuser",
-      "label": "defaultAdminUser",
+      "id": "src_store_useadminstore_adminstate",
+      "label": "AdminState",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L187",
+      "source_location": "L124",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_store_useadminstore_guestuser",
+      "label": "guestUser",
+      "file_type": "code",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L186",
       "_origin": "ast"
     },
     {
@@ -1597,7 +1637,23 @@
       "label": "defaultSystemPromptObj",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L196",
+      "source_location": "L193",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_store_useadminstore_getstoredtoken",
+      "label": "getStoredToken()",
+      "file_type": "code",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L201",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_store_useadminstore_getstoreduser",
+      "label": "getStoredUser()",
+      "file_type": "code",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L206",
       "_origin": "ast"
     },
     {
@@ -1605,7 +1661,7 @@
       "label": "useAdminStore",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L203",
+      "source_location": "L216",
       "_origin": "ast"
     },
     {
@@ -3073,11 +3129,33 @@
     },
     {
       "source": "server_index",
+      "target": "server_routes_activities_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_notifications_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
       "target": "server_index_app",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.ts",
-      "source_location": "L14",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3087,7 +3165,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.ts",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3099,6 +3177,49 @@
       "confidence": "EXTRACTED",
       "source_file": "server/lib/prisma.ts",
       "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "server_routes_activities_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3335,6 +3456,49 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "server_routes_notifications_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
@@ -6167,7 +6331,7 @@
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_adminstate",
+      "target": "src_store_useadminstore_adminuser",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
@@ -6177,11 +6341,21 @@
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_defaultadminuser",
+      "target": "src_store_useadminstore_adminstate",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L187",
+      "source_location": "L124",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_useadminstore",
+      "target": "src_store_useadminstore_guestuser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L186",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6191,7 +6365,27 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L196",
+      "source_location": "L193",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_useadminstore",
+      "target": "src_store_useadminstore_getstoredtoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L201",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_useadminstore",
+      "target": "src_store_useadminstore_getstoreduser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L206",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6201,7 +6395,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L203",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6706,6 +6900,28 @@
       "_origin": "ast"
     },
     {
+      "source": "server_index",
+      "target": "server_routes_activities_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_notifications_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "src_app_admin_activities_page_salesactivitiespage",
       "target": "src_store_useadminstore_useadminstore",
       "relation": "calls",
@@ -6762,6 +6978,18 @@
       "confidence_score": 1.0,
       "source_file": "src/app/admin/landing-content/page.tsx",
       "source_location": "L185",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_app_admin_layout_adminlayout",
+      "target": "src_store_useadminstore_useadminstore",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/admin/layout.tsx",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7013,7 +7241,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/admin/login/page.tsx",
-      "source_location": "L153",
+      "source_location": "L172",
       "weight": 1.0,
       "_origin": "ast"
     }
