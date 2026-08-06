@@ -7,7 +7,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38BDF8?logo=tailwind-css)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**DevPulse Studio** adalah platform konsultasi digital dan engine pembuatan dokumen PRD (*Product Requirement Document*) otomatis berbasis kecerdasan buatan (AI). Platform ini membantu klien bisnis, pendiri startup, dan manajer produk dalam menganalisis kebutuhan aplikasi (Mobile, Web, Cross-Platform), merekomendasikan arsitektur server, dan menghitung estimasi biaya secara transparan sebelum masuk ke tahap pengembangan aplikasi.
+**DevPulse Studio** adalah platform konsultasi digital dan engine pembuatan dokumen PRD (*Product Requirement Document*) otomatis berbasis kecerdasan buatan (AI) yang dikembangkan oleh **Ahmad Arif (Developer)**. Platform ini membantu klien bisnis, pendiri startup, dan manajer produk dalam menganalisis kebutuhan aplikasi (Mobile, Web, Cross-Platform), merekomendasikan arsitektur server, dan menghitung estimasi biaya secara transparan sebelum masuk ke tahap pengembangan aplikasi.
 
 ---
 
@@ -37,6 +37,7 @@
 
 ## 🛠️ Teknologi & Stack (Tech Stack)
 
+- **Developer**: Ahmad Arif
 - **Frontend Framework**: Next.js 16 (App Router + Turbopack)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS & Glassmorphism Aesthetics
@@ -90,4 +91,4 @@ Repositori ini dikelola dengan 2 branch utama:
 
 ## 📄 Lisensi (License)
 
-Proyek ini dilindungi di bawah [Lisensi MIT](LICENSE). Dibuat dengan ❤️ oleh **DevPulse Studio**.
+Proyek ini dilindungi di bawah [Lisensi MIT](LICENSE). Dibuat dengan ❤️ oleh **Ahmad Arif (Developer)** untuk **DevPulse Studio**.
