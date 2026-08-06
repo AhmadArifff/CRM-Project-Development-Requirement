@@ -1,0 +1,98 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useAdminStore } from '@/store/useAdminStore';
+import { User, Mail, Shield, Key, Save, DollarSign } from 'lucide-react';
+
+export default function AdminProfilePage() {
+  const { currentUser, systemPrompt, setSystemPrompt } = useAdminStore();
+  const [name, setName] = useState(currentUser.name);
+  const [email, setEmail] = useState(currentUser.email);
+  const [rate, setRate] = useState(systemPrompt.hourlyRate);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSystemPrompt({ hourlyRate: Number(rate) });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <User className="w-6 h-6 text-cyan-400" />
+          <span>Profile & Account <span className="gradient-text-cyan">Settings</span></span>
+        </h2>
+        <p className="text-xs text-slate-400 mt-1">
+          Pengaturan akun admin, perubah password, dan hourly rate global kalkulator.
+        </p>
+      </div>
+
+      <form onSubmit={handleSave} className="glass-card rounded-2xl p-6 border-slate-800/80 space-y-6 text-xs">
+        {saved && (
+          <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs">
+            ✓ Pengaturan berhasil disimpan!
+          </div>
+        )}
+
+        <div className="flex items-center gap-4">
+          <img src={currentUser.avatar} alt="Avatar" className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-700 shadow-xl" />
+          <div>
+            <h3 className="text-base font-bold text-white">{name}</h3>
+            <span className="text-xs text-cyan-400 font-semibold">{currentUser.role}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-slate-300 font-semibold block mb-1">Nama Lengkap</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+
+          <div>
+            <label className="text-slate-300 font-semibold block mb-1">Alamat Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-slate-300 font-semibold block mb-1">Hourly Rate Kalkulator Biaya (IDR / Jam)</label>
+          <div className="relative">
+            <DollarSign className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="number"
+              value={rate}
+              onChange={(e) => setRate(Number(e.target.value))}
+              className="w-full pl-9 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+          <p className="text-[11px] text-slate-400 mt-1">
+            Rate ini secara otomatis di-inject ke kalkulator Landing Page dan instruksi AI PRD.
+          </p>
+        </div>
+
+        <div className="pt-4 border-t border-slate-800 flex justify-end">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold shadow-lg hover:scale-105 transition-all"
+          >
+            <Save className="w-4 h-4" />
+            <span>Simpan Perubahan</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

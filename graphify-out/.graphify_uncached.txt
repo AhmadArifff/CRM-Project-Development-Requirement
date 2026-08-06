@@ -1,0 +1,9 @@
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\AGENTS.md
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\CLAUDE.md
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\PRD.md
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\README.md
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\public\file.svg
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\public\globe.svg
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\public\next.svg
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\public\vercel.svg
+C:\Users\ASUS\Documents\Web Dev\improving\CRM-Management-Project\public\window.svg
