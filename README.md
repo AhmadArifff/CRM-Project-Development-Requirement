@@ -72,11 +72,40 @@
    ```
    Buka browser di `http://localhost:3000`.
 
-4. **Build untuk Produksi**:
+4. **Konfigurasi Database (.env)**:
+   Buat file `.env` dan konfigurasikan URI Supabase Anda:
+   ```env
+   DATABASE_URL="postgresql://postgres.xxx:password@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+   DIRECT_URL="postgresql://postgres.xxx:password@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
+   JWT_SECRET="secret_key"
+   PORT=5000
+   ```
+
+5. **Migrasi Database & Seeding**:
+   ```bash
+   npx prisma db push
+   npm run db:seed
+   ```
+
+6. **Build & Produksi**:
    ```bash
    npm run build
    npm run start
    ```
+
+---
+
+## 🔐 Akses Default Admin Panel
+
+Setelah menjalankan `npm run db:seed`, Anda dapat login ke **Admin Panel** (`http://localhost:3000/admin/login`) menggunakan kredensial default berikut:
+
+| Role | Email Login | Password |
+|---|---|---|
+| **Primary Admin** | `ahmadarif@devpulsestudio.dev` | `admin123` |
+| **Admin Alias** | `admin@devpulsestudio.dev` | `admin123` |
+| **Personal Admin** | `ahmadarifff@gmail.com` | `admin123` |
+
+Semua autentikasi divalidasi langsung menggunakan **bcrypt** dan **JWT Token** melalui endpoint `/api/v1/auth/login` menuju live database Supabase.
 
 ---
 
