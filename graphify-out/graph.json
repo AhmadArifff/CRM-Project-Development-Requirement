@@ -947,7 +947,7 @@
       "label": "prisma",
       "file_type": "code",
       "source_file": "prisma/seed.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "_origin": "ast",
       "id": "prisma_seed_prisma",
       "community": 9,
@@ -957,7 +957,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "prisma/seed.ts",
-      "source_location": "L5",
+      "source_location": "L6",
       "_origin": "ast",
       "id": "prisma_seed_main",
       "community": 9,
@@ -3729,7 +3729,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "prisma/seed.ts",
-      "source_location": "L5",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
       "source": "prisma_seed",
@@ -3740,7 +3740,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "prisma/seed.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "prisma_seed",
@@ -6800,5 +6800,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "227a55e3112abe0ad7f91d44315df7086e667d50"
+  "built_at_commit": "badba6ccc110f0304e4783696324a96439f5a900"
 }
