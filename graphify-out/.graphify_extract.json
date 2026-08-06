@@ -105,11 +105,75 @@
       "_origin": "ast"
     },
     {
+      "id": "package_scripts_server_dev",
+      "label": "server:dev",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L10",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_scripts_server_start",
+      "label": "server:start",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L11",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_scripts_db_push",
+      "label": "db:push",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_scripts_db_seed",
+      "label": "db:seed",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "_origin": "ast"
+    },
+    {
       "id": "package_dependencies",
       "label": "dependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L11",
+      "source_location": "L15",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_prisma_client",
+      "label": "@prisma/client",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "_origin": "ast"
+    },
+    {
+      "id": "prisma_client",
+      "label": "@prisma/client",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_supabase_supabase_js",
+      "label": "@supabase/supabase-js",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "_origin": "ast"
+    },
+    {
+      "id": "supabase_supabase_js",
+      "label": "@supabase/supabase-js",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L17",
       "_origin": "ast"
     },
     {
@@ -117,7 +181,7 @@
       "label": "animejs",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L12",
+      "source_location": "L18",
       "_origin": "ast"
     },
     {
@@ -125,7 +189,23 @@
       "label": "animejs",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L12",
+      "source_location": "L18",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_bcryptjs",
+      "label": "bcryptjs",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "_origin": "ast"
+    },
+    {
+      "id": "bcryptjs",
+      "label": "bcryptjs",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L19",
       "_origin": "ast"
     },
     {
@@ -133,7 +213,7 @@
       "label": "canvas-confetti",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L13",
+      "source_location": "L20",
       "_origin": "ast"
     },
     {
@@ -141,7 +221,55 @@
       "label": "canvas-confetti",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L13",
+      "source_location": "L20",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_cors",
+      "label": "cors",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
+      "id": "cors",
+      "label": "cors",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_express",
+      "label": "express",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "_origin": "ast"
+    },
+    {
+      "id": "express",
+      "label": "express",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_express_rate_limit",
+      "label": "express-rate-limit",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L23",
+      "_origin": "ast"
+    },
+    {
+      "id": "express_rate_limit",
+      "label": "express-rate-limit",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L23",
       "_origin": "ast"
     },
     {
@@ -149,7 +277,7 @@
       "label": "framer-motion",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L14",
+      "source_location": "L24",
       "_origin": "ast"
     },
     {
@@ -157,7 +285,39 @@
       "label": "framer-motion",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L14",
+      "source_location": "L24",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_helmet",
+      "label": "helmet",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "_origin": "ast"
+    },
+    {
+      "id": "helmet",
+      "label": "helmet",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_jsonwebtoken",
+      "label": "jsonwebtoken",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L26",
+      "_origin": "ast"
+    },
+    {
+      "id": "jsonwebtoken",
+      "label": "jsonwebtoken",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L26",
       "_origin": "ast"
     },
     {
@@ -165,7 +325,7 @@
       "label": "lucide-react",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L27",
       "_origin": "ast"
     },
     {
@@ -173,7 +333,23 @@
       "label": "lucide-react",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L27",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_dependencies_morgan",
+      "label": "morgan",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "_origin": "ast"
+    },
+    {
+      "id": "morgan",
+      "label": "morgan",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L28",
       "_origin": "ast"
     },
     {
@@ -181,7 +357,7 @@
       "label": "next",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L16",
+      "source_location": "L29",
       "_origin": "ast"
     },
     {
@@ -189,7 +365,7 @@
       "label": "next",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L16",
+      "source_location": "L29",
       "_origin": "ast"
     },
     {
@@ -197,7 +373,7 @@
       "label": "react",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L30",
       "_origin": "ast"
     },
     {
@@ -205,7 +381,7 @@
       "label": "react",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L30",
       "_origin": "ast"
     },
     {
@@ -213,7 +389,7 @@
       "label": "react-dom",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L31",
       "_origin": "ast"
     },
     {
@@ -221,7 +397,7 @@
       "label": "react-dom",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L31",
       "_origin": "ast"
     },
     {
@@ -229,7 +405,7 @@
       "label": "react-markdown",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L32",
       "_origin": "ast"
     },
     {
@@ -237,7 +413,7 @@
       "label": "react-markdown",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L32",
       "_origin": "ast"
     },
     {
@@ -245,7 +421,7 @@
       "label": "remark-gfm",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L33",
       "_origin": "ast"
     },
     {
@@ -253,7 +429,7 @@
       "label": "remark-gfm",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L33",
       "_origin": "ast"
     },
     {
@@ -261,7 +437,7 @@
       "label": "zustand",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L34",
       "_origin": "ast"
     },
     {
@@ -269,7 +445,7 @@
       "label": "zustand",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L34",
       "_origin": "ast"
     },
     {
@@ -277,7 +453,7 @@
       "label": "devDependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L36",
       "_origin": "ast"
     },
     {
@@ -285,7 +461,7 @@
       "label": "@tailwindcss/postcss",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L37",
       "_origin": "ast"
     },
     {
@@ -293,7 +469,7 @@
       "label": "@tailwindcss/postcss",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L37",
       "_origin": "ast"
     },
     {
@@ -301,7 +477,7 @@
       "label": "@types/animejs",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L38",
       "_origin": "ast"
     },
     {
@@ -309,7 +485,23 @@
       "label": "@types/animejs",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L38",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_types_bcryptjs",
+      "label": "@types/bcryptjs",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L39",
+      "_origin": "ast"
+    },
+    {
+      "id": "types_bcryptjs",
+      "label": "@types/bcryptjs",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L39",
       "_origin": "ast"
     },
     {
@@ -317,7 +509,7 @@
       "label": "@types/canvas-confetti",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L40",
       "_origin": "ast"
     },
     {
@@ -325,7 +517,71 @@
       "label": "@types/canvas-confetti",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L40",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_types_cors",
+      "label": "@types/cors",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L41",
+      "_origin": "ast"
+    },
+    {
+      "id": "types_cors",
+      "label": "@types/cors",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L41",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_types_express",
+      "label": "@types/express",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L42",
+      "_origin": "ast"
+    },
+    {
+      "id": "types_express",
+      "label": "@types/express",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L42",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_types_jsonwebtoken",
+      "label": "@types/jsonwebtoken",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "_origin": "ast"
+    },
+    {
+      "id": "types_jsonwebtoken",
+      "label": "@types/jsonwebtoken",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_types_morgan",
+      "label": "@types/morgan",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L44",
+      "_origin": "ast"
+    },
+    {
+      "id": "types_morgan",
+      "label": "@types/morgan",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L44",
       "_origin": "ast"
     },
     {
@@ -333,7 +589,7 @@
       "label": "@types/node",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L27",
+      "source_location": "L45",
       "_origin": "ast"
     },
     {
@@ -341,7 +597,7 @@
       "label": "@types/node",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L27",
+      "source_location": "L45",
       "_origin": "ast"
     },
     {
@@ -349,7 +605,7 @@
       "label": "@types/react",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L46",
       "_origin": "ast"
     },
     {
@@ -357,7 +613,7 @@
       "label": "@types/react",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L46",
       "_origin": "ast"
     },
     {
@@ -365,7 +621,7 @@
       "label": "@types/react-dom",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L47",
       "_origin": "ast"
     },
     {
@@ -373,7 +629,7 @@
       "label": "@types/react-dom",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L47",
       "_origin": "ast"
     },
     {
@@ -381,7 +637,7 @@
       "label": "eslint",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L30",
+      "source_location": "L48",
       "_origin": "ast"
     },
     {
@@ -389,7 +645,7 @@
       "label": "eslint",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L30",
+      "source_location": "L48",
       "_origin": "ast"
     },
     {
@@ -397,7 +653,7 @@
       "label": "eslint-config-next",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L49",
       "_origin": "ast"
     },
     {
@@ -405,7 +661,23 @@
       "label": "eslint-config-next",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L49",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_prisma",
+      "label": "prisma",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L50",
+      "_origin": "ast"
+    },
+    {
+      "id": "prisma",
+      "label": "prisma",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L50",
       "_origin": "ast"
     },
     {
@@ -413,7 +685,7 @@
       "label": "tailwindcss",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L32",
+      "source_location": "L51",
       "_origin": "ast"
     },
     {
@@ -421,7 +693,23 @@
       "label": "tailwindcss",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L32",
+      "source_location": "L51",
+      "_origin": "ast"
+    },
+    {
+      "id": "package_devdependencies_tsx",
+      "label": "tsx",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L52",
+      "_origin": "ast"
+    },
+    {
+      "id": "tsx",
+      "label": "tsx",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L52",
       "_origin": "ast"
     },
     {
@@ -429,7 +717,7 @@
       "label": "typescript",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L33",
+      "source_location": "L53",
       "_origin": "ast"
     },
     {
@@ -437,7 +725,7 @@
       "label": "typescript",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L33",
+      "source_location": "L53",
       "_origin": "ast"
     },
     {
@@ -454,6 +742,158 @@
       "file_type": "code",
       "source_file": "postcss.config.mjs",
       "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "prisma_seed",
+      "label": "seed.ts",
+      "file_type": "code",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "prisma_seed_prisma",
+      "label": "prisma",
+      "file_type": "code",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L3",
+      "_origin": "ast"
+    },
+    {
+      "id": "prisma_seed_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L5",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_index",
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "server/index.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_index_app",
+      "label": "app",
+      "file_type": "code",
+      "source_file": "server/index.ts",
+      "source_location": "L14",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_index_apilimiter",
+      "label": "apiLimiter",
+      "file_type": "code",
+      "source_file": "server/index.ts",
+      "source_location": "L28",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_lib_prisma",
+      "label": "prisma.ts",
+      "file_type": "code",
+      "source_file": "server/lib/prisma.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_ai_routes",
+      "label": "ai.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/ai.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_ai_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/ai.routes.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_auth_routes",
+      "label": "auth.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_auth_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L6",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_deals_routes",
+      "label": "deals.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/deals.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_deals_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/deals.routes.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_landing_routes",
+      "label": "landing.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/landing.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_landing_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/landing.routes.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_leads_routes",
+      "label": "leads.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_leads_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_tasks_routes",
+      "label": "tasks.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/tasks.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_tasks_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/tasks.routes.ts",
+      "source_location": "L4",
       "_origin": "ast"
     },
     {
@@ -597,7 +1037,7 @@
       "label": "AdminLoginPage()",
       "file_type": "code",
       "source_file": "src/app/admin/login/page.tsx",
-      "source_location": "L9",
+      "source_location": "L28",
       "_origin": "ast"
     },
     {
@@ -998,6 +1438,38 @@
       "file_type": "code",
       "source_file": "src/components/prd-builder/SubmissionModal.tsx",
       "source_location": "L9",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_lib_supabase",
+      "label": "supabase.ts",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_lib_supabase_supabase",
+      "label": "supabase",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L9",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_lib_supabase_supabase_buckets",
+      "label": "SUPABASE_BUCKETS",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L12",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_lib_supabase_getsupabaseadminclient",
+      "label": "getSupabaseAdminClient()",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L19",
       "_origin": "ast"
     },
     {
@@ -1874,8 +2346,18 @@
       "_origin": "ast"
     },
     {
-      "source": "package",
-      "target": "package_dependencies",
+      "source": "package_scripts",
+      "target": "package_scripts_server_dev",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_scripts",
+      "target": "package_scripts_server_start",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
@@ -1884,12 +2366,84 @@
       "_origin": "ast"
     },
     {
+      "source": "package_scripts",
+      "target": "package_scripts_db_push",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_scripts",
+      "target": "package_scripts_db_seed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package",
+      "target": "package_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_prisma_client",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_prisma_client",
+      "target": "prisma_client",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_supabase_supabase_js",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_supabase_supabase_js",
+      "target": "supabase_supabase_js",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
       "source": "package_dependencies",
       "target": "package_dependencies_animejs",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L12",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1899,7 +2453,28 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L12",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_bcryptjs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_bcryptjs",
+      "target": "bcryptjs",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L19",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -1910,7 +2485,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L13",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1920,7 +2495,70 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L13",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_cors",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_cors",
+      "target": "cors",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_express",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_express",
+      "target": "express",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_express_rate_limit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_express_rate_limit",
+      "target": "express_rate_limit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L23",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -1931,7 +2569,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L14",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1941,7 +2579,49 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L14",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_helmet",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_helmet",
+      "target": "helmet",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_jsonwebtoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_jsonwebtoken",
+      "target": "jsonwebtoken",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L26",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -1952,7 +2632,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1962,7 +2642,28 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L27",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies",
+      "target": "package_dependencies_morgan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_dependencies_morgan",
+      "target": "morgan",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -1973,7 +2674,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L16",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1983,7 +2684,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L16",
+      "source_location": "L29",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -1994,7 +2695,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2004,7 +2705,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L30",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2015,7 +2716,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2025,7 +2726,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L31",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2036,7 +2737,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2046,7 +2747,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L32",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2057,7 +2758,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2067,7 +2768,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L33",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2078,7 +2779,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2088,7 +2789,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L34",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2099,7 +2800,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2109,7 +2810,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2119,7 +2820,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L37",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2130,7 +2831,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2140,7 +2841,28 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L38",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_types_bcryptjs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_types_bcryptjs",
+      "target": "types_bcryptjs",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L39",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2151,7 +2873,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2161,7 +2883,91 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_types_cors",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_types_cors",
+      "target": "types_cors",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L41",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_types_express",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_types_express",
+      "target": "types_express",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_types_jsonwebtoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_types_jsonwebtoken",
+      "target": "types_jsonwebtoken",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_types_morgan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_types_morgan",
+      "target": "types_morgan",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L44",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2172,7 +2978,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L27",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2182,7 +2988,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L27",
+      "source_location": "L45",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2193,7 +2999,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2203,7 +3009,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L46",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2214,7 +3020,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2224,7 +3030,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L47",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2235,7 +3041,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L30",
+      "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2245,7 +3051,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L30",
+      "source_location": "L48",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2256,7 +3062,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2266,7 +3072,28 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L49",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_prisma",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_prisma",
+      "target": "prisma",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L50",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2277,7 +3104,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L32",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2287,7 +3114,28 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L32",
+      "source_location": "L51",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_tsx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "package_devdependencies_tsx",
+      "target": "tsx",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L52",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2298,7 +3146,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L33",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -2308,7 +3156,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L33",
+      "source_location": "L53",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast"
@@ -2320,6 +3168,469 @@
       "confidence": "EXTRACTED",
       "source_file": "postcss.config.mjs",
       "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "prisma_seed",
+      "target": "ref_prisma_client",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "prisma_seed",
+      "target": "prisma_seed_prisma",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "prisma_seed",
+      "target": "prisma_seed_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "ref_cors",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "ref_helmet",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "ref_morgan",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "ref_express_rate_limit",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_auth_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_leads_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_deals_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_tasks_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_landing_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_ai_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_index_app",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_index_apilimiter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_lib_prisma",
+      "target": "ref_prisma_client",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/lib/prisma.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_ai_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/ai.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_ai_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/ai.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_ai_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/ai.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_ai_routes",
+      "target": "server_routes_ai_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/ai.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_auth_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_auth_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_auth_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_auth_routes",
+      "target": "ref_bcryptjs",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_auth_routes",
+      "target": "ref_jsonwebtoken",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_auth_routes",
+      "target": "server_routes_auth_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/auth.routes.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_deals_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/deals.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_deals_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/deals.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_deals_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/deals.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_deals_routes",
+      "target": "server_routes_deals_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/deals.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_landing_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/landing.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_landing_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/landing.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_landing_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/landing.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_landing_routes",
+      "target": "server_routes_landing_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/landing.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_leads_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_leads_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_leads_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_leads_routes",
+      "target": "server_routes_leads_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_tasks_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/tasks.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_tasks_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/tasks.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_tasks_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/tasks.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_tasks_routes",
+      "target": "server_routes_tasks_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/tasks.routes.ts",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3113,7 +4424,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/app/admin/login/page.tsx",
-      "source_location": "L7",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3123,7 +4434,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/admin/login/page.tsx",
-      "source_location": "L9",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -4913,6 +6224,47 @@
       "_origin": "ast"
     },
     {
+      "source": "src_lib_supabase",
+      "target": "ref_supabase_supabase_js",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_lib_supabase",
+      "target": "src_lib_supabase_supabase",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_lib_supabase",
+      "target": "src_lib_supabase_supabase_buckets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_lib_supabase",
+      "target": "src_lib_supabase_getsupabaseadminclient",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "src_store_useadminstore",
       "target": "ref_zustand",
       "relation": "imports_from",
@@ -5536,6 +6888,72 @@
       "_origin": "ast"
     },
     {
+      "source": "server_index",
+      "target": "server_routes_auth_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_leads_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_deals_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_tasks_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_landing_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_ai_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "src_app_admin_activities_page_salesactivitiespage",
       "target": "src_store_useadminstore_useadminstore",
       "relation": "calls",
@@ -5615,7 +7033,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/admin/login/page.tsx",
-      "source_location": "L11",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -5832,6 +7250,18 @@
       "confidence_score": 1.0,
       "source_file": "src/components/prd-builder/SubmissionModal.tsx",
       "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_app_admin_login_page_adminloginpage",
+      "target": "package_dependencies_react",
+      "relation": "references",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/admin/login/page.tsx",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast"
     },
