@@ -922,7 +922,34 @@ CRM-Management-Project/
 └── README.md              # Project documentation
 ```
 
-### 8.3 Database Schema (Prisma)
+### 8.3 Supabase Database Connection & Storage Architecture
+
+#### 1. Supabase PostgreSQL Connection Specifications
+
+| Parameter | Value / Details |
+| :--- | :--- |
+| **Supabase Project Ref** | `ydpmuauskndowontbfhx` |
+| **Region** | `ap-northeast-1` (Tokyo, AWS) |
+| **Host** | `aws-0-ap-northeast-1.pooler.supabase.com` |
+| **Transaction Pooler Port** | `6543` (Ideal for Serverless Next.js API Routes & pgbouncer) |
+| **Direct DB Connection Port** | `5432` (Ideal for CLI Migrations `npx prisma migrate dev`) |
+| **Database Name** | `postgres` |
+| **Database User** | `postgres.ydpmuauskndowontbfhx` |
+| **Supabase Project URL** | `https://ydpmuauskndowontbfhx.supabase.co` |
+| **Anon Public Key** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkcG11YXVza25kb3dvbnRiZmh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMDY1NzcsImV4cCI6MjEwMTU4MjU3N30.1Hk7XWcOnpXYf0RKWPVqw298tyPcyxLkTXvTAPAkBOo` |
+| **Service Role Secret Key** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkcG11YXVza25kb3dvbnRiZmh4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjAwNjU3NywiZXhwIjoyMTAxNTgyNTc3fQ.iWfuiGtdDFaTtG7IZ3xbLsoeXc1LAHeU6xF_UDXyuvM` |
+
+#### 2. Supabase Storage Bucket Configuration Matrix
+
+| Bucket Name | Access Policy | File Types Allowed | Max Size | Kegunaan Utama |
+| :--- | :--- | :--- | :--- | :--- |
+| **`prd-documents`** | Public Read / Authenticated Write | `.md`, `.pdf`, `.txt`, `.json` | `10 MB` | Menyimpan dokumen PRD.md hasil generate AI & ekspor PDF |
+| **`landing-assets`** | Public Read / Authenticated Write | `.png`, `.jpg`, `.jpeg`, `.webp`, `.svg` | `5 MB` | Menyimpan foto avatar testimoni klien, logo badge, & gambar CMS Figma |
+| **`crm-attachments`** | Private (RLS Authenticated) | All Document Types (`.pdf`, `.zip`, `.png`) | `25 MB` | Menyimpan lampiran tugas Trello board, dokumen kontrak, & proposal |
+
+---
+
+### 8.4 Database Schema (Prisma)
 
 ```prisma
 // prisma/schema.prisma
@@ -932,8 +959,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Auth & User ──────────────────────────
