@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { supabase } from '@/lib/supabase';
 
 export interface TestimonialCMSItem {
   id: string;
@@ -66,15 +67,17 @@ export interface LandingContentState {
     badgeText: string;
     sectionTitle: string;
     sectionSubhead: string;
-    ratingSummaryText: string;
     items: TestimonialCMSItem[];
   };
   footer: {
     tagline: string;
-    contactEmail: string;
-    contactPhone: string;
-    addressText: string;
-    copyrightText: string;
+    email: string;
+    whatsapp: string;
+    address: string;
+    copyright: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    copyrightText?: string;
   };
 
   // Actions
@@ -83,71 +86,31 @@ export interface LandingContentState {
   updateRateCalculator: (data: Partial<LandingContentState['rateCalculator']>) => void;
   updateProcess: (data: Partial<LandingContentState['process']>) => void;
   updateTestimonialsHeader: (data: Partial<Omit<LandingContentState['testimonials'], 'items'>>) => void;
-  updateTestimonialItem: (id: string, data: Partial<TestimonialCMSItem>) => void;
-  addTestimonialItem: (item: Omit<TestimonialCMSItem, 'id'>) => void;
-  removeTestimonialItem: (id: string) => void;
   updateFooter: (data: Partial<LandingContentState['footer']>) => void;
+  
+  // Testimonial CRUD
+  addTestimonial: (item: Omit<TestimonialCMSItem, 'id'>) => void;
+  updateTestimonial: (id: string, item: Partial<TestimonialCMSItem>) => void;
+  deleteTestimonial: (id: string) => void;
+  
+  // Aliases for page compat
+  addTestimonialItem: (item: Omit<TestimonialCMSItem, 'id'>) => void;
+  updateTestimonialItem: (id: string, item: Partial<TestimonialCMSItem>) => void;
+  removeTestimonialItem: (id: string) => void;
+  
+  // Supabase Live Sync
+  fetchContentFromSupabase: () => Promise<void>;
+  saveSectionToSupabase: (sectionKey: string, payload: any) => Promise<void>;
   resetToDefault: () => void;
 }
 
-const defaultTestimonialsList: TestimonialCMSItem[] = [
-  {
-    id: 't-1',
-    author: 'Budi Santoso',
-    role: 'Chief Executive Officer',
-    company: 'PT Retail Bangun Nusantara',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    category: 'E-Commerce',
-    rating: 5,
-    quote: 'Fitur AI PRD Builder dari DevPulse Studio luar biasa presisi! Dalam waktu 10 menit, spesifikasi teknis dan estimasi jam kerja aplikasi toko online kami langsung tersusun rapi. Tim konsultannya sangat solutif!',
-    metrics: 'Estimasi Biaya Acc 100% Sesuai MVP',
-    date: 'Agustus 2026',
-  },
-  {
-    id: 't-2',
-    author: 'Siti Rahmawati',
-    role: 'Head of Product Operations',
-    company: 'CV Logistik Maju Express',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    category: 'CRM Platform',
-    rating: 5,
-    quote: 'Sebelumnya kami kesulitan menghitung durasi pengerjaan platform internal CRM. Lewat konsultasi DevPulse Studio, arsitektur Supabase & Next.js di-breakdown dengan jelas dari hari pertama.',
-    metrics: 'Rilis 2 Minggu Lebih Cepat',
-    date: 'Juli 2026',
-  },
-  {
-    id: 't-3',
-    author: 'Hendra Gunawan',
-    role: 'Chief Technology Officer',
-    company: 'FinTech Digital Indonesia',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-    category: 'SaaS Web App',
-    rating: 5,
-    quote: 'Integrasi AI Assistant pada portal konsultasi ini sangat membantu tim kami menyelaraskan alur kerja B2B. Dokumen PRD yang dihasilkan langsung siap dieksekusi oleh tim developer.',
-    metrics: 'Efisiensi Time-to-Market +40%',
-    date: 'Juli 2026',
-  },
-  {
-    id: 't-4',
-    author: 'Dewi Lestari',
-    role: 'Founder & Managing Director',
-    company: 'Travelku Interactive',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    category: 'Mobile App',
-    rating: 5,
-    quote: 'Kalkulator biaya transparan dan rekomendasi arsitektur mobile native vs Flutter dari DevPulse Studio sangat objektif. Sangat direkomendasikan untuk pendiri startup yang butuh kejelasan anggaran!',
-    metrics: 'Budget MVP Terkendali',
-    date: 'Juni 2026',
-  },
-];
-
-const defaultLandingContent = {
+const initialDefaultState = {
   hero: {
     badgeText: 'Konsultasi Development & AI PRD Builder #1',
     badgeIcon: 'Zap',
     headlineLine1: 'Rancang Requirement & Buat',
     headlineHighlight: 'PRD.md Otomatis',
-    headlineLine2: 'Sebelum Mulai Pengerjaan Proyek',
+    headlineLine2: 'dalam Hitungan Menit',
     subtitle: 'Analisis perilaku pengguna aplikasi Anda (Mobile, Web, Cross-Platform), kalkulasi opsi server cloud vs dedicated, dan dapatkan estimasi rate harga transparan serta dokumen PRD lengkap dalam hitungan menit.',
     primaryCtaText: '✨ Buat PRD Otomatis Sekarang',
     secondaryCtaText: 'Mulai Konsultasi Kebutuhan',
@@ -155,87 +118,228 @@ const defaultLandingContent = {
     card1Sub: 'Mobile, Web, PWA',
     card2Title: 'Opsi Server Cloud',
     card2Sub: 'Dedicated vs Sharing',
-    card3Title: 'Notion AI Style',
-    card3Sub: 'Draft PRD.md Live',
-    card4Title: 'Rate Transparan',
-    card4Sub: 'Hitung Jam Kerja',
+    card3Title: 'PRD.md Notion-Style',
+    card3Sub: 'Otomatis dalam 10 Menit',
+    card4Title: 'Estimasi Biaya Transparan',
+    card4Sub: 'Berdasarkan Jam Kerja Riil',
   },
   consulting: {
     badgeText: 'Konsultasi Perilaku & Infrastruktur Platform',
-    sectionTitle: 'Analisis Perilaku Pengguna & Kebutuhan Server',
-    sectionSubhead: 'Sebelum masuk ke tahap deal harga dan development, kami membantu Anda menentukan jenis platform dan arsitektur server terbaik sesuai target pasar.',
-    mobileWebCardTitle: 'Mobile Native vs Web App vs Cross Platform',
-    mobileWebCardDesc: 'Analisis mendalam mengenai ekosistem pengguna aplikasi Anda. Apakah memerlukan akses offline native (iOS/Android), performa web PWA, atau fleksibilitas Flutter/React Native.',
-    serverCardTitle: 'Server Dedicated Sharing vs Cloud Infrastructure',
-    serverCardDesc: 'Rekomendasi spesifikasi server yang efisien. Pilih antara Cloud (Supabase, Firebase, Managed DB) untuk skalabilitas otomatis, atau Dedicated VPS untuk kontrol keamanan total.',
+    sectionTitle: 'Analisis Perilaku Pengguna & Kebutuhan Server Aplikasi Anda',
+    sectionSubhead: 'Tim DevPulse Studio menganalisis karakteristik aplikasi Anda untuk menentukan platform frontend yang tepat serta arsitektur server yang paling efisien.',
+    mobileWebCardTitle: 'Platform Perilaku Pengguna (Mobile Native vs PWA Web App)',
+    mobileWebCardDesc: 'Kami mengevaluasi apakah pengguna Anda membutuhkan performa tinggi & sensor hardware (iOS/Android Native), akses instan tanpa install (PWA), atau kombinasi keduanya.',
+    serverCardTitle: 'Arsitektur Infrastruktur Server (Cloud VPS vs Dedicated Server)',
+    serverCardDesc: 'Kami membandingkan estimasi biaya bulanan, kapasitas auto-scaling, dan fleksibilitas antara AWS/GCP Managed Cloud vs Bare-Metal Dedicated Server.',
   },
   rateCalculator: {
-    badgeText: 'Estimasi Biaya Pengerjaan Transparan',
-    sectionTitle: 'Kalkulator Rate Biaya Development',
-    sectionSubhead: 'Hitung estimasi total investasi proyek berdasarkan estimasi total jam kerja dikali rate per jam yang fleksibel.',
-    guarantee1: 'Garansi tidak ada pembengkakan biaya tersembunyi',
-    guarantee2: 'Payment milestone sesuai progress kanban board',
-    ctaText: 'Mulai AI Scoping PRD',
-    hourlyRateNotice: '* Estimasi akhir akan otomatis terintegrasi ke dalam PRD.md setelah menyelesaikan kuisioner & interaksi AI Consultant.',
+    badgeText: 'Kalkulator Estimasi Biaya Transparan',
+    sectionTitle: 'Hitung Estimasi Investasi Proyek Aplikasi Anda',
+    sectionSubhead: 'Transparansi 100%. Biaya proyek Anda dihitung murni berdasarkan perkiraan jam kerja riil dikalikan rate hourly yang fleksibel.',
+    guarantee1: 'Tanpa Biaya Tersembunyi',
+    guarantee2: 'Dokumen PRD.md Rinci',
+    ctaText: '✨ Rancang PRD & Dapatkan Estimasi Biaya',
+    hourlyRateNotice: 'Standard consultancy rate: Rp 250.000 / jam (bisa disesuaikan di Admin Panel).',
   },
   process: {
-    badgeText: 'Alur Kerja Otomatis berbasis AI',
-    sectionTitle: '4 Langkah Mudah Menuju Deal Proyek',
-    step1Title: 'Kuisioner Kebutuhan Non-Teknis',
-    step1Desc: 'Jawab pertanyaan sederhana mengenai scope fitur, kategori aplikasi, target pengguna, dan preferensi server tanpa kebingungan istilah teknis.',
-    step2Title: 'Interaksi & Scope Scoping AI',
-    step2Desc: 'Diskusikan detail fitur aplikasi dengan AI Consultant kami yang siap membantu menyelaraskan alur bisnis & arsitektur proyek Anda.',
-    step3Title: 'Review & Download PRD.md',
-    step3Desc: 'Dapatkan preview dokumen PRD.md bergaya Notion dengan rincian fitur, arsitektur, tech stack, dan estimasi waktu development.',
-    step4Title: 'Deal Rate & Kickoff Project',
-    step4Desc: 'Setelah dokumen PRD sesuai, tim developer kami akan langsung memproses deal rate dan siap memulai pengerjaan aplikasi.',
+    badgeText: 'Alur PRD Steps',
+    sectionTitle: '4 Langkah Mudah Memulai Proyek',
+    step1Title: '1. Isi Kuisioner Kebutuhan',
+    step1Desc: 'Jawab pertanyaan seputar ide aplikasi, target platform, dan ekspektasi skala pengguna.',
+    step2Title: '2. Analisis AI & Refinement',
+    step2Desc: 'AI Engine menganalisis requirement, memberikan opsi tech stack & arsitektur server.',
+    step3Title: '3. Pratinjau Dokumen PRD.md',
+    step3Desc: 'Dapatkan dokumen PRD lengkap gaya Notion beserta estimasi jam kerja & total biaya.',
+    step4Title: '4. Konsultasi & Deal Proyek',
+    step4Desc: 'Tim konsultan kami akan menghubungi Anda untuk diskusi teknis dan kickoff proyek.',
   },
   testimonials: {
-    badgeText: 'Testimoni Klien Terverifikasi & Case Studies',
-    sectionTitle: 'Dipercaya oleh Founders & Product Leaders',
-    sectionSubhead: 'Lihat pengalaman langsung para pendiri bisnis dan tim produk yang telah menggunakan portal konsultasi dan AI PRD Builder dari DevPulse Studio.',
-    ratingSummaryText: '4.9 / 5.0 Rating dari 48+ Proyek Aplikasi Selesai',
-    items: defaultTestimonialsList,
+    badgeText: 'Testimoni Klien Terverifikasi',
+    sectionTitle: 'Dipercaya oleh 48+ Founder Startup & Enterprise',
+    sectionSubhead: 'Lihat bagaimana DevPulse Studio membantu merancang spesifikasi requirement dan membangun aplikasi berkualitas tinggi.',
+    items: [
+      {
+        id: 't-1',
+        author: 'Rian Prasetya',
+        role: 'CEO & Founder',
+        company: 'NusaCart E-Commerce',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        category: 'E-Commerce' as const,
+        rating: 5,
+        quote: 'DevPulse Studio membantu kami menentukan arsitektur server AWS Dedicated vs Cloud VPS. Dokumen PRD.md yang dihasilkan sangat detail dan hemat waktu 2 minggu!',
+        metrics: '99.9% Server Uptime • MVP Launch 4 Minggu',
+        date: '12 Juli 2026',
+      },
+      {
+        id: 't-2',
+        author: 'Siti Rahmawati',
+        role: 'Head of Product',
+        company: 'FleetLogis Mobile App',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+        category: 'Mobile App' as const,
+        rating: 5,
+        quote: 'Proses AI PRD Builder benar-benar transparan. Rincian jam kerja per fitur dipaparkan jelas sehingga tidak ada pembengkakan budget di tengah jalan.',
+        metrics: 'Hemat Budget 35% • Flutter Cross-Platform',
+        date: '28 Juni 2026',
+      },
+    ],
   },
   footer: {
-    tagline: 'Agency Digital App Consultancy & AI-Powered PRD Engine terlengkap untuk merancang & membangun aplikasi Web, Mobile, dan SaaS custom.',
-    contactEmail: 'consulting@devpulsestudio.dev',
+    tagline: 'Platform Konsultasi Aplikasi Digital & AI PRD Engine #1 di Indonesia.',
+    email: 'consult@devpulsestudio.dev',
+    whatsapp: '+62 812-3456-7890',
+    address: 'Jakarta, Indonesia (Remote / Hybrid Consultancy)',
+    copyright: '© 2026 DevPulse Studio. Developed by Ahmad Arif.',
+    contactEmail: 'consult@devpulsestudio.dev',
     contactPhone: '+62 812-3456-7890',
-    addressText: 'Jakarta Tech Tower Level 18, SCBD, Jakarta Selatan',
-    copyrightText: '© 2026 DevPulse Studio. All rights reserved.',
+    copyrightText: '© 2026 DevPulse Studio. Developed by Ahmad Arif.',
   },
 };
 
-export const useLandingContentStore = create<LandingContentState>((set) => ({
-  ...defaultLandingContent,
+export const useLandingContentStore = create<LandingContentState>((set, get) => ({
+  ...initialDefaultState,
 
-  updateHero: (data) => set((state) => ({ hero: { ...state.hero, ...data } })),
-  updateConsulting: (data) => set((state) => ({ consulting: { ...state.consulting, ...data } })),
-  updateRateCalculator: (data) => set((state) => ({ rateCalculator: { ...state.rateCalculator, ...data } })),
-  updateProcess: (data) => set((state) => ({ process: { ...state.process, ...data } })),
-  updateTestimonialsHeader: (data) =>
-    set((state) => ({ testimonials: { ...state.testimonials, ...data } })),
-  updateTestimonialItem: (id, data) =>
-    set((state) => ({
-      testimonials: {
-        ...state.testimonials,
-        items: state.testimonials.items.map((item) => (item.id === id ? { ...item, ...data } : item)),
-      },
-    })),
-  addTestimonialItem: (item) =>
-    set((state) => ({
-      testimonials: {
-        ...state.testimonials,
-        items: [...state.testimonials.items, { ...item, id: `t-${Date.now()}` }],
-      },
-    })),
-  removeTestimonialItem: (id) =>
-    set((state) => ({
-      testimonials: {
-        ...state.testimonials,
-        items: state.testimonials.items.filter((item) => item.id !== id),
-      },
-    })),
-  updateFooter: (data) => set((state) => ({ footer: { ...state.footer, ...data } })),
-  resetToDefault: () => set(defaultLandingContent),
+  updateHero: (data) => {
+    set((state) => {
+      const updated = { ...state.hero, ...data };
+      get().saveSectionToSupabase('HERO', updated);
+      return { hero: updated };
+    });
+  },
+
+  updateConsulting: (data) => {
+    set((state) => {
+      const updated = { ...state.consulting, ...data };
+      get().saveSectionToSupabase('CONSULTING', updated);
+      return { consulting: updated };
+    });
+  },
+
+  updateRateCalculator: (data) => {
+    set((state) => {
+      const updated = { ...state.rateCalculator, ...data };
+      get().saveSectionToSupabase('CALCULATOR', updated);
+      return { rateCalculator: updated };
+    });
+  },
+
+  updateProcess: (data) => {
+    set((state) => {
+      const updated = { ...state.process, ...data };
+      get().saveSectionToSupabase('PROCESS', updated);
+      return { process: updated };
+    });
+  },
+
+  updateTestimonialsHeader: (data) => {
+    set((state) => {
+      const updatedHeader = {
+        badgeText: data.badgeText ?? state.testimonials.badgeText,
+        sectionTitle: data.sectionTitle ?? state.testimonials.sectionTitle,
+        sectionSubhead: data.sectionSubhead ?? state.testimonials.sectionSubhead,
+        items: state.testimonials.items,
+      };
+      get().saveSectionToSupabase('TESTIMONIALS_HEADER', updatedHeader);
+      return { testimonials: updatedHeader };
+    });
+  },
+
+  updateFooter: (data) => {
+    set((state) => {
+      const updated = {
+        ...state.footer,
+        ...data,
+        contactEmail: data.contactEmail || data.email || state.footer.email,
+        contactPhone: data.contactPhone || data.whatsapp || state.footer.whatsapp,
+        copyrightText: data.copyrightText || data.copyright || state.footer.copyright,
+      };
+      get().saveSectionToSupabase('FOOTER', updated);
+      return { footer: updated };
+    });
+  },
+
+  addTestimonial: (item) => {
+    const newItem: TestimonialCMSItem = {
+      ...item,
+      id: `testi-${Date.now()}`,
+    };
+    set((state) => {
+      const updatedItems = [newItem, ...state.testimonials.items];
+      const updatedTestimonials = { ...state.testimonials, items: updatedItems };
+      get().saveSectionToSupabase('TESTIMONIALS', updatedItems);
+      return { testimonials: updatedTestimonials };
+    });
+  },
+
+  updateTestimonial: (id, itemData) => {
+    set((state) => {
+      const updatedItems = state.testimonials.items.map((it) =>
+        it.id === id ? { ...it, ...itemData } : it
+      );
+      const updatedTestimonials = { ...state.testimonials, items: updatedItems };
+      get().saveSectionToSupabase('TESTIMONIALS', updatedItems);
+      return { testimonials: updatedTestimonials };
+    });
+  },
+
+  deleteTestimonial: (id) => {
+    set((state) => {
+      const updatedItems = state.testimonials.items.filter((it) => it.id !== id);
+      const updatedTestimonials = { ...state.testimonials, items: updatedItems };
+      get().saveSectionToSupabase('TESTIMONIALS', updatedItems);
+      return { testimonials: updatedTestimonials };
+    });
+  },
+
+  addTestimonialItem: (item) => get().addTestimonial(item),
+  updateTestimonialItem: (id, item) => get().updateTestimonial(id, item),
+  removeTestimonialItem: (id) => get().deleteTestimonial(id),
+
+  saveSectionToSupabase: async (sectionKey: string, payload: any) => {
+    try {
+      if (!supabase) return;
+      await supabase
+        .from('LandingContent')
+        .upsert(
+          {
+            sectionKey,
+            contentJson: payload,
+            updatedAt: new Date().toISOString(),
+          },
+          { onConflict: 'sectionKey' }
+        );
+    } catch (err) {
+      console.warn('Supabase save error:', err);
+    }
+  },
+
+  fetchContentFromSupabase: async () => {
+    try {
+      if (!supabase) return;
+      const { data, error } = await supabase.from('LandingContent').select('*');
+      if (error || !data || data.length === 0) return;
+
+      const newHero = data.find((d: any) => d.sectionKey === 'HERO')?.contentJson;
+      const newConsulting = data.find((d: any) => d.sectionKey === 'CONSULTING')?.contentJson;
+      const newCalculator = data.find((d: any) => d.sectionKey === 'CALCULATOR')?.contentJson;
+      const newProcess = data.find((d: any) => d.sectionKey === 'PROCESS')?.contentJson;
+      const newTestimonials = data.find((d: any) => d.sectionKey === 'TESTIMONIALS')?.contentJson;
+      const newFooter = data.find((d: any) => d.sectionKey === 'FOOTER')?.contentJson;
+
+      set((state) => ({
+        hero: newHero ? { ...state.hero, ...newHero } : state.hero,
+        consulting: newConsulting ? { ...state.consulting, ...newConsulting } : state.consulting,
+        rateCalculator: newCalculator ? { ...state.rateCalculator, ...newCalculator } : state.rateCalculator,
+        process: newProcess ? { ...state.process, ...newProcess } : state.process,
+        testimonials: newTestimonials
+          ? { ...state.testimonials, items: newTestimonials }
+          : state.testimonials,
+        footer: newFooter ? { ...state.footer, ...newFooter } : state.footer,
+      }));
+    } catch (err) {
+      console.warn('Supabase fetch error:', err);
+    }
+  },
+
+  resetToDefault: () => set(initialDefaultState),
 }));

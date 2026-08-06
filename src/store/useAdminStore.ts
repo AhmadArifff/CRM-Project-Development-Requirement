@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { supabase } from '@/lib/supabase';
 
 export interface DealItem {
   id: string;
@@ -21,7 +22,7 @@ export interface TaskChecklistItem {
 export interface TaskLabelItem {
   id: string;
   name: string;
-  color: string; // Tailwind color class e.g. bg-cyan-500/20 text-cyan-300 border-cyan-500/30
+  color: string;
 }
 
 export interface TaskAttachmentItem {
@@ -61,32 +62,16 @@ export interface LeadItem {
   company: string;
   email: string;
   phone: string;
-  source: 'LANDING_PAGE' | 'REFERRAL' | 'SOCIAL_MEDIA' | 'DIRECT';
   status: 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'UNQUALIFIED' | 'CONVERTED';
-  createdAt: string;
-  appTitle?: string;
+  source: string;
+  notes?: string;
+  prdFileUrl?: string;
   prdContent?: string;
+  appTitle?: string;
+  createdAt: string;
 }
 
-export interface ActivityItem {
-  id: string;
-  type: 'CALL' | 'EMAIL' | 'MEETING' | 'NOTE' | 'FOLLOW_UP';
-  title: string;
-  description: string;
-  leadName?: string;
-  date: string;
-}
-
-export interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-  type: 'LEAD' | 'DEAL' | 'TASK' | 'SYSTEM';
-}
-
-export interface AiProviderConfig {
+export interface AiProviderItem {
   id: string;
   providerKey: string;
   name: string;
@@ -97,417 +82,668 @@ export interface AiProviderConfig {
   availableModels: string[];
 }
 
-interface AdminStore {
-  // Auth
+export type AiProviderConfig = AiProviderItem;
+
+export interface ActivityItem {
+  id: string;
+  type: 'CALL' | 'EMAIL' | 'MEETING' | 'NOTE' | 'FOLLOW_UP' | 'call' | 'email' | 'meeting' | 'note';
+  title: string;
+  date: string;
+  description: string;
+  leadName?: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  isRead?: boolean;
+  type: 'lead' | 'deal' | 'task' | 'system';
+}
+
+export interface SystemPromptConfig {
+  systemInstruction: string;
+  scopeRestriction: string;
+  offTopicMessage: string;
+  hourlyRate: number;
+}
+
+export interface AdminState {
   isAuthenticated: boolean;
-  currentUser: { name: string; email: string; role: string; avatar: string };
+  user: {
+    name: string;
+    email: string;
+    role: string;
+    avatar: string;
+    bio?: string;
+    hourlyRate?: number;
+  };
+  currentUser: {
+    name: string;
+    email: string;
+    role: string;
+    avatar: string;
+    bio?: string;
+    hourlyRate?: number;
+  };
+
+  leads: LeadItem[];
+  deals: DealItem[];
+  tasks: TaskItem[];
+  activities: ActivityItem[];
+  masterLabels: TaskLabelItem[];
+  aiProviders: AiProviderItem[];
+  notifications: NotificationItem[];
+  systemPrompt: SystemPromptConfig;
+
+  // Actions
   login: () => void;
   logout: () => void;
+  setSystemPrompt: (prompt: Partial<SystemPromptConfig> | string | any) => void;
 
-  // Master Data Management
-  masterLabels: TaskLabelItem[];
-  addMasterLabel: (name: string, color: string) => void;
-  removeMasterLabel: (id: string) => void;
+  // Leads CRUD & 1-Click Convert
+  addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => Promise<void>;
+  updateLeadStatus: (id: string, status?: any, notes?: any) => Promise<void>;
+  convertLeadToDeal: (leadId: string, dealValue?: number) => Promise<void>;
 
-  // Deals
-  deals: DealItem[];
-  moveDeal: (id: string, newStage: DealItem['stage']) => void;
-  addDeal: (deal: Omit<DealItem, 'id'>) => void;
+  // Deals Pipeline
+  addDeal: (deal: any) => Promise<void>;
+  updateDealStage: (dealId: string, stage: DealItem['stage']) => Promise<void>;
+  moveDeal: (dealId: string, stage: DealItem['stage']) => Promise<void>;
 
-  // Tasks (Trello Style)
-  tasks: TaskItem[];
-  moveTask: (id: string, newStatus: TaskItem['status']) => void;
-  addTask: (task: Omit<TaskItem, 'id' | 'checklists' | 'attachments' | 'comments'>) => void;
-  toggleChecklistItem: (taskId: string, checklistId: string) => void;
-  addChecklistItem: (taskId: string, text: string) => void;
-  addTaskComment: (taskId: string, author: string, avatar: string, text: string) => void;
-  updateTaskDescription: (taskId: string, description: string) => void;
+  // Project Tasks
+  addTask: (task: any) => Promise<void>;
+  updateTaskStatus: (taskId: string, status: TaskItem['status']) => Promise<void>;
+  moveTask: (taskId: string, targetStatus: TaskItem['status']) => Promise<void>;
+  toggleChecklistItem: (taskId: string, checklistId: string) => Promise<void>;
+  addChecklistItem: (taskId: string, text: string) => Promise<void>;
+  addTaskComment: (taskId: string, text: string, author?: any, avatar?: any) => Promise<void>;
+  updateTaskDescription: (taskId: string, description: string) => Promise<void>;
 
-  // Leads
-  leads: LeadItem[];
-  addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => void;
-  updateLeadStatus: (id: string, status: LeadItem['status']) => void;
-  convertLeadToDeal: (leadId: string, dealValue: number) => void;
+  // Master Labels
+  addMasterLabel: (label: any, color?: string) => Promise<void>;
+  deleteMasterLabel: (id: string) => Promise<void>;
+  removeMasterLabel: (id: string) => Promise<void>;
 
   // Activities
-  activities: ActivityItem[];
-  addActivity: (activity: Omit<ActivityItem, 'id'>) => void;
+  addActivity: (act: any) => Promise<void>;
+
+  // AI Providers Toggle
+  toggleAiProvider: (id: string) => Promise<void>;
+  setDefaultAiProvider: (id: string) => Promise<void>;
+  updateAiApiKey: (id: string, key: string) => Promise<void>;
+  updateAiSelectedModel: (id: string, model: string) => Promise<void>;
 
   // Notifications
-  notifications: NotificationItem[];
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
 
-  // AI Providers & System Prompt
-  aiProviders: AiProviderConfig[];
-  toggleAiProvider: (id: string) => void;
-  setDefaultAiProvider: (id: string) => void;
-  updateAiApiKey: (id: string, key: string) => void;
-  updateAiSelectedModel: (id: string, model: string) => void;
-
-  systemPrompt: {
-    systemInstruction: string;
-    scopeRestriction: string;
-    hourlyRate: number;
-    offTopicMessage: string;
-  };
-  setSystemPrompt: (prompt: Partial<AdminStore['systemPrompt']>) => void;
+  // Supabase Fetch
+  fetchFromSupabase: () => Promise<void>;
 }
 
-const initialMasterLabels: TaskLabelItem[] = [
-  { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-cyan-300 border-blue-500/30' },
-  { id: 'lbl-2', name: 'Security', color: 'bg-red-500/20 text-red-300 border-red-500/30' },
-  { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-  { id: 'lbl-4', name: 'UI/UX', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  { id: 'lbl-5', name: 'QA & Testing', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-];
-
-const initialDeals: DealItem[] = [
-  { id: 'deal-1', title: 'Aplikasi E-Commerce SuperApp', clientName: 'Budi Santoso', company: 'PT Retail Bangun', value: 45000000, stage: 'NEW_LEAD', expectedClose: '2026-08-25', prdFileUrl: '/prd-sample.md' },
-  { id: 'deal-2', title: 'Portal CRM Management System', clientName: 'Siti Rahma', company: 'CV Logistik Maju', value: 35000000, stage: 'CONTACTED', expectedClose: '2026-08-30' },
-  { id: 'deal-3', title: 'SaaS Analytics Dashboard', clientName: 'Hendra Gunawan', company: 'FinTech Digital', value: 75000000, stage: 'PROPOSAL_SENT', expectedClose: '2026-09-05' },
-  { id: 'deal-4', title: 'Mobile Booking App (Flutter)', clientName: 'Dewi Lestari', company: 'Travelku Corp', value: 50000000, stage: 'NEGOTIATION', expectedClose: '2026-08-20' },
-  { id: 'deal-5', title: 'Custom Inventory Web App', clientName: 'Rudi Wijaya', company: 'Gudang Jaya', value: 30000000, stage: 'WON', expectedClose: '2026-08-10' },
-];
-
-const initialTasks: TaskItem[] = [
-  {
-    id: 'task-1',
-    title: 'Integrasi Supabase Auth & JWT Middleware',
-    description: `## Task Requirement & Security Guide
-
-> [!IMPORTANT]
-> Pastikan refresh token rotation dienkripsi dengan **AES-256-GCM** sebelum disimpan di cookie.
-
-- [x] Konfigurasi Supabase Client SDK
-- [x] Middleware JWT Cookie Handler
-- [ ] Session Lock & Fingerprint Verification
-- [ ] Unit Test Authentication Flow
-
-\`\`\`typescript
-// Sample JWT Refresh Rotation Handler
-export const rotateRefreshToken = async (token: string) => {
-  return await supabase.auth.refreshSession({ refresh_token: token });
+const defaultAdminUser = {
+  name: 'Andi — Developer Konsultan',
+  email: 'andi@devpulsestudio.dev',
+  role: 'ADMIN',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+  bio: 'Senior Fullstack Consultant & Lead Developer at DevPulse Studio.',
+  hourlyRate: 250000,
 };
-\`\`\`
 
-$$ E_{security} = \sum_{i=1}^{n} (Auth_i + Enkripsi_i) $$`,
-    status: 'IN_PROGRESS',
-    priority: 'HIGH',
-    dueDate: '2026-08-12',
-    assignee: 'Andi Konsultan',
-    projectName: 'CRM Management',
-    coverGradient: 'from-blue-600 via-indigo-600 to-cyan-500',
-    labels: [
-      { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-cyan-300 border-blue-500/30' },
-      { id: 'lbl-2', name: 'Security', color: 'bg-red-500/20 text-red-300 border-red-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-1', text: 'Konfigurasi Supabase Client SDK', isCompleted: true },
-      { id: 'chk-2', text: 'Middleware JWT Cookie Handler', isCompleted: true },
-      { id: 'chk-3', text: 'Session Lock & Fingerprint Verification', isCompleted: false },
-      { id: 'chk-4', text: 'Unit Test Authentication Flow', isCompleted: false },
-    ],
-    attachments: [
-      { id: 'att-1', name: 'PRD_Auth_Specification.md', url: '/PRD.md', size: '64 KB' },
-    ],
-    comments: [
-      { id: 'cmt-1', author: 'Andi Konsultan', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', text: 'Sesi middleware Cookie HttpOnly sudah terpasang. Tinggal verifikasi unit test.', timestamp: '10:15 AM' },
-    ],
-  },
-  {
-    id: 'task-2',
-    title: 'Desain Kanban Board & Trello Workspace UI',
-    description: `## UI/UX Requirement Document
+const defaultSystemPromptObj: SystemPromptConfig = {
+  systemInstruction: 'Anda adalah AI PRD Consultant dari DevPulse Studio yang membantu merancang spesifikasi requirement aplikasi.',
+  scopeRestriction: 'Fokus hanya pada perancangan requirement proyek aplikasi.',
+  offTopicMessage: 'Maaf, mari fokus pada perancangan requirement proyek aplikasi Anda.',
+  hourlyRate: 250000,
+};
 
-- [x] Layout Columns Drag & Drop
-- [x] Markdown Rich Renderer Component
-- [ ] Interactive Checklist Card Bar
-- [ ] Filter & Search Workspace Bar`,
-    status: 'TODO',
-    priority: 'MEDIUM',
-    dueDate: '2026-08-15',
-    assignee: 'Frontend Dev',
-    projectName: 'CRM Management',
-    coverGradient: 'from-purple-600 via-indigo-600 to-cyan-400',
-    labels: [
-      { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-      { id: 'lbl-4', name: 'UI/UX', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-5', text: 'Layout Columns Drag & Drop', isCompleted: true },
-      { id: 'chk-6', text: 'Markdown Rich Renderer Component', isCompleted: true },
-      { id: 'chk-7', text: 'Interactive Checklist Card Bar', isCompleted: false },
-      { id: 'chk-8', text: 'Filter & Search Workspace Bar', isCompleted: false },
-    ],
-    attachments: [],
-    comments: [],
-  },
-  {
-    id: 'task-3',
-    title: 'Setup Database Prisma Schema & Migration',
-    description: 'Schema database PostgreSQL disiapkan untuk model User, Session, Lead, Deal, Task, Activity, dan AiProvider.',
-    status: 'DONE',
-    priority: 'URGENT',
-    dueDate: '2026-08-08',
-    assignee: 'Andi Konsultan',
-    projectName: 'CRM Management',
-    coverGradient: 'from-emerald-600 to-teal-500',
-    labels: [
-      { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-cyan-300 border-blue-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-9', text: 'Database Migration Script', isCompleted: true },
-    ],
-    attachments: [],
-    comments: [],
-  },
-  {
-    id: 'task-4',
-    title: 'Testing Guardrail Simulator AI (Strict Scope)',
-    description: 'Memastikan prompt injection menolak pertanyaan off-topic seperti resep atau cuaca.',
-    status: 'REVIEW',
-    priority: 'HIGH',
-    dueDate: '2026-08-14',
-    assignee: 'QA Team',
-    projectName: 'CRM Management',
-    coverGradient: 'from-amber-600 to-red-600',
-    labels: [
-      { id: 'lbl-5', name: 'QA & Testing', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-10', text: 'Test Off-Topic Rejection', isCompleted: true },
-      { id: 'chk-11', text: 'Test Dynamic Rate Injection', isCompleted: true },
-    ],
-    attachments: [],
-    comments: [],
-  },
-  {
-    id: 'task-5',
-    title: 'Optimasi Responsive Mobile & Tablet View',
-    description: 'Memastikan antarmuka CRM berjalan lancar pada perangkat mobile.',
-    status: 'BACKLOG',
-    priority: 'LOW',
-    dueDate: '2026-08-18',
-    assignee: 'Frontend Dev',
-    projectName: 'CRM Management',
-    labels: [
-      { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-    ],
-    checklists: [],
-    attachments: [],
-    comments: [],
-  },
-];
-
-const initialLeads: LeadItem[] = [
-  { id: 'lead-1', name: 'Budi Santoso', company: 'PT Retail Bangun', email: 'budi@retailbangun.co.id', phone: '+62 812-3456-7890', source: 'LANDING_PAGE', status: 'NEW', createdAt: '2026-08-06 09:30', appTitle: 'Aplikasi E-Commerce SuperApp', prdContent: '# PRD E-Commerce SuperApp\n\n## 1. Scope Fitur\n- Auth User\n- Payment Gateway Midtrans' },
-  { id: 'lead-2', name: 'Siti Rahma', company: 'CV Logistik Maju', email: 'siti@logistikmaju.id', phone: '+62 813-9876-5432', source: 'LANDING_PAGE', status: 'CONTACTED', createdAt: '2026-08-05 14:15', appTitle: 'Portal CRM Management System' },
-  { id: 'lead-3', name: 'Hendra Gunawan', company: 'FinTech Digital', email: 'hendra@fintechdigital.com', phone: '+62 811-2233-4455', source: 'REFERRAL', status: 'QUALIFIED', createdAt: '2026-08-04 11:00' },
-];
-
-const initialActivities: ActivityItem[] = [
-  { id: 'act-1', type: 'MEETING', title: 'Konsultasi Requirement PRD dengan Budi', description: 'Membahas scope MVP dan integrasi payment gateway Midtrans.', leadName: 'Budi Santoso', date: '2026-08-06 10:00' },
-  { id: 'act-2', type: 'CALL', title: 'Follow-up Penawaran Proposal CRM', description: 'Klien menanyakan rincian durasi 120 jam kerja.', leadName: 'Siti Rahma', date: '2026-08-05 16:30' },
-  { id: 'act-3', type: 'NOTE', title: 'Catatan Teknis API Key Security', description: 'Memastikan API Key dienkripsi dengan AES-256-GCM.', date: '2026-08-04 13:00' },
-];
-
-const initialNotifications: NotificationItem[] = [
-  { id: 'notif-1', title: 'Leads Baru dari Landing Page', message: 'Budi Santoso (PT Retail Bangun) telah submit PRD.', time: '5m lalu', isRead: false, type: 'LEAD' },
-  { id: 'notif-2', title: 'Deal Berpindah Stage', message: 'Custom Inventory Web App berpindah ke stage WON.', time: '1j lalu', isRead: false, type: 'DEAL' },
-  { id: 'notif-3', title: 'Reminder Deadline Task', message: 'Task "Testing Guardrail Simulator AI" mendekati deadline.', time: '3j lalu', isRead: true, type: 'TASK' },
-];
-
-const initialAiProviders: AiProviderConfig[] = [
-  { id: 'p-1', providerKey: 'GEMINI', name: 'Google Gemini AI', apiKey: 'sk-gemini-****8921', isActive: true, isDefault: true, selectedModel: 'gemini-1.5-flash', availableModels: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-ultra'] },
-  { id: 'p-2', providerKey: 'OPENAI', name: 'OpenAI GPT', apiKey: 'sk-proj-****4102', isActive: true, isDefault: false, selectedModel: 'gpt-4o-mini', availableModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'] },
-  { id: 'p-3', providerKey: 'ANTHROPIC', name: 'Anthropic Claude', apiKey: 'sk-ant-****9912', isActive: false, isDefault: false, selectedModel: 'claude-3-5-sonnet', availableModels: ['claude-3-5-sonnet', 'claude-3-haiku'] },
-  { id: 'p-4', providerKey: 'GROQ', name: 'Groq Llama-3', apiKey: 'gsk_****7712', isActive: false, isDefault: false, selectedModel: 'llama-3.1-70b-versatile', availableModels: ['llama-3.1-70b-versatile', 'mixtral-8x7b'] },
-  { id: 'p-5', providerKey: 'DEEPSEEK', name: 'DeepSeek AI', apiKey: 'sk-ds-****3311', isActive: false, isDefault: false, selectedModel: 'deepseek-chat', availableModels: ['deepseek-chat', 'deepseek-coder'] },
-];
-
-export const useAdminStore = create<AdminStore>((set, get) => ({
+export const useAdminStore = create<AdminState>((set, get) => ({
   isAuthenticated: true,
-  currentUser: {
-    name: 'Andi Konsultan',
-    email: 'andi@crm-project.dev',
-    role: 'Super Admin / Owner',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-  },
-  login: () => set({ isAuthenticated: true }),
-  logout: () => set({ isAuthenticated: false }),
+  user: defaultAdminUser,
+  currentUser: defaultAdminUser,
+  systemPrompt: defaultSystemPromptObj,
 
-  // Dynamic Master Labels
-  masterLabels: initialMasterLabels,
-  addMasterLabel: (name, color) =>
-    set((state) => ({
-      masterLabels: [...state.masterLabels, { id: `lbl-${Date.now()}`, name, color }],
-    })),
-  removeMasterLabel: (id) =>
-    set((state) => ({
-      masterLabels: state.masterLabels.filter((l) => l.id !== id),
-    })),
+  activities: [
+    {
+      id: 'act-1',
+      type: 'call',
+      title: 'Konsultasi Perdana Requirement App',
+      date: '2026-08-06 14:00',
+      description: 'Diskusi arsitektur server cloud vs dedicated dengan Budi Santoso.',
+      leadName: 'Budi Santoso',
+    },
+    {
+      id: 'act-2',
+      type: 'email',
+      title: 'Pengiriman Proposal & PRD.md',
+      date: '2026-08-05 11:30',
+      description: 'Dokumen PRD.md dikirim ke tim LogisX Express.',
+      leadName: 'Dewi Lestari',
+    },
+  ],
 
-  deals: initialDeals,
-  moveDeal: (id, newStage) =>
-    set((state) => ({
-      deals: state.deals.map((d) => (d.id === id ? { ...d, stage: newStage } : d)),
-    })),
-  addDeal: (deal) =>
-    set((state) => ({
-      deals: [...state.deals, { ...deal, id: `deal-${Date.now()}` }],
-    })),
+  notifications: [
+    {
+      id: 'n-1',
+      title: 'Prospect Lead Baru',
+      message: 'Budi Santoso telah mengisi kuisioner AI PRD Builder untuk TokoMajuloka E-Commerce App.',
+      time: '10 menit lalu',
+      read: false,
+      isRead: false,
+      type: 'lead',
+    },
+    {
+      id: 'n-2',
+      title: 'Stage Deal Diperbarui',
+      message: 'Deal LogisX Fleet Management berpindah ke stage Proposal Sent.',
+      time: '1 jam lalu',
+      read: false,
+      isRead: false,
+      type: 'deal',
+    },
+  ],
 
-  tasks: initialTasks,
-  moveTask: (id, newStatus) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => (t.id === id ? { ...t, status: newStatus } : t)),
-    })),
-  addTask: (task) =>
-    set((state) => ({
-      tasks: [
-        ...state.tasks,
+  leads: [
+    {
+      id: 'lead-1',
+      name: 'Budi Santoso',
+      company: 'TokoMajuloka Startup',
+      email: 'budi@tokomajuloka.com',
+      phone: '+62 812-9988-7766',
+      status: 'NEW',
+      source: 'AI PRD Builder Landing Page',
+      appTitle: 'TokoMajuloka Mobile App E-Commerce',
+      prdContent: '# PRD Document — TokoMajuloka E-Commerce\n\n## 1. Overview\nAplikasi mobile e-commerce Flutter dengan backend Supabase.',
+      notes: 'Membutuhkan aplikasi mobile Android/iOS Flutter dengan backend Supabase.',
+      createdAt: '2026-08-06 14:20',
+    },
+    {
+      id: 'lead-2',
+      name: 'Dewi Lestari',
+      company: 'LogisX Express',
+      email: 'dewi@logisx.co.id',
+      phone: '+62 815-4433-2211',
+      status: 'QUALIFIED',
+      source: 'Direct Contact',
+      appTitle: 'LogisX Fleet Management Platform',
+      notes: 'Sudah diskusi requirement server dedicated vs cloud VPS.',
+      createdAt: '2026-08-05 10:15',
+    },
+  ],
+
+  deals: [
+    {
+      id: 'deal-1',
+      title: 'Deal — TokoMajuloka E-Commerce App',
+      clientName: 'Budi Santoso',
+      company: 'TokoMajuloka Startup',
+      value: 25000000,
+      stage: 'NEW_LEAD',
+      expectedClose: '2026-08-25',
+      notes: 'Integrasi payment gateway DOKU & Midtrans.',
+    },
+    {
+      id: 'deal-2',
+      title: 'Deal — LogisX Fleet Tracker Web App',
+      clientName: 'Dewi Lestari',
+      company: 'LogisX Express',
+      value: 45000000,
+      stage: 'PROPOSAL_SENT',
+      expectedClose: '2026-09-01',
+      notes: 'Proposal arsitektur server & pengerjaan 6 minggu.',
+    },
+  ],
+
+  tasks: [
+    {
+      id: 'task-1',
+      title: 'Setup Database Supabase & Prisma ORM Schema',
+      description: 'Menyusun tabel User, Lead, Deal, Task, MasterLabel, dan AiProvider pada Supabase PostgreSQL.',
+      status: 'IN_PROGRESS',
+      priority: 'URGENT',
+      dueDate: '2026-08-10',
+      assignee: 'Andi (Lead Dev)',
+      projectName: 'DevPulse Core CRM',
+      coverGradient: 'from-blue-600 to-indigo-600',
+      labels: [
+        { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
+        { id: 'lbl-2', name: 'Database', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+      ],
+      checklists: [
+        { id: 'chk-1', text: 'Konfigurasi schema.prisma', isCompleted: true },
+        { id: 'chk-2', text: 'Push migration ke Supabase', isCompleted: true },
+      ],
+      attachments: [],
+      comments: [
         {
-          ...task,
-          id: `task-${Date.now()}`,
-          checklists: [],
-          attachments: [],
-          comments: [],
+          id: 'cmt-1',
+          author: 'Andi',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          text: 'Database Supabase berhasil di-connect!',
+          timestamp: '15:30',
         },
       ],
-    })),
-  toggleChecklistItem: (taskId, checklistId) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return {
-          ...t,
-          checklists: t.checklists.map((c) => (c.id === checklistId ? { ...c, isCompleted: !c.isCompleted } : c)),
-        };
-      }),
-    })),
-  addChecklistItem: (taskId, text) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return {
-          ...t,
-          checklists: [...t.checklists, { id: `chk-${Date.now()}`, text, isCompleted: false }],
-        };
-      }),
-    })),
-  addTaskComment: (taskId, author, avatar, text) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return {
-          ...t,
-          comments: [
-            ...t.comments,
-            {
-              id: `cmt-${Date.now()}`,
-              author,
-              avatar,
-              text,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            },
-          ],
-        };
-      }),
-    })),
-  updateTaskDescription: (taskId, description) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, description } : t)),
-    })),
-
-  leads: initialLeads,
-  addLead: (lead) =>
-    set((state) => ({
-      leads: [
-        { ...lead, id: `lead-${Date.now()}`, createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16) },
-        ...state.leads,
+    },
+    {
+      id: 'task-2',
+      title: 'Sempurnakan Layout Figma Visual CMS Live Editor',
+      description: 'Menambahkan auto-scroll focus ke top canvas dan dual-mode ImageUploadPicker.',
+      status: 'DONE',
+      priority: 'HIGH',
+      dueDate: '2026-08-06',
+      assignee: 'Andi (Frontend)',
+      projectName: 'Figma CMS Module',
+      coverGradient: 'from-indigo-600 to-purple-600',
+      labels: [
+        { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
+        { id: 'lbl-4', name: 'UI/UX', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
       ],
-    })),
-  updateLeadStatus: (id, status) =>
+      checklists: [],
+      attachments: [],
+      comments: [],
+    },
+  ],
+
+  masterLabels: [
+    { id: 'lbl-1', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
+    { id: 'lbl-2', name: 'Backend', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
+    { id: 'lbl-3', name: 'Database', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+    { id: 'lbl-4', name: 'UI/UX', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
+    { id: 'lbl-5', name: 'AI / ML', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
+    { id: 'lbl-6', name: 'Security', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+  ],
+
+  aiProviders: [
+    {
+      id: 'p-1',
+      providerKey: 'GEMINI',
+      name: 'Google Gemini AI Engine',
+      apiKey: 'AIzaSyD-****-12345',
+      isActive: true,
+      isDefault: true,
+      selectedModel: 'gemini-1.5-flash',
+      availableModels: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'],
+    },
+    {
+      id: 'p-2',
+      providerKey: 'OPENAI',
+      name: 'OpenAI GPT-4o Engine',
+      apiKey: 'sk-proj-****-67890',
+      isActive: true,
+      isDefault: false,
+      selectedModel: 'gpt-4o-mini',
+      availableModels: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo'],
+    },
+    {
+      id: 'p-3',
+      providerKey: 'ANTHROPIC',
+      name: 'Anthropic Claude Engine',
+      apiKey: 'sk-ant-****-99887',
+      isActive: false,
+      isDefault: false,
+      selectedModel: 'claude-3-5-sonnet',
+      availableModels: ['claude-3-5-sonnet', 'claude-3-haiku'],
+    },
+  ],
+
+  login: () => set({ isAuthenticated: true }),
+  logout: () => set({ isAuthenticated: false }),
+  setSystemPrompt: (prompt) => {
+    if (typeof prompt === 'string') {
+      set((state) => ({
+        systemPrompt: { ...state.systemPrompt, systemInstruction: prompt },
+      }));
+    } else {
+      set((state) => ({
+        systemPrompt: { ...state.systemPrompt, ...prompt },
+      }));
+    }
+  },
+
+  addLead: async (leadData) => {
+    const newLead: LeadItem = {
+      ...leadData,
+      id: `lead-${Date.now()}`,
+      createdAt: new Date().toLocaleString(),
+    };
+    set((state) => ({ leads: [newLead, ...state.leads] }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('Lead').insert({
+        id: newLead.id,
+        name: newLead.name,
+        company: newLead.company,
+        email: newLead.email,
+        phone: newLead.phone,
+        status: newLead.status,
+        source: newLead.source,
+        notes: newLead.notes,
+        appTitle: newLead.appTitle,
+      });
+    } catch (err) {
+      console.warn('Supabase lead save warning:', err);
+    }
+  },
+
+  updateLeadStatus: async (id, status = 'CONTACTED') => {
     set((state) => ({
       leads: state.leads.map((l) => (l.id === id ? { ...l, status } : l)),
-    })),
+    }));
 
-  convertLeadToDeal: (leadId, dealValue) =>
-    set((state) => {
-      const targetLead = state.leads.find((l) => l.id === leadId);
-      if (!targetLead) return state;
+    try {
+      if (!supabase) return;
+      await supabase.from('Lead').update({ status }).eq('id', id);
+    } catch (err) {
+      console.warn('Supabase lead status update warning:', err);
+    }
+  },
 
-      const newDealItem: DealItem = {
-        id: `deal-${Date.now()}`,
-        title: targetLead.appTitle || `Deal Proyek — ${targetLead.company}`,
-        clientName: targetLead.name,
-        company: targetLead.company,
-        value: dealValue,
-        stage: 'NEW_LEAD',
-        expectedClose: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-        prdFileUrl: targetLead.prdContent ? '/PRD.md' : undefined,
-      };
+  convertLeadToDeal: async (leadId, dealValue = 15000000) => {
+    const lead = get().leads.find((l) => l.id === leadId);
+    if (!lead) return;
 
-      return {
-        leads: state.leads.map((l) => (l.id === leadId ? { ...l, status: 'CONVERTED' } : l)),
-        deals: [newDealItem, ...state.deals],
-        notifications: [
-          {
-            id: `notif-${Date.now()}`,
-            title: 'Lead Berhasil Dikonversi!',
-            message: `Lead ${targetLead.name} (${targetLead.company}) telah dikonversi menjadi Deal Baru di Pipeline.`,
-            time: 'Baru saja',
-            isRead: false,
-            type: 'DEAL',
-          },
-          ...state.notifications,
-        ],
-      };
-    }),
+    const newDeal: DealItem = {
+      id: `deal-${Date.now()}`,
+      title: `Deal — ${lead.appTitle || lead.company || lead.name}`,
+      clientName: lead.name,
+      company: lead.company || 'N/A',
+      value: dealValue,
+      stage: 'NEW_LEAD',
+      expectedClose: '2026-09-15',
+      notes: `Konversi otomatis dari Prospect Lead (${lead.email}). Notes: ${lead.notes || 'N/A'}`,
+    };
 
-  activities: initialActivities,
-  addActivity: (activity) =>
     set((state) => ({
-      activities: [{ ...activity, id: `act-${Date.now()}` }, ...state.activities],
-    })),
+      deals: [newDeal, ...state.deals],
+      leads: state.leads.map((l) => (l.id === leadId ? { ...l, status: 'CONVERTED' } : l)),
+    }));
 
-  notifications: initialNotifications,
-  markAsRead: (id) =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    })),
-  markAllAsRead: () =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
-    })),
+    try {
+      if (!supabase) return;
+      await supabase.from('Lead').update({ status: 'CONVERTED' }).eq('id', leadId);
+      await supabase.from('Deal').insert({
+        id: newDeal.id,
+        title: newDeal.title,
+        value: newDeal.value,
+        stage: newDeal.stage,
+        leadId: leadId,
+        description: newDeal.notes,
+      });
+    } catch (err) {
+      console.warn('Supabase deal convert warning:', err);
+    }
+  },
 
-  aiProviders: initialAiProviders,
-  toggleAiProvider: (id) =>
+  addDeal: async (dealData) => {
+    const newDeal: DealItem = {
+      ...dealData,
+      id: `deal-${Date.now()}`,
+    };
+    set((state) => ({ deals: [newDeal, ...state.deals] }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('Deal').insert({
+        id: newDeal.id,
+        title: newDeal.title,
+        value: newDeal.value,
+        stage: newDeal.stage,
+        description: newDeal.notes,
+      });
+    } catch (err) {
+      console.warn('Supabase deal insert warning:', err);
+    }
+  },
+
+  updateDealStage: async (dealId, stage) => {
+    set((state) => ({
+      deals: state.deals.map((d) => (d.id === dealId ? { ...d, stage } : d)),
+    }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('Deal').update({ stage }).eq('id', dealId);
+    } catch (err) {
+      console.warn('Supabase deal stage update warning:', err);
+    }
+  },
+
+  moveDeal: async (dealId, stage) => get().updateDealStage(dealId, stage),
+
+  addTask: async (taskData) => {
+    const newTask: TaskItem = {
+      title: taskData.title || 'Task Baru',
+      description: taskData.description || '',
+      status: taskData.status || 'BACKLOG',
+      priority: taskData.priority || 'MEDIUM',
+      dueDate: taskData.dueDate || new Date().toISOString().slice(0, 10),
+      assignee: taskData.assignee || 'Andi',
+      projectName: taskData.projectName || 'DevPulse Studio',
+      coverGradient: taskData.coverGradient || 'from-blue-600 to-indigo-600',
+      labels: taskData.labels || [],
+      checklists: taskData.checklists || [],
+      comments: taskData.comments || [],
+      attachments: taskData.attachments || [],
+      id: `task-${Date.now()}`,
+    };
+    set((state) => ({ tasks: [newTask, ...state.tasks] }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('Task').insert({
+        id: newTask.id,
+        title: newTask.title,
+        description: newTask.description,
+        status: newTask.status,
+        priority: newTask.priority,
+        dueDate: newTask.dueDate,
+        projectId: 'proj_default_001',
+      });
+    } catch (err) {
+      console.warn('Supabase task insert warning:', err);
+    }
+  },
+
+  updateTaskStatus: async (taskId, status) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, status } : t)),
+    }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('Task').update({ status }).eq('id', taskId);
+    } catch (err) {
+      console.warn('Supabase task status update warning:', err);
+    }
+  },
+
+  moveTask: async (taskId, targetStatus) => get().updateTaskStatus(taskId, targetStatus),
+
+  toggleChecklistItem: async (taskId, checklistId) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => {
+        if (t.id !== taskId) return t;
+        return {
+          ...t,
+          checklists: t.checklists.map((c) =>
+            c.id === checklistId ? { ...c, isCompleted: !c.isCompleted } : c
+          ),
+        };
+      }),
+    }));
+  },
+
+  addChecklistItem: async (taskId, text) => {
+    const newChecklist: TaskChecklistItem = {
+      id: `chk-${Date.now()}`,
+      text,
+      isCompleted: false,
+    };
+
+    set((state) => ({
+      tasks: state.tasks.map((t) => {
+        if (t.id !== taskId) return t;
+        return { ...t, checklists: [...t.checklists, newChecklist] };
+      }),
+    }));
+  },
+
+  addTaskComment: async (taskId, text, author = 'Andi', avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') => {
+    const newComment: TaskCommentItem = {
+      id: `cmt-${Date.now()}`,
+      author,
+      avatar,
+      text,
+      timestamp: 'Sekarang',
+    };
+
+    set((state) => ({
+      tasks: state.tasks.map((t) => {
+        if (t.id !== taskId) return t;
+        return { ...t, comments: [...t.comments, newComment] };
+      }),
+    }));
+  },
+
+  updateTaskDescription: async (taskId, description) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, description } : t)),
+    }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('Task').update({ description }).eq('id', taskId);
+    } catch (err) {
+      console.warn('Supabase task description update warning:', err);
+    }
+  },
+
+  addMasterLabel: async (labelData, colorArg = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30') => {
+    const name = typeof labelData === 'string' ? labelData : labelData.name;
+    const color = typeof labelData === 'string' ? colorArg : (labelData.color || colorArg);
+
+    const newLabel: TaskLabelItem = {
+      id: `lbl-${Date.now()}`,
+      name,
+      color,
+    };
+    set((state) => ({ masterLabels: [...state.masterLabels, newLabel] }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('MasterLabel').insert({
+        id: newLabel.id,
+        name: newLabel.name,
+        color: newLabel.color,
+        bgClass: 'bg-cyan-500/20',
+        textClass: 'text-cyan-300',
+        borderClass: 'border-cyan-500/30',
+      });
+    } catch (err) {
+      console.warn('Supabase label insert warning:', err);
+    }
+  },
+
+  deleteMasterLabel: async (id) => {
+    set((state) => ({
+      masterLabels: state.masterLabels.filter((l) => l.id !== id),
+    }));
+
+    try {
+      if (!supabase) return;
+      await supabase.from('MasterLabel').delete().eq('id', id);
+    } catch (err) {
+      console.warn('Supabase label delete warning:', err);
+    }
+  },
+
+  removeMasterLabel: async (id) => get().deleteMasterLabel(id),
+
+  addActivity: async (actData) => {
+    const newAct: ActivityItem = {
+      ...actData,
+      id: `act-${Date.now()}`,
+      date: new Date().toLocaleString(),
+    };
+    set((state) => ({ activities: [newAct, ...state.activities] }));
+  },
+
+  toggleAiProvider: async (id) => {
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)),
-    })),
-  setDefaultAiProvider: (id) =>
+    }));
+
+    try {
+      if (!supabase) return;
+      const target = get().aiProviders.find((p) => p.id === id);
+      if (target) {
+        await supabase.from('AiProvider').update({ isActive: target.isActive }).eq('id', id);
+      }
+    } catch (err) {
+      console.warn('Supabase provider toggle warning:', err);
+    }
+  },
+
+  setDefaultAiProvider: async (id) => {
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => ({ ...p, isDefault: p.id === id })),
-    })),
-  updateAiApiKey: (id, key) =>
-    set((state) => ({
-      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, apiKey: key } : p)),
-    })),
-  updateAiSelectedModel: (id, model) =>
-    set((state) => ({
-      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, selectedModel: model } : p)),
-    })),
-
-  systemPrompt: {
-    systemInstruction: 'Anda adalah AI PRD Consultant profesional. Tugas Anda adalah membantu calon klien merancang spesifikasi requirement aplikasi (PRD.md) secara terstruktur.',
-    scopeRestriction: 'Strict Project Guardrail: HANYA jawab percakapan seputar requirement software, scope fitur, platform, server, dan PRD. Tolak percakapan di luar topik proyek aplikasi.',
-    hourlyRate: 250000,
-    offTopicMessage: 'Maaf, saya adalah AI PRD Consultant yang khusus membantu perancangan requirement proyek aplikasi. Mari fokus pada pembahasan fitur dan kebutuhan aplikasi Anda.',
+    }));
   },
-  setSystemPrompt: (prompt) =>
+
+  updateAiApiKey: async (id, apiKey) => {
     set((state) => ({
-      systemPrompt: { ...state.systemPrompt, ...prompt },
-    })),
+      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, apiKey } : p)),
+    }));
+  },
+
+  updateAiSelectedModel: async (id, selectedModel) => {
+    set((state) => ({
+      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, selectedModel } : p)),
+    }));
+  },
+
+  markAsRead: (id) => {
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n.id === id ? { ...n, read: true, isRead: true } : n
+      ),
+    }));
+  },
+
+  markAllAsRead: () => {
+    set((state) => ({
+      notifications: state.notifications.map((n) => ({ ...n, read: true, isRead: true })),
+    }));
+  },
+
+  fetchFromSupabase: async () => {
+    try {
+      if (!supabase) return;
+      const [leadsRes, dealsRes, tasksRes, labelsRes] = await Promise.all([
+        supabase.from('Lead').select('*'),
+        supabase.from('Deal').select('*'),
+        supabase.from('Task').select('*'),
+        supabase.from('MasterLabel').select('*'),
+      ]);
+
+      if (leadsRes.data && leadsRes.data.length > 0) {
+        set({ leads: leadsRes.data });
+      }
+      if (dealsRes.data && dealsRes.data.length > 0) {
+        set({ deals: dealsRes.data });
+      }
+      if (tasksRes.data && tasksRes.data.length > 0) {
+        set({ tasks: tasksRes.data });
+      }
+      if (labelsRes.data && labelsRes.data.length > 0) {
+        set({ masterLabels: labelsRes.data });
+      }
+    } catch (err) {
+      console.warn('Supabase store fetch warning:', err);
+    }
+  },
 }));
