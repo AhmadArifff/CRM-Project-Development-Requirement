@@ -67,8 +67,9 @@
    ```
 
 3. **Jalankan Mode Dev Server**:
+   Jalankan frontend (Next.js) dan backend (Express) secara bersamaan:
    ```bash
-   npm run dev
+   npm run dev:all
    ```
    Buka browser di `http://localhost:3000`.
 
