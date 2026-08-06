@@ -110,24 +110,22 @@ export interface SystemPromptConfig {
   hourlyRate: number;
 }
 
+export interface AdminUser {
+  id?: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  bio?: string;
+  hourlyRate?: number;
+  timezone?: string;
+}
+
 export interface AdminState {
   isAuthenticated: boolean;
-  user: {
-    name: string;
-    email: string;
-    role: string;
-    avatar: string;
-    bio?: string;
-    hourlyRate?: number;
-  };
-  currentUser: {
-    name: string;
-    email: string;
-    role: string;
-    avatar: string;
-    bio?: string;
-    hourlyRate?: number;
-  };
+  token: string | null;
+  user: AdminUser;
+  currentUser: AdminUser;
 
   leads: LeadItem[];
   deals: DealItem[];
@@ -139,8 +137,9 @@ export interface AdminState {
   systemPrompt: SystemPromptConfig;
 
   // Actions
-  login: () => void;
+  login: (user: AdminUser, token: string) => void;
   logout: () => void;
+  setUser: (user: AdminUser) => void;
   setSystemPrompt: (prompt: Partial<SystemPromptConfig> | string | any) => void;
 
   // Leads CRUD & 1-Click Convert
@@ -184,13 +183,11 @@ export interface AdminState {
   fetchFromSupabase: () => Promise<void>;
 }
 
-const defaultAdminUser = {
-  name: 'Ahmad Arif',
-  email: 'ahmadarif@devpulsestudio.dev',
-  role: 'ADMIN',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-  bio: 'Lead Developer & Founder at DevPulse Studio.',
-  hourlyRate: 250000,
+const guestUser: AdminUser = {
+  name: 'Guest',
+  email: '',
+  role: 'GUEST',
+  avatar: '',
 };
 
 const defaultSystemPromptObj: SystemPromptConfig = {
@@ -200,197 +197,83 @@ const defaultSystemPromptObj: SystemPromptConfig = {
   hourlyRate: 250000,
 };
 
+// Helper: get token from localStorage (client-side only)
+const getStoredToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('devpulse_token');
+};
+
+const getStoredUser = (): AdminUser | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('devpulse_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const useAdminStore = create<AdminState>((set, get) => ({
-  isAuthenticated: true,
-  user: defaultAdminUser,
-  currentUser: defaultAdminUser,
+  // Auth state — default unauthenticated; hydrated from localStorage on client
+  isAuthenticated: false,
+  token: null,
+  user: guestUser,
+  currentUser: guestUser,
   systemPrompt: defaultSystemPromptObj,
 
-  activities: [
-    {
-      id: 'act-1',
-      type: 'call',
-      title: 'Konsultasi Perdana Requirement App',
-      date: '2026-08-06 14:00',
-      description: 'Diskusi arsitektur server cloud vs dedicated dengan Budi Santoso.',
-      leadName: 'Budi Santoso',
-    },
-    {
-      id: 'act-2',
-      type: 'email',
-      title: 'Pengiriman Proposal & PRD.md',
-      date: '2026-08-05 11:30',
-      description: 'Dokumen PRD.md dikirim ke tim LogisX Express.',
-      leadName: 'Dewi Lestari',
-    },
-  ],
+  // ALL data starts empty — populated from database via fetchFromSupabase()
+  activities: [],
+  notifications: [],
+  leads: [],
+  deals: [],
+  tasks: [],
+  masterLabels: [],
+  aiProviders: [],
 
-  notifications: [
-    {
-      id: 'n-1',
-      title: 'Prospect Lead Baru',
-      message: 'Budi Santoso telah mengisi kuisioner AI PRD Builder untuk TokoMajuloka E-Commerce App.',
-      time: '10 menit lalu',
-      read: false,
-      isRead: false,
-      type: 'lead',
-    },
-    {
-      id: 'n-2',
-      title: 'Stage Deal Diperbarui',
-      message: 'Deal LogisX Fleet Management berpindah ke stage Proposal Sent.',
-      time: '1 jam lalu',
-      read: false,
-      isRead: false,
-      type: 'deal',
-    },
-  ],
+  // =====================================================================
+  // AUTH ACTIONS
+  // =====================================================================
 
-  leads: [
-    {
-      id: 'lead-1',
-      name: 'Budi Santoso',
-      company: 'TokoMajuloka Startup',
-      email: 'budi@tokomajuloka.com',
-      phone: '+62 812-9988-7766',
-      status: 'NEW',
-      source: 'AI PRD Builder Landing Page',
-      appTitle: 'TokoMajuloka Mobile App E-Commerce',
-      prdContent: '# PRD Document — TokoMajuloka E-Commerce\n\n## 1. Overview\nAplikasi mobile e-commerce Flutter dengan backend Supabase.',
-      notes: 'Membutuhkan aplikasi mobile Android/iOS Flutter dengan backend Supabase.',
-      createdAt: '2026-08-06 14:20',
-    },
-    {
-      id: 'lead-2',
-      name: 'Dewi Lestari',
-      company: 'LogisX Express',
-      email: 'dewi@logisx.co.id',
-      phone: '+62 815-4433-2211',
-      status: 'QUALIFIED',
-      source: 'Direct Contact',
-      appTitle: 'LogisX Fleet Management Platform',
-      notes: 'Sudah diskusi requirement server dedicated vs cloud VPS.',
-      createdAt: '2026-08-05 10:15',
-    },
-  ],
+  login: (user, token) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('devpulse_token', token);
+      localStorage.setItem('devpulse_user', JSON.stringify(user));
+    }
+    set({
+      isAuthenticated: true,
+      token,
+      user,
+      currentUser: user,
+    });
+  },
 
-  deals: [
-    {
-      id: 'deal-1',
-      title: 'Deal — TokoMajuloka E-Commerce App',
-      clientName: 'Budi Santoso',
-      company: 'TokoMajuloka Startup',
-      value: 25000000,
-      stage: 'NEW_LEAD',
-      expectedClose: '2026-08-25',
-      notes: 'Integrasi payment gateway DOKU & Midtrans.',
-    },
-    {
-      id: 'deal-2',
-      title: 'Deal — LogisX Fleet Tracker Web App',
-      clientName: 'Dewi Lestari',
-      company: 'LogisX Express',
-      value: 45000000,
-      stage: 'PROPOSAL_SENT',
-      expectedClose: '2026-09-01',
-      notes: 'Proposal arsitektur server & pengerjaan 6 minggu.',
-    },
-  ],
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('devpulse_token');
+      localStorage.removeItem('devpulse_user');
+    }
+    set({
+      isAuthenticated: false,
+      token: null,
+      user: guestUser,
+      currentUser: guestUser,
+      leads: [],
+      deals: [],
+      tasks: [],
+      activities: [],
+      notifications: [],
+      masterLabels: [],
+      aiProviders: [],
+    });
+  },
 
-  tasks: [
-    {
-      id: 'task-1',
-      title: 'Setup Database Supabase & Prisma ORM Schema',
-      description: 'Menyusun tabel User, Lead, Deal, Task, MasterLabel, dan AiProvider pada Supabase PostgreSQL.',
-      status: 'IN_PROGRESS',
-      priority: 'URGENT',
-      dueDate: '2026-08-10',
-      assignee: 'Andi (Lead Dev)',
-      projectName: 'DevPulse Core CRM',
-      coverGradient: 'from-blue-600 to-indigo-600',
-      labels: [
-        { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-        { id: 'lbl-2', name: 'Database', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-      ],
-      checklists: [
-        { id: 'chk-1', text: 'Konfigurasi schema.prisma', isCompleted: true },
-        { id: 'chk-2', text: 'Push migration ke Supabase', isCompleted: true },
-      ],
-      attachments: [],
-      comments: [
-        {
-          id: 'cmt-1',
-          author: 'Andi',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-          text: 'Database Supabase berhasil di-connect!',
-          timestamp: '15:30',
-        },
-      ],
-    },
-    {
-      id: 'task-2',
-      title: 'Sempurnakan Layout Figma Visual CMS Live Editor',
-      description: 'Menambahkan auto-scroll focus ke top canvas dan dual-mode ImageUploadPicker.',
-      status: 'DONE',
-      priority: 'HIGH',
-      dueDate: '2026-08-06',
-      assignee: 'Andi (Frontend)',
-      projectName: 'Figma CMS Module',
-      coverGradient: 'from-indigo-600 to-purple-600',
-      labels: [
-        { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-        { id: 'lbl-4', name: 'UI/UX', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
-      ],
-      checklists: [],
-      attachments: [],
-      comments: [],
-    },
-  ],
+  setUser: (user) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('devpulse_user', JSON.stringify(user));
+    }
+    set({ user, currentUser: user });
+  },
 
-  masterLabels: [
-    { id: 'lbl-1', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-    { id: 'lbl-2', name: 'Backend', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-    { id: 'lbl-3', name: 'Database', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-    { id: 'lbl-4', name: 'UI/UX', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
-    { id: 'lbl-5', name: 'AI / ML', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
-    { id: 'lbl-6', name: 'Security', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-  ],
-
-  aiProviders: [
-    {
-      id: 'p-1',
-      providerKey: 'GEMINI',
-      name: 'Google Gemini AI Engine',
-      apiKey: 'AIzaSyD-****-12345',
-      isActive: true,
-      isDefault: true,
-      selectedModel: 'gemini-1.5-flash',
-      availableModels: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'],
-    },
-    {
-      id: 'p-2',
-      providerKey: 'OPENAI',
-      name: 'OpenAI GPT-4o Engine',
-      apiKey: 'sk-proj-****-67890',
-      isActive: true,
-      isDefault: false,
-      selectedModel: 'gpt-4o-mini',
-      availableModels: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo'],
-    },
-    {
-      id: 'p-3',
-      providerKey: 'ANTHROPIC',
-      name: 'Anthropic Claude Engine',
-      apiKey: 'sk-ant-****-99887',
-      isActive: false,
-      isDefault: false,
-      selectedModel: 'claude-3-5-sonnet',
-      availableModels: ['claude-3-5-sonnet', 'claude-3-haiku'],
-    },
-  ],
-
-  login: () => set({ isAuthenticated: true }),
-  logout: () => set({ isAuthenticated: false }),
   setSystemPrompt: (prompt) => {
     if (typeof prompt === 'string') {
       set((state) => ({
@@ -402,6 +285,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       }));
     }
   },
+
+  // =====================================================================
+  // LEADS CRUD
+  // =====================================================================
 
   addLead: async (leadData) => {
     const newLead: LeadItem = {
@@ -478,6 +365,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     }
   },
 
+  // =====================================================================
+  // DEALS PIPELINE
+  // =====================================================================
+
   addDeal: async (dealData) => {
     const newDeal: DealItem = {
       ...dealData,
@@ -514,14 +405,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
   moveDeal: async (dealId, stage) => get().updateDealStage(dealId, stage),
 
+  // =====================================================================
+  // PROJECT TASKS
+  // =====================================================================
+
   addTask: async (taskData) => {
+    const currentUser = get().currentUser;
     const newTask: TaskItem = {
       title: taskData.title || 'Task Baru',
       description: taskData.description || '',
       status: taskData.status || 'BACKLOG',
       priority: taskData.priority || 'MEDIUM',
       dueDate: taskData.dueDate || new Date().toISOString().slice(0, 10),
-      assignee: taskData.assignee || 'Andi',
+      assignee: taskData.assignee || currentUser.name,
       projectName: taskData.projectName || 'DevPulse Studio',
       coverGradient: taskData.coverGradient || 'from-blue-600 to-indigo-600',
       labels: taskData.labels || [],
@@ -592,11 +488,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     }));
   },
 
-  addTaskComment: async (taskId, text, author = 'Andi', avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') => {
+  addTaskComment: async (taskId, text, author, avatar) => {
+    const currentUser = get().currentUser;
     const newComment: TaskCommentItem = {
       id: `cmt-${Date.now()}`,
-      author,
-      avatar,
+      author: author || currentUser.name,
+      avatar: avatar || currentUser.avatar || '',
       text,
       timestamp: 'Sekarang',
     };
@@ -621,6 +518,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       console.warn('Supabase task description update warning:', err);
     }
   },
+
+  // =====================================================================
+  // MASTER LABELS
+  // =====================================================================
 
   addMasterLabel: async (labelData, colorArg = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30') => {
     const name = typeof labelData === 'string' ? labelData : labelData.name;
@@ -663,6 +564,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
   removeMasterLabel: async (id) => get().deleteMasterLabel(id),
 
+  // =====================================================================
+  // ACTIVITIES
+  // =====================================================================
+
   addActivity: async (actData) => {
     const newAct: ActivityItem = {
       ...actData,
@@ -670,7 +575,25 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       date: new Date().toLocaleString(),
     };
     set((state) => ({ activities: [newAct, ...state.activities] }));
+
+    try {
+      if (!supabase) return;
+      const currentUser = get().currentUser;
+      await supabase.from('Activity').insert({
+        id: newAct.id,
+        type: (newAct.type || 'NOTE').toUpperCase(),
+        title: newAct.title,
+        description: newAct.description || '',
+        userId: currentUser.id || 'usr_admin_ahmad_001',
+      });
+    } catch (err) {
+      console.warn('Supabase activity insert warning:', err);
+    }
   },
+
+  // =====================================================================
+  // AI PROVIDERS
+  // =====================================================================
 
   toggleAiProvider: async (id) => {
     set((state) => ({
@@ -706,42 +629,191 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     }));
   },
 
+  // =====================================================================
+  // NOTIFICATIONS
+  // =====================================================================
+
   markAsRead: (id) => {
     set((state) => ({
       notifications: state.notifications.map((n) =>
         n.id === id ? { ...n, read: true, isRead: true } : n
       ),
     }));
+
+    // Sync to database
+    try {
+      if (supabase) {
+        supabase.from('Notification').update({ isRead: true }).eq('id', id).then(() => {});
+      }
+    } catch {}
   },
 
   markAllAsRead: () => {
     set((state) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true, isRead: true })),
     }));
+
+    // Sync to database
+    try {
+      if (supabase) {
+        supabase.from('Notification').update({ isRead: true }).neq('isRead', true).then(() => {});
+      }
+    } catch {}
   },
+
+  // =====================================================================
+  // FETCH ALL DATA FROM SUPABASE DATABASE
+  // =====================================================================
 
   fetchFromSupabase: async () => {
     try {
       if (!supabase) return;
-      const [leadsRes, dealsRes, tasksRes, labelsRes] = await Promise.all([
-        supabase.from('Lead').select('*'),
-        supabase.from('Deal').select('*'),
-        supabase.from('Task').select('*'),
-        supabase.from('MasterLabel').select('*'),
+
+      const [leadsRes, dealsRes, tasksRes, labelsRes, aiRes, activitiesRes, notificationsRes] = await Promise.all([
+        supabase.from('Lead').select('*').order('createdAt', { ascending: false }),
+        supabase.from('Deal').select('*').order('createdAt', { ascending: false }),
+        supabase.from('Task').select('*, TaskChecklist(*), TaskComment(*)').order('createdAt', { ascending: false }),
+        supabase.from('MasterLabel').select('*').order('name', { ascending: true }),
+        supabase.from('AiProvider').select('*').order('providerKey', { ascending: true }),
+        supabase.from('Activity').select('*, Lead(name)').order('createdAt', { ascending: false }),
+        supabase.from('Notification').select('*').order('createdAt', { ascending: false }),
       ]);
 
+      // Map Leads
       if (leadsRes.data && leadsRes.data.length > 0) {
-        set({ leads: leadsRes.data });
+        const leads: LeadItem[] = leadsRes.data.map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          company: l.company || '',
+          email: l.email,
+          phone: l.phone || '',
+          status: l.status,
+          source: l.source || 'LANDING_PAGE',
+          notes: l.notes,
+          prdFileUrl: l.prdFileUrl,
+          appTitle: l.appTitle,
+          createdAt: l.createdAt,
+        }));
+        set({ leads });
       }
+
+      // Map Deals
       if (dealsRes.data && dealsRes.data.length > 0) {
-        set({ deals: dealsRes.data });
+        const deals: DealItem[] = dealsRes.data.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          clientName: d.clientName || d.title,
+          company: d.company || '',
+          value: Number(d.value) || 0,
+          stage: d.stage,
+          expectedClose: d.expectedClose || '',
+          notes: d.description,
+        }));
+        set({ deals });
       }
+
+      // Map Tasks with checklists & comments
       if (tasksRes.data && tasksRes.data.length > 0) {
-        set({ tasks: tasksRes.data });
+        const currentUser = get().currentUser;
+        const tasks: TaskItem[] = tasksRes.data.map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description || '',
+          status: t.status,
+          priority: t.priority,
+          dueDate: t.dueDate || '',
+          assignee: t.assigneeName || currentUser.name,
+          projectName: t.projectName || 'DevPulse Studio',
+          coverGradient: t.coverGradient || 'from-blue-600 to-indigo-600',
+          labels: (t.labels || []).map((labelName: string, idx: number) => ({
+            id: `lbl-db-${idx}`,
+            name: labelName,
+            color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+          })),
+          checklists: (t.TaskChecklist || []).map((c: any) => ({
+            id: c.id,
+            text: c.text,
+            isCompleted: c.completed,
+          })),
+          comments: (t.TaskComment || []).map((c: any) => ({
+            id: c.id,
+            author: c.authorName,
+            avatar: c.authorAvatar || '',
+            text: c.text,
+            timestamp: c.createdAt,
+          })),
+          attachments: [],
+        }));
+        set({ tasks });
       }
+
+      // Map Master Labels
       if (labelsRes.data && labelsRes.data.length > 0) {
-        set({ masterLabels: labelsRes.data });
+        const masterLabels: TaskLabelItem[] = labelsRes.data.map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          color: l.color,
+        }));
+        set({ masterLabels });
       }
+
+      // Map AI Providers
+      if (aiRes.data && aiRes.data.length > 0) {
+        const aiProviders: AiProviderItem[] = aiRes.data.map((p: any) => ({
+          id: p.id,
+          providerKey: p.providerKey,
+          name: p.name,
+          apiKey: p.apiKey,
+          isActive: p.isActive,
+          isDefault: p.isDefault,
+          selectedModel: p.selectedModel || '',
+          availableModels: p.availableModels || [],
+        }));
+        set({ aiProviders });
+      }
+
+      // Map Activities
+      if (activitiesRes.data && activitiesRes.data.length > 0) {
+        const activities: ActivityItem[] = activitiesRes.data.map((a: any) => ({
+          id: a.id,
+          type: a.type,
+          title: a.title,
+          description: a.description || '',
+          date: a.date || a.createdAt,
+          leadName: a.Lead?.name || undefined,
+        }));
+        set({ activities });
+      }
+
+      // Map Notifications
+      if (notificationsRes.data && notificationsRes.data.length > 0) {
+        const notifications: NotificationItem[] = notificationsRes.data.map((n: any) => ({
+          id: n.id,
+          type: n.type === 'NEW_LEAD' ? 'lead' : n.type === 'DEAL_UPDATE' ? 'deal' : n.type === 'TASK_ASSIGNED' ? 'task' : 'system',
+          title: n.title,
+          message: n.message,
+          time: n.createdAt,
+          read: n.isRead,
+          isRead: n.isRead,
+        }));
+        set({ notifications });
+      }
+
+      // Fetch AI System Prompt
+      try {
+        const promptRes = await supabase.from('AiSystemPrompt').select('*').limit(1).single();
+        if (promptRes.data) {
+          set({
+            systemPrompt: {
+              systemInstruction: promptRes.data.systemInstruction,
+              scopeRestriction: promptRes.data.scopeRestriction,
+              offTopicMessage: promptRes.data.offTopicMessage,
+              hourlyRate: Number(promptRes.data.hourlyRate) || 250000,
+            },
+          });
+        }
+      } catch {}
+
     } catch (err) {
       console.warn('Supabase store fetch warning:', err);
     }
