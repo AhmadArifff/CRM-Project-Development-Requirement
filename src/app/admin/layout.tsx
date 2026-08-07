@@ -56,17 +56,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Skip layout shell for login page
-  if (pathname === '/admin/login') {
-    return <div className="min-h-screen bg-[#060911] text-slate-100 font-sans">{children}</div>;
-  }
-
   // Auth guard: redirect to login if not authenticated
   useEffect(() => {
     if (isHydrated && !isAuthenticated && pathname !== '/admin/login') {
       router.replace('/admin/login');
     }
   }, [isHydrated, isAuthenticated, pathname, router]);
+
+  // Skip layout shell for login page
+  if (pathname === '/admin/login') {
+    return <div className="min-h-screen bg-[#060911] text-slate-100 font-sans">{children}</div>;
+  }
 
   // Show loading spinner while hydrating auth state or redirecting
   if (!isHydrated || (!isAuthenticated && pathname !== '/admin/login')) {
