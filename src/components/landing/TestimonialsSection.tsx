@@ -133,56 +133,63 @@ export const TestimonialsSection: React.FC = () => {
               <motion.div
                 key={t.id}
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="glass-card glass-card-hover rounded-2xl p-6 sm:p-8 border-slate-800/80 shadow-xl flex flex-col justify-between space-y-6 relative overflow-hidden group"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                className="group relative p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 shadow-lg flex flex-col justify-between space-y-6 overflow-hidden hover:border-cyan-500/30 transition-all duration-500 backdrop-blur-xl hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(34,211,238,0.1)]"
               >
-                {/* Quote Icon Accent */}
-                <Quote className="w-16 h-16 text-blue-500/10 absolute -top-2 -right-2 pointer-events-none group-hover:text-cyan-500/20 transition-colors" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+                
+                {/* Glow on hover */}
+                <div className="absolute -inset-x-20 -top-20 h-40 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                <div className="space-y-4">
+                {/* Quote Icon Accent */}
+                <Quote className="w-16 h-16 text-blue-500/5 absolute -top-2 -right-2 pointer-events-none group-hover:text-cyan-500/10 transition-colors duration-500 group-hover:scale-110 group-hover:-rotate-6" />
+
+                <div className="space-y-5 relative z-10">
                   {/* Top Bar: Stars & Category */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/20 border border-white/5">
                       {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
 
-                    <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-blue-500/10 text-cyan-300 border border-blue-500/20 font-mono">
+                    <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-mono tracking-wide shadow-inner">
                       {t.category}
                     </span>
                   </div>
 
                   {/* Quote Body */}
-                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium italic">
+                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-medium italic group-hover:text-white transition-colors duration-300">
                     "{t.quote}"
                   </p>
                 </div>
 
                 {/* Card Footer: Author Profile & Outcome Metric */}
-                <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={t.avatar}
-                      alt={t.author}
-                      className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md"
-                    />
+                <div className="pt-5 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative">
+                      <img
+                        src={t.avatar}
+                        alt={t.author}
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-md group-hover:border-cyan-500/50 transition-colors duration-300"
+                      />
+                      <div className="absolute -bottom-1 -right-1 bg-[#060911] rounded-full p-0.5">
+                        <CheckCircle2 className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
+                      </div>
+                    </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <span>{t.author}</span>
-                        <span title="Verified Client">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/20" />
-                        </span>
+                      <h4 className="text-sm font-bold text-white tracking-tight">
+                        {t.author}
                       </h4>
-                      <p className="text-[10px] text-slate-400">{t.role} • <strong className="text-slate-300">{t.company}</strong></p>
+                      <p className="text-[11px] text-slate-400">{t.role} • <strong className="text-slate-300">{t.company}</strong></p>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-300 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/20 block">
+                  <div className="self-start sm:self-center">
+                    <span className="text-[10px] bg-gradient-to-r from-emerald-500/20 to-emerald-500/5 text-emerald-300 px-3 py-1.5 rounded-lg font-bold border border-emerald-500/20 block shadow-sm whitespace-nowrap">
                       ✓ {t.metrics}
                     </span>
                   </div>
