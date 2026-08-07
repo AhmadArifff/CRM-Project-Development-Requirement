@@ -103,7 +103,7 @@ export interface LandingContentState {
   resetToDefault: () => void;
 }
 
-const initialDefaultState = {
+export const initialDefaultState = {
   hero: {
     badgeText: 'Konsultasi Development & AI PRD Builder #1',
     badgeIcon: 'Zap',

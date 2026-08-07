@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { initialDefaultState } from '../src/store/useLandingContentStore';
 
 const prisma = new PrismaClient();
 
@@ -467,6 +468,34 @@ async function main() {
   });
 
   console.log('✅ Notifications seeded');
+
+  // ===========================================================================
+  // 10. LANDING CONTENT CMS SEED
+  // ===========================================================================
+  console.log('🌱 Seeding Landing Page CMS contents...');
+  
+  const landingSections = [
+    { key: 'HERO', data: initialDefaultState.hero },
+    { key: 'CONSULTING', data: initialDefaultState.consulting },
+    { key: 'CALCULATOR', data: initialDefaultState.rateCalculator },
+    { key: 'PROCESS', data: initialDefaultState.process },
+    { key: 'TESTIMONIALS_HEADER', data: { badgeText: initialDefaultState.testimonials.badgeText, sectionTitle: initialDefaultState.testimonials.sectionTitle, sectionSubhead: initialDefaultState.testimonials.sectionSubhead } },
+    { key: 'TESTIMONIALS', data: initialDefaultState.testimonials.items },
+    { key: 'FOOTER', data: initialDefaultState.footer },
+  ];
+
+  for (const section of landingSections) {
+    await prisma.landingContent.upsert({
+      where: { sectionKey: section.key },
+      update: {},
+      create: {
+        sectionKey: section.key,
+        contentJson: section.data,
+      },
+    });
+  }
+
+  console.log('✅ Landing Page CMS contents seeded');
 
   console.log('\n🎉 All database tables seeded successfully!');
   console.log('📧 Login: ahmadarif@devpulsestudio.dev');
