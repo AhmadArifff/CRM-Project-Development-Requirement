@@ -131,12 +131,12 @@ export default function AdminProfilePage() {
         <div>
           <label className="text-slate-300 font-semibold block mb-1">Hourly Rate Kalkulator Biaya (IDR / Jam)</label>
           <div className="relative">
-            <DollarSign className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-400 font-bold text-xs font-mono">Rp</span>
             <input
               type="number"
               value={rate}
               onChange={(e) => setRate(Number(e.target.value))}
-              className="w-full pl-9 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold focus:outline-none focus:border-cyan-500"
+              className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold focus:outline-none focus:border-cyan-500"
             />
           </div>
           <p className="text-[11px] text-slate-400 mt-1">

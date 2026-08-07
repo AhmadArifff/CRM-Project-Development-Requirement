@@ -201,27 +201,38 @@ export default function LeadsManagementPage() {
                       </select>
                     </td>
 
-                    <td className="p-4 text-slate-400 font-mono text-[11px]">{lead.createdAt}</td>
+                    <td className="p-4 text-slate-300 font-mono text-xs whitespace-nowrap">
+                      {(() => {
+                        try {
+                          const d = new Date(lead.createdAt);
+                          return isNaN(d.getTime()) ? lead.createdAt : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        } catch {
+                          return lead.createdAt;
+                        }
+                      })()}
+                    </td>
 
-                    <td className="p-4 text-right space-x-2">
-                      <button
-                        onClick={() => setSelectedLead(lead)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600/20 text-cyan-300 hover:bg-blue-600/30 border border-blue-500/30 text-xs font-semibold transition-colors"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>Detail & PRD</span>
-                      </button>
-
-                      {lead.status !== 'CONVERTED' && (
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                         <button
-                          onClick={() => convertLeadToDeal(lead.id, 35000000)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 border border-emerald-500/30 text-xs font-semibold transition-colors"
-                          title="Konversi Lead ke Deals Pipeline"
+                          onClick={() => setSelectedLead(lead)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 text-cyan-300 hover:bg-blue-600/35 border border-blue-500/30 text-xs font-semibold transition-all hover:scale-105"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Convert to Deal</span>
+                          <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Detail & PRD</span>
                         </button>
-                      )}
+
+                        {lead.status !== 'CONVERTED' && (
+                          <button
+                            onClick={() => convertLeadToDeal(lead.id, 35000000)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/35 border border-emerald-500/30 text-xs font-semibold transition-all hover:scale-105"
+                            title="Konversi Lead ke Deals Pipeline"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Convert to Deal</span>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

@@ -90,31 +90,31 @@ export const RateCalculatorSection: React.FC = () => {
 
                 {/* Preset Selector */}
                 <div className="space-y-3">
-                  <label className="text-xs text-slate-500 font-bold uppercase tracking-[0.1em] block">Pilih Preset Estimasi Jam Kerja:</label>
+                  <label className="text-xs text-slate-400 font-bold uppercase tracking-[0.1em] block">Pilih Preset Estimasi Jam Kerja:</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {presets.map((p, idx) => (
                       <button
                         key={idx}
                         onClick={() => setEstimatedHours(p.hours)}
-                        className={`p-4 rounded-2xl text-left border transition-all duration-300 relative overflow-hidden group ${
+                        className={`p-3.5 rounded-2xl text-left border transition-all duration-300 relative overflow-hidden group ${
                           estimatedHours === p.hours
-                            ? 'bg-blue-600/20 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
-                            : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-800/60'
+                            ? 'bg-blue-600/25 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.25)]'
+                            : 'bg-slate-900/80 border-slate-700/80 hover:border-slate-500 hover:bg-slate-800/80'
                         }`}
                       >
                         {estimatedHours === p.hours && <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-transparent pointer-events-none" />}
-                        <div className={`font-bold text-xs mb-1 transition-colors ${estimatedHours === p.hours ? 'text-white' : 'text-slate-300'}`}>{p.label}</div>
-                        <div className={`text-[11px] font-mono transition-colors ${estimatedHours === p.hours ? 'text-cyan-300' : 'text-slate-500'}`}>{p.hours} Jam</div>
+                        <div className={`font-bold text-xs mb-1 transition-colors ${estimatedHours === p.hours ? 'text-white' : 'text-slate-200'}`}>{p.label}</div>
+                        <div className={`text-xs font-mono font-semibold transition-colors ${estimatedHours === p.hours ? 'text-cyan-300' : 'text-cyan-400/90'}`}>{p.hours} Jam</div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Hours Custom Range */}
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4 pt-2">
                   <div className="flex justify-between items-end text-sm font-medium">
-                    <label className="text-slate-400">Estimasi Total Jam Kerja:</label>
-                    <span className="font-mono text-white font-extrabold text-xl">{estimatedHours} <span className="text-sm font-normal text-slate-500">Jam Kerja</span></span>
+                    <label className="text-slate-300">Estimasi Total Jam Kerja:</label>
+                    <span className="font-mono text-white font-extrabold text-xl">{estimatedHours} <span className="text-sm font-normal text-slate-400">Jam Kerja</span></span>
                   </div>
                   <div className="relative pt-2 pb-2">
                     <input
@@ -131,21 +131,22 @@ export const RateCalculatorSection: React.FC = () => {
                 </div>
 
                 {/* Result Summary Box - 3D Inset Style */}
-                <div className="relative mt-8 p-6 sm:p-8 rounded-2xl bg-[#060911] shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)] border border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden group">
+                <div className="relative mt-8 p-5 sm:p-6 rounded-2xl bg-[#060911] shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)] border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 overflow-hidden group">
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.1),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                   
-                  <div className="relative z-10">
-                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.1em] block mb-1">Total Estimasi Investasi:</span>
-                    <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight gradient-text-cyan font-mono drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                  <div className="relative z-10 shrink-0">
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-[0.1em] block mb-1">Total Estimasi Investasi:</span>
+                    <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight gradient-text-cyan font-mono drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
                       {formatRupiah(totalEstimate)}
                     </span>
                   </div>
 
                   <Link
                     href="/prd-builder"
-                    className="relative z-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-white text-black font-extrabold text-sm shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-slate-200 hover:scale-105 transition-all duration-300 shrink-0"
+                    className="relative z-10 w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-extrabold text-xs sm:text-sm shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] hover:scale-105 transition-all duration-300 whitespace-nowrap shrink-0"
                   >
-                    <span>{rateCalculator.ctaText}</span>
+                    <Sparkles className="w-4 h-4 text-slate-950" />
+                    <span>Rancang PRD & Estimasi Biaya</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
