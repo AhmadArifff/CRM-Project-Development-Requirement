@@ -21,11 +21,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LeadsManagementPage() {
-  const { leads, addLead, updateLeadStatus, convertLeadToDeal } = useAdminStore();
+  const { leads, addLead, updateLeadStatus, convertLeadToDeal, uploadFile, updateLeadPrdFile } = useAdminStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedLead, setSelectedLead] = useState<LeadItem | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [newLead, setNewLead] = useState({
     name: '',
@@ -53,6 +54,32 @@ export default function LeadsManagementPage() {
     addLead(newLead);
     setIsAddModalOpen(false);
     setNewLead({ name: '', company: '', email: '', phone: '', source: 'LANDING_PAGE', status: 'NEW', appTitle: '' });
+  };
+
+  const handleUploadPrd = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedLead) return;
+
+    setIsUploading(true);
+    try {
+      // 1. Read text locally for preview/saving in DB
+      const text = await file.text();
+      
+      // 2. Upload to Supabase Storage
+      const url = await uploadFile(file);
+      
+      // 3. Update DB
+      await updateLeadPrdFile(selectedLead.id, url, text);
+      
+      // Update local state so it shows up immediately
+      setSelectedLead({ ...selectedLead, prdFileUrl: url, prdContent: text });
+      
+    } catch (error) {
+      console.error(error);
+      alert('Gagal mengunggah file PRD');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const statusBadges: Record<LeadItem['status'], { label: string; color: string }> = {
@@ -243,17 +270,32 @@ export default function LeadsManagementPage() {
               {/* Attached PRD Viewer */}
               {selectedLead.prdContent ? (
                 <div className="space-y-2 pt-2">
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-cyan-400" />
-                    <span>Lampiran Dokumen PRD.md</span>
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-cyan-400" />
+                      <span>Lampiran Dokumen PRD.md</span>
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <a href={selectedLead.prdFileUrl} target="_blank" rel="noreferrer" className="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-cyan-300">
+                        Buka Original
+                      </a>
+                      <label className="cursor-pointer text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-white flex items-center gap-1">
+                        {isUploading ? 'Mengunggah...' : 'Ganti File'}
+                        <input type="file" accept=".md" className="hidden" onChange={handleUploadPrd} disabled={isUploading} />
+                      </label>
+                    </div>
+                  </div>
                   <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-mono overflow-x-auto max-h-60">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedLead.prdContent}</ReactMarkdown>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-center text-xs text-slate-400">
-                  Klien belum melampirkan dokumen PRD.md
+                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-center text-xs text-slate-400 space-y-2">
+                  <p>Klien belum melampirkan dokumen PRD.md</p>
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 text-cyan-300 hover:bg-blue-600/30 border border-blue-500/30 text-[10px] font-semibold transition-colors">
+                    {isUploading ? 'Mengunggah...' : 'Upload Dokumen PRD (.md)'}
+                    <input type="file" accept=".md" className="hidden" onChange={handleUploadPrd} disabled={isUploading} />
+                  </label>
                 </div>
               )}
             </motion.div>

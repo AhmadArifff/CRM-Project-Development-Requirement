@@ -8,10 +8,28 @@ export default function AdminProfilePage() {
   const { currentUser, systemPrompt, setSystemPrompt } = useAdminStore();
   const [name, setName] = useState(currentUser.name);
   const [email, setEmail] = useState(currentUser.email);
+  const [avatar, setAvatar] = useState(currentUser.avatar || '');
   const [rate, setRate] = useState(systemPrompt.hourlyRate);
   const [saved, setSaved] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
+  const { uploadFile } = useAdminStore();
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setIsUploading(true);
+      try {
+        const url = await uploadFile(e.target.files[0]);
+        setAvatar(url);
+      } catch (error) {
+        console.error(error);
+        alert('Gagal mengunggah gambar');
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +45,7 @@ export default function AdminProfilePage() {
         body: JSON.stringify({
           name,
           email,
+          avatar,
           hourlyRate: Number(rate)
         })
       });
@@ -65,7 +84,22 @@ export default function AdminProfilePage() {
         )}
 
         <div className="flex items-center gap-4">
-          <img src={currentUser.avatar} alt="Avatar" className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-700 shadow-xl" />
+          <div className="relative group w-16 h-16">
+            <img src={avatar || 'https://api.dicebear.com/7.x/avataaars/svg'} alt="Avatar" className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-700 shadow-xl" />
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
+              </div>
+            )}
+            <div className="absolute -bottom-1 -right-1 bg-slate-800 p-1 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-700">
+              <label htmlFor="avatar-upload" className="cursor-pointer">
+                <svg className="w-3 h-3 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </label>
+              <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} disabled={isUploading} />
+            </div>
+          </div>
           <div>
             <h3 className="text-base font-bold text-white">{name}</h3>
             <span className="text-xs text-cyan-400 font-semibold">{currentUser.role}</span>

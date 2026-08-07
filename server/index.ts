@@ -13,6 +13,7 @@ import landingRoutes from './routes/landing.routes';
 import aiRoutes from './routes/ai.routes';
 import activitiesRoutes from './routes/activities.routes';
 import notificationsRoutes from './routes/notifications.routes';
+import storageRoutes from './routes/storage.routes';
 
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
@@ -55,6 +56,7 @@ app.use('/api/v1/landing-content', landingRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/activities', activitiesRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
+app.use('/api/v1/storage', storageRoutes);
 
 // Global 404 Handler
 app.use((req: Request, res: Response) => {

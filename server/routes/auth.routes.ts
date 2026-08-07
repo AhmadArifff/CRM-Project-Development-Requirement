@@ -110,7 +110,7 @@ import { authenticateToken, AuthRequest } from '../middleware/auth.middleware';
 // PUT /api/v1/auth/profile — Update user profile
 router.put('/profile', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { name, email, hourlyRate } = req.body;
+    const { name, email, hourlyRate, avatar } = req.body;
     const userId = req.user.id;
 
     const user = await prisma.user.update({
@@ -118,6 +118,7 @@ router.put('/profile', authenticateToken, async (req: AuthRequest, res: Response
       data: {
         name,
         email,
+        avatar: avatar !== undefined ? avatar : undefined,
         hourlyRate: hourlyRate !== undefined ? Number(hourlyRate) : undefined,
       },
     });

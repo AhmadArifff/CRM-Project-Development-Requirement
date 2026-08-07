@@ -144,6 +144,7 @@ export interface AdminState {
   // Leads CRUD & 1-Click Convert
   addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => Promise<void>;
   updateLeadStatus: (id: string, status?: any, notes?: any) => Promise<void>;
+  updateLeadPrdFile: (leadId: string, prdFileUrl: string, prdContent?: string) => Promise<void>;
   convertLeadToDeal: (leadId: string, dealValue?: number) => Promise<void>;
 
   // Deals Pipeline
@@ -180,6 +181,9 @@ export interface AdminState {
 
   // API Fetch
   fetchFromSupabase: () => Promise<void>;
+  
+  // Storage
+  uploadFile: (file: File) => Promise<string>;
 }
 
 const guestUser: AdminUser = {
@@ -282,10 +286,27 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         systemPrompt: { ...state.systemPrompt, systemInstruction: prompt },
       }));
     } else {
-      set((state) => ({
-        systemPrompt: { ...state.systemPrompt, ...prompt },
-      }));
+      set({ systemPrompt: { ...get().systemPrompt, ...prompt } });
     }
+  },
+
+  uploadFile: async (file: File) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('devpulse_token') : null;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    const res = await fetch(`${apiUrl}/api/v1/storage/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Upload failed');
+    return data.url;
   },
 
   // =====================================================================
@@ -327,6 +348,20 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       });
     } catch (err) {
       console.warn('API lead status update warning:', err);
+    }
+  },
+
+  updateLeadPrdFile: async (leadId, prdFileUrl, prdContent) => {
+    try {
+      await apiFetch(`/api/v1/leads/${leadId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ prdFileUrl, prdContent }),
+      });
+      set((state) => ({
+        leads: state.leads.map((l) => (l.id === leadId ? { ...l, prdFileUrl, prdContent } : l)),
+      }));
+    } catch (error) {
+      console.error('Update PRD File gagal:', error);
     }
   },
 
