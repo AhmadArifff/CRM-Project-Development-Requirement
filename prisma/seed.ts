@@ -341,6 +341,16 @@ async function main() {
       selectedModel: 'claude-3-5-sonnet',
       availableModels: ['claude-3-5-sonnet', 'claude-3-haiku'],
     },
+    {
+      id: 'ai_seed_004',
+      providerKey: 'OPENROUTER',
+      name: 'OpenRouter Unified AI',
+      apiKey: 'sk-or-v1-****',
+      isActive: false,
+      isDefault: false,
+      selectedModel: 'google/gemini-2.0-flash-exp:free',
+      availableModels: ['google/gemini-2.0-flash-exp:free', 'meta-llama/llama-3.3-70b-instruct:free', 'deepseek/deepseek-chat:free'],
+    },
   ];
 
   for (const provider of aiProviders) {
