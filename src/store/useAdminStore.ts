@@ -196,8 +196,8 @@ const defaultSystemPromptObj: SystemPromptConfig = {
   hourlyRate: 250000,
 };
 
-// Helper fetch to add authorization token
-const apiFetch = async (url: string, options: RequestInit = {}) => {
+// Helper fetch to add authorization token and bypass Next.js proxy
+const apiFetch = async (urlPath: string, options: RequestInit = {}) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('devpulse_token') : null;
   const headers = {
     'Content-Type': 'application/json',
@@ -205,6 +205,9 @@ const apiFetch = async (url: string, options: RequestInit = {}) => {
     ...options.headers,
   };
   
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+  const url = urlPath.startsWith('http') ? urlPath : `${apiUrl}${urlPath}`;
+
   const res = await fetch(url, { ...options, headers });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'API request failed');
@@ -290,15 +293,26 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addLead: async (leadData) => {
+    const tempId = `temp_${Date.now()}`;
+    const optimisticLead = { 
+      ...leadData, 
+      id: tempId, 
+      status: leadData.status || 'NEW',
+      source: leadData.source || 'LANDING_PAGE',
+      createdAt: new Date().toLocaleString() 
+    } as LeadItem;
+    set((state) => ({ leads: [optimisticLead, ...state.leads] }));
+
     try {
       const data = await apiFetch('/api/v1/leads', {
         method: 'POST',
         body: JSON.stringify(leadData),
       });
       const newLead = { ...data.lead, id: data.lead.id, createdAt: new Date(data.lead.createdAt).toLocaleString() };
-      set((state) => ({ leads: [newLead, ...state.leads] }));
+      set((state) => ({ leads: state.leads.map(l => l.id === tempId ? newLead : l) }));
     } catch (err) {
       console.warn('API lead save warning:', err);
+      set((state) => ({ leads: state.leads.filter(l => l.id !== tempId) }));
     }
   },
 
@@ -347,24 +361,29 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addDeal: async (dealData) => {
+    const tempId = `temp_${Date.now()}`;
+    const optimisticDeal = {
+      ...dealData,
+      id: tempId,
+      clientName: dealData.clientName || 'N/A',
+      company: dealData.company || 'N/A',
+      value: dealData.value || 0,
+      stage: dealData.stage || 'NEW_LEAD',
+      expectedClose: '2026-09-15',
+      notes: dealData.description,
+    };
+    set((state) => ({ deals: [optimisticDeal, ...state.deals] }));
+
     try {
       const data = await apiFetch('/api/v1/deals', {
         method: 'POST',
         body: JSON.stringify(dealData),
       });
-      const newDeal = {
-        id: data.deal.id,
-        title: data.deal.title,
-        clientName: dealData.clientName || 'N/A',
-        company: dealData.company || 'N/A',
-        value: data.deal.value,
-        stage: data.deal.stage,
-        expectedClose: '2026-09-15',
-        notes: data.deal.description,
-      };
-      set((state) => ({ deals: [newDeal, ...state.deals] }));
+      const newDeal = { ...optimisticDeal, id: data.deal.id };
+      set((state) => ({ deals: state.deals.map(d => d.id === tempId ? newDeal : d) }));
     } catch (err) {
       console.warn('API deal insert warning:', err);
+      set((state) => ({ deals: state.deals.filter(d => d.id !== tempId) }));
     }
   },
 
@@ -389,8 +408,22 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addTask: async (taskData) => {
+    const currentUser = get().currentUser;
+    const tempId = `temp_${Date.now()}`;
+    const optimisticTask: TaskItem = {
+      ...taskData,
+      id: tempId,
+      assignee: currentUser.name,
+      projectName: 'DevPulse Studio',
+      coverGradient: 'from-blue-600 to-indigo-600',
+      labels: [],
+      checklists: [],
+      comments: [],
+      attachments: [],
+    };
+    set((state) => ({ tasks: [optimisticTask, ...state.tasks] }));
+
     try {
-      const currentUser = get().currentUser;
       const data = await apiFetch('/api/v1/tasks', {
         method: 'POST',
         body: JSON.stringify({
@@ -398,25 +431,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           assigneeId: currentUser.id || 'usr_admin_ahmad_001'
         }),
       });
-      
-      const newTask: TaskItem = {
-        id: data.task.id,
-        title: data.task.title,
-        description: data.task.description || '',
-        status: data.task.status,
-        priority: data.task.priority,
-        dueDate: data.task.dueDate,
-        assignee: currentUser.name,
-        projectName: 'DevPulse Studio',
-        coverGradient: 'from-blue-600 to-indigo-600',
-        labels: [],
-        checklists: [],
-        comments: [],
-        attachments: [],
-      };
-      set((state) => ({ tasks: [newTask, ...state.tasks] }));
+      const newTask = { ...optimisticTask, id: data.task.id };
+      set((state) => ({ tasks: state.tasks.map(t => t.id === tempId ? newTask : t) }));
     } catch (err) {
       console.warn('API task insert warning:', err);
+      set((state) => ({ tasks: state.tasks.filter(t => t.id !== tempId) }));
     }
   },
 
@@ -565,8 +584,17 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   // =====================================================================
 
   addActivity: async (actData) => {
+    const currentUser = get().currentUser;
+    const tempId = `temp_${Date.now()}`;
+    const optimisticAct: ActivityItem = {
+      ...actData,
+      id: tempId,
+      description: actData.description || '',
+      date: new Date().toLocaleString(),
+    };
+    set((state) => ({ activities: [optimisticAct, ...state.activities] }));
+
     try {
-      const currentUser = get().currentUser;
       const data = await apiFetch('/api/v1/activities', {
         method: 'POST',
         body: JSON.stringify({
@@ -574,16 +602,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           userId: currentUser.id || 'usr_admin_ahmad_001'
         }),
       });
-      const newAct = {
-        id: data.data.id,
-        type: data.data.type,
-        title: data.data.title,
-        description: data.data.description || '',
-        date: new Date().toLocaleString(),
-      };
-      set((state) => ({ activities: [newAct, ...state.activities] }));
+      const newAct = { ...optimisticAct, id: data.data.id };
+      set((state) => ({ activities: state.activities.map(a => a.id === tempId ? newAct : a) }));
     } catch (err) {
       console.warn('API activity insert warning:', err);
+      set((state) => ({ activities: state.activities.filter(a => a.id !== tempId) }));
     }
   },
 

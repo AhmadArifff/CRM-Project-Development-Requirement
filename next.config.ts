@@ -1,14 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/v1/:path*',
-        destination: `http://127.0.0.1:5000/api/v1/:path*`,
-      },
-    ];
-  },
+  // Removed proxy to allow direct Express API calls for better dev performance
 };
 
 export default nextConfig;
