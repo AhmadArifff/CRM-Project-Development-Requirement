@@ -193,12 +193,17 @@ export default function FigmaVisualCMSPage() {
     removeTestimonialItem,
     updateFooter,
     resetToDefault,
+    fetchContentFromSupabase,
   } = useLandingContentStore();
 
   const [selectedSection, setSelectedSection] = useState<'HERO' | 'CONSULTING' | 'CALCULATOR' | 'PROCESS' | 'TESTIMONIALS' | 'FOOTER'>('HERO');
   const [deviceViewport, setDeviceViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [zoomScale, setZoomScale] = useState<number>(100);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchContentFromSupabase();
+  }, [fetchContentFromSupabase]);
 
   // Section Refs Map for Auto-Scrolling Canvas Viewport to Top
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});

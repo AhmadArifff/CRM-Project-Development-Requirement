@@ -6,6 +6,7 @@ import { RateCalculatorSection } from '@/components/landing/RateCalculatorSectio
 import { ProcessSection } from '@/components/landing/ProcessSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { Footer } from '@/components/layout/Footer';
+import { ClientStoreHydration } from '@/components/landing/ClientStoreHydration';
 
 export const metadata = {
   title: 'DevPulse Studio — AI PRD Builder & Digital App Consultancy',
@@ -15,6 +16,7 @@ export const metadata = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#060911] text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
+      <ClientStoreHydration />
       <Navbar />
       <main>
         <HeroSection />
