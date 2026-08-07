@@ -23,8 +23,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       if (token && storedUser) {
         try {
-          // Validate token with backend API
-          const res = await fetch('/api/v1/auth/me', {
+          // Validate token with backend API directly
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+          const res = await fetch(`${apiUrl}/api/v1/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -60,28 +61,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <div className="min-h-screen bg-[#060911] text-slate-100 font-sans">{children}</div>;
   }
 
-  // Show loading spinner while hydrating auth state
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-[#060911] text-slate-100 font-sans flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-slate-400 font-semibold">Memvalidasi sesi login...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Auth guard: redirect to login if not authenticated
-  if (!isAuthenticated) {
-    if (typeof window !== 'undefined') {
+  useEffect(() => {
+    if (isHydrated && !isAuthenticated && pathname !== '/admin/login') {
       router.replace('/admin/login');
     }
+  }, [isHydrated, isAuthenticated, pathname, router]);
+
+  // Show loading spinner while hydrating auth state or redirecting
+  if (!isHydrated || (!isAuthenticated && pathname !== '/admin/login')) {
     return (
       <div className="min-h-screen bg-[#060911] text-slate-100 font-sans flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-slate-400 font-semibold">Mengalihkan ke halaman login...</p>
+          <p className="text-xs text-slate-400 font-semibold">
+            {!isHydrated ? "Memvalidasi sesi login..." : "Mengalihkan ke halaman login..."}
+          </p>
         </div>
       </div>
     );
