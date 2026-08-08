@@ -122,4 +122,4 @@ Proyek ini menggunakan 2 branch utama dengan aturan merge milestone yang ketat:
 
 ## 📄 Lisensi (License)
 
-Proyek ini dilindungi di bawah [Lisensi MIT](LICENSE). Dibuat dengan ❤️ oleh **Ahmad Arif (Developer)** untuk **DevPulse Studio**.
+Proyek ini dilindungi di bawah [Lisensi MIT](LICENSE). Dikembangkan dan disusun sepenuhnya oleh **Ahmad Arif (Lead Developer & Author)** untuk **DevPulse Studio** ([DevPulseStudio.dev](https://devpulsestudio.dev)).
