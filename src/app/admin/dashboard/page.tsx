@@ -19,7 +19,7 @@ import {
 import { motion } from 'framer-motion';
 
 export default function DashboardOverviewPage() {
-  const { leads, deals, tasks, activities } = useAdminStore();
+  const { leads, deals, tasks, activities, currentUser } = useAdminStore();
 
   const totalLeads = leads.length;
   const newLeads = leads.filter((l) => l.status === 'NEW').length;
@@ -47,7 +47,7 @@ export default function DashboardOverviewPage() {
             <span>Admin CRM Analytics & Control Portal</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Selamat Datang Kembali, <span className="gradient-text-cyan">Andi!</span>
+            Selamat Datang Kembali, <span className="gradient-text-cyan">{currentUser.name || 'Admin'}!</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-300">
             Ada <strong className="text-emerald-400">{newLeads} leads baru</strong> dari landing page & <strong className="text-cyan-300">{activeDeals.length} active deals</strong> dalam pipeline.

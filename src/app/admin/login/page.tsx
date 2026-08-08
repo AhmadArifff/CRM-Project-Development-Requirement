@@ -28,33 +28,53 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function AdminLoginPage() {
   const router = useRouter();
   const { login } = useAdminStore();
-  const [email, setEmail] = useState('andi@devpulsestudio.dev');
-  const [password, setPassword] = useState('AdminPass2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const performLogin = async (loginEmail: string, loginPassword: string) => {
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+      const res = await fetch(`${apiUrl}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMsg(data.message || 'Login gagal. Periksa email dan password Anda.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Login successful — store user & token
+      login(data.user, data.token);
+      router.push('/admin/dashboard');
+    } catch (err: any) {
+      setErrorMsg('Tidak dapat terhubung ke server. Pastikan backend sedang berjalan.');
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    setTimeout(() => {
-      login();
-      setIsLoading(false);
-      router.push('/admin/dashboard');
-    }, 700);
+    performLogin(email, password);
   };
 
   const handleQuickDemo = () => {
-    setEmail('andi@devpulsestudio.dev');
-    setPassword('AdminPass2026!');
-    setIsLoading(true);
-    setTimeout(() => {
-      login();
-      setIsLoading(false);
-      router.push('/admin/dashboard');
-    }, 500);
+    setEmail('ahmadarif@devpulsestudio.dev');
+    setPassword('admin123');
+    performLogin('ahmadarif@devpulsestudio.dev', 'admin123');
   };
+
 
   const serviceHighlights = [
     {
@@ -235,6 +255,12 @@ export default function AdminLoginPage() {
           </div>
 
           {/* Login Form */}
+          {errorMsg && (
+            <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 font-bold text-xs flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-4 text-xs">
             <div>
               <label className="text-slate-300 font-semibold block mb-1.5 flex items-center gap-1.5">

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useLandingContentStore, TestimonialCMSItem } from '@/store/useLandingContentStore';
+import { useAdminStore } from '@/store/useAdminStore';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { ConsultingSection } from '@/components/landing/ConsultingSection';
 import { RateCalculatorSection } from '@/components/landing/RateCalculatorSection';
@@ -75,18 +76,23 @@ const ImageUploadPicker: React.FC<{
   const [mode, setMode] = useState<'upload' | 'url'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const { uploadFile } = useAdminStore();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        onChange(dataUrl);
-      }
-    };
-    reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+      const url = await uploadFile(file);
+      onChange(url);
+    } catch (error) {
+      console.error(error);
+      alert('Gagal mengunggah gambar');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -143,10 +149,15 @@ const ImageUploadPicker: React.FC<{
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 text-cyan-300 text-xs font-bold flex items-center justify-center gap-2 hover:border-cyan-400 transition-all"
+                disabled={isUploading}
+                className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 text-cyan-300 text-xs font-bold flex items-center justify-center gap-2 hover:border-cyan-400 transition-all disabled:opacity-50"
               >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Pilih File Gambar Komputer</span>
+                {isUploading ? (
+                  <div className="w-3.5 h-3.5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                <span>{isUploading ? 'Mengunggah...' : 'Pilih File Gambar Komputer'}</span>
               </button>
             </div>
           ) : (
@@ -182,12 +193,17 @@ export default function FigmaVisualCMSPage() {
     removeTestimonialItem,
     updateFooter,
     resetToDefault,
+    fetchContentFromSupabase,
   } = useLandingContentStore();
 
   const [selectedSection, setSelectedSection] = useState<'HERO' | 'CONSULTING' | 'CALCULATOR' | 'PROCESS' | 'TESTIMONIALS' | 'FOOTER'>('HERO');
   const [deviceViewport, setDeviceViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [zoomScale, setZoomScale] = useState<number>(100);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchContentFromSupabase();
+  }, [fetchContentFromSupabase]);
 
   // Section Refs Map for Auto-Scrolling Canvas Viewport to Top
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});

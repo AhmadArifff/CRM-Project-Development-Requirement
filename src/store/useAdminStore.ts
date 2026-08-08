@@ -21,7 +21,7 @@ export interface TaskChecklistItem {
 export interface TaskLabelItem {
   id: string;
   name: string;
-  color: string; // Tailwind color class e.g. bg-cyan-500/20 text-cyan-300 border-cyan-500/30
+  color: string;
 }
 
 export interface TaskAttachmentItem {
@@ -61,32 +61,16 @@ export interface LeadItem {
   company: string;
   email: string;
   phone: string;
-  source: 'LANDING_PAGE' | 'REFERRAL' | 'SOCIAL_MEDIA' | 'DIRECT';
   status: 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'UNQUALIFIED' | 'CONVERTED';
-  createdAt: string;
-  appTitle?: string;
+  source: string;
+  notes?: string;
+  prdFileUrl?: string;
   prdContent?: string;
+  appTitle?: string;
+  createdAt: string;
 }
 
-export interface ActivityItem {
-  id: string;
-  type: 'CALL' | 'EMAIL' | 'MEETING' | 'NOTE' | 'FOLLOW_UP';
-  title: string;
-  description: string;
-  leadName?: string;
-  date: string;
-}
-
-export interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-  type: 'LEAD' | 'DEAL' | 'TASK' | 'SYSTEM';
-}
-
-export interface AiProviderConfig {
+export interface AiProviderItem {
   id: string;
   providerKey: string;
   name: string;
@@ -97,417 +81,788 @@ export interface AiProviderConfig {
   availableModels: string[];
 }
 
-interface AdminStore {
-  // Auth
+export type AiProviderConfig = AiProviderItem;
+
+export interface ActivityItem {
+  id: string;
+  type: 'CALL' | 'EMAIL' | 'MEETING' | 'NOTE' | 'FOLLOW_UP' | 'call' | 'email' | 'meeting' | 'note';
+  title: string;
+  date: string;
+  description: string;
+  leadName?: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  isRead?: boolean;
+  type: 'lead' | 'deal' | 'task' | 'system';
+}
+
+export interface SystemPromptConfig {
+  systemInstruction: string;
+  scopeRestriction: string;
+  offTopicMessage: string;
+  hourlyRate: number;
+}
+
+export interface AdminUser {
+  id?: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  bio?: string;
+  hourlyRate?: number;
+  timezone?: string;
+}
+
+export interface AdminState {
   isAuthenticated: boolean;
-  currentUser: { name: string; email: string; role: string; avatar: string };
-  login: () => void;
-  logout: () => void;
+  token: string | null;
+  user: AdminUser;
+  currentUser: AdminUser;
 
-  // Master Data Management
-  masterLabels: TaskLabelItem[];
-  addMasterLabel: (name: string, color: string) => void;
-  removeMasterLabel: (id: string) => void;
-
-  // Deals
-  deals: DealItem[];
-  moveDeal: (id: string, newStage: DealItem['stage']) => void;
-  addDeal: (deal: Omit<DealItem, 'id'>) => void;
-
-  // Tasks (Trello Style)
-  tasks: TaskItem[];
-  moveTask: (id: string, newStatus: TaskItem['status']) => void;
-  addTask: (task: Omit<TaskItem, 'id' | 'checklists' | 'attachments' | 'comments'>) => void;
-  toggleChecklistItem: (taskId: string, checklistId: string) => void;
-  addChecklistItem: (taskId: string, text: string) => void;
-  addTaskComment: (taskId: string, author: string, avatar: string, text: string) => void;
-  updateTaskDescription: (taskId: string, description: string) => void;
-
-  // Leads
   leads: LeadItem[];
-  addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => void;
-  updateLeadStatus: (id: string, status: LeadItem['status']) => void;
-  convertLeadToDeal: (leadId: string, dealValue: number) => void;
+  deals: DealItem[];
+  tasks: TaskItem[];
+  activities: ActivityItem[];
+  masterLabels: TaskLabelItem[];
+  aiProviders: AiProviderItem[];
+  notifications: NotificationItem[];
+  systemPrompt: SystemPromptConfig;
+
+  // Actions
+  login: (user: AdminUser, token: string) => void;
+  logout: () => void;
+  setUser: (user: AdminUser) => void;
+  setSystemPrompt: (prompt: Partial<SystemPromptConfig> | string | any) => void;
+
+  // Leads CRUD & 1-Click Convert
+  addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => Promise<void>;
+  updateLeadStatus: (id: string, status?: any, notes?: any) => Promise<void>;
+  updateLeadPrdFile: (leadId: string, prdFileUrl: string, prdContent?: string) => Promise<void>;
+  convertLeadToDeal: (leadId: string, dealValue?: number) => Promise<void>;
+
+  // Deals Pipeline
+  addDeal: (deal: any) => Promise<void>;
+  updateDealStage: (dealId: string, stage: DealItem['stage']) => Promise<void>;
+  moveDeal: (dealId: string, stage: DealItem['stage']) => Promise<void>;
+
+  // Project Tasks
+  addTask: (task: any) => Promise<void>;
+  updateTaskStatus: (taskId: string, status: TaskItem['status']) => Promise<void>;
+  moveTask: (taskId: string, targetStatus: TaskItem['status']) => Promise<void>;
+  toggleChecklistItem: (taskId: string, checklistId: string) => Promise<void>;
+  addChecklistItem: (taskId: string, text: string) => Promise<void>;
+  addTaskComment: (taskId: string, text: string, author?: any, avatar?: any) => Promise<void>;
+  updateTaskDescription: (taskId: string, description: string) => Promise<void>;
+
+  // Master Labels
+  addMasterLabel: (label: any, color?: string) => Promise<void>;
+  deleteMasterLabel: (id: string) => Promise<void>;
+  removeMasterLabel: (id: string) => Promise<void>;
 
   // Activities
-  activities: ActivityItem[];
-  addActivity: (activity: Omit<ActivityItem, 'id'>) => void;
+  addActivity: (act: any) => Promise<void>;
+
+  // AI Providers Toggle
+  toggleAiProvider: (id: string) => Promise<void>;
+  setDefaultAiProvider: (id: string) => Promise<void>;
+  updateAiApiKey: (id: string, key: string) => Promise<void>;
+  updateAiSelectedModel: (id: string, model: string) => Promise<void>;
 
   // Notifications
-  notifications: NotificationItem[];
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
 
-  // AI Providers & System Prompt
-  aiProviders: AiProviderConfig[];
-  toggleAiProvider: (id: string) => void;
-  setDefaultAiProvider: (id: string) => void;
-  updateAiApiKey: (id: string, key: string) => void;
-  updateAiSelectedModel: (id: string, model: string) => void;
-
-  systemPrompt: {
-    systemInstruction: string;
-    scopeRestriction: string;
-    hourlyRate: number;
-    offTopicMessage: string;
-  };
-  setSystemPrompt: (prompt: Partial<AdminStore['systemPrompt']>) => void;
+  // API Fetch
+  fetchFromSupabase: () => Promise<void>;
+  
+  // Storage
+  uploadFile: (file: File) => Promise<string>;
 }
 
-const initialMasterLabels: TaskLabelItem[] = [
-  { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-cyan-300 border-blue-500/30' },
-  { id: 'lbl-2', name: 'Security', color: 'bg-red-500/20 text-red-300 border-red-500/30' },
-  { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-  { id: 'lbl-4', name: 'UI/UX', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  { id: 'lbl-5', name: 'QA & Testing', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-];
-
-const initialDeals: DealItem[] = [
-  { id: 'deal-1', title: 'Aplikasi E-Commerce SuperApp', clientName: 'Budi Santoso', company: 'PT Retail Bangun', value: 45000000, stage: 'NEW_LEAD', expectedClose: '2026-08-25', prdFileUrl: '/prd-sample.md' },
-  { id: 'deal-2', title: 'Portal CRM Management System', clientName: 'Siti Rahma', company: 'CV Logistik Maju', value: 35000000, stage: 'CONTACTED', expectedClose: '2026-08-30' },
-  { id: 'deal-3', title: 'SaaS Analytics Dashboard', clientName: 'Hendra Gunawan', company: 'FinTech Digital', value: 75000000, stage: 'PROPOSAL_SENT', expectedClose: '2026-09-05' },
-  { id: 'deal-4', title: 'Mobile Booking App (Flutter)', clientName: 'Dewi Lestari', company: 'Travelku Corp', value: 50000000, stage: 'NEGOTIATION', expectedClose: '2026-08-20' },
-  { id: 'deal-5', title: 'Custom Inventory Web App', clientName: 'Rudi Wijaya', company: 'Gudang Jaya', value: 30000000, stage: 'WON', expectedClose: '2026-08-10' },
-];
-
-const initialTasks: TaskItem[] = [
-  {
-    id: 'task-1',
-    title: 'Integrasi Supabase Auth & JWT Middleware',
-    description: `## Task Requirement & Security Guide
-
-> [!IMPORTANT]
-> Pastikan refresh token rotation dienkripsi dengan **AES-256-GCM** sebelum disimpan di cookie.
-
-- [x] Konfigurasi Supabase Client SDK
-- [x] Middleware JWT Cookie Handler
-- [ ] Session Lock & Fingerprint Verification
-- [ ] Unit Test Authentication Flow
-
-\`\`\`typescript
-// Sample JWT Refresh Rotation Handler
-export const rotateRefreshToken = async (token: string) => {
-  return await supabase.auth.refreshSession({ refresh_token: token });
+const guestUser: AdminUser = {
+  name: 'Guest',
+  email: '',
+  role: 'GUEST',
+  avatar: '',
 };
-\`\`\`
 
-$$ E_{security} = \sum_{i=1}^{n} (Auth_i + Enkripsi_i) $$`,
-    status: 'IN_PROGRESS',
-    priority: 'HIGH',
-    dueDate: '2026-08-12',
-    assignee: 'Andi Konsultan',
-    projectName: 'CRM Management',
-    coverGradient: 'from-blue-600 via-indigo-600 to-cyan-500',
-    labels: [
-      { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-cyan-300 border-blue-500/30' },
-      { id: 'lbl-2', name: 'Security', color: 'bg-red-500/20 text-red-300 border-red-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-1', text: 'Konfigurasi Supabase Client SDK', isCompleted: true },
-      { id: 'chk-2', text: 'Middleware JWT Cookie Handler', isCompleted: true },
-      { id: 'chk-3', text: 'Session Lock & Fingerprint Verification', isCompleted: false },
-      { id: 'chk-4', text: 'Unit Test Authentication Flow', isCompleted: false },
-    ],
-    attachments: [
-      { id: 'att-1', name: 'PRD_Auth_Specification.md', url: '/PRD.md', size: '64 KB' },
-    ],
-    comments: [
-      { id: 'cmt-1', author: 'Andi Konsultan', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', text: 'Sesi middleware Cookie HttpOnly sudah terpasang. Tinggal verifikasi unit test.', timestamp: '10:15 AM' },
-    ],
+const defaultSystemPromptObj: SystemPromptConfig = {
+  systemInstruction: 'Anda adalah AI PRD Consultant dari DevPulse Studio yang membantu merancang spesifikasi requirement aplikasi.',
+  scopeRestriction: 'Fokus hanya pada perancangan requirement proyek aplikasi.',
+  offTopicMessage: 'Maaf, mari fokus pada perancangan requirement proyek aplikasi Anda.',
+  hourlyRate: 250000,
+};
+
+// Helper fetch to add authorization token and bypass Next.js proxy
+const apiFetch = async (urlPath: string, options: RequestInit = {}) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('devpulse_token') : null;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+  
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+  const url = urlPath.startsWith('http') ? urlPath : `${apiUrl}${urlPath}`;
+
+  const res = await fetch(url, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'API request failed');
+  return data;
+};
+
+export const useAdminStore = create<AdminState>((set, get) => ({
+  // Auth state — default unauthenticated; hydrated from localStorage on client
+  isAuthenticated: false,
+  token: null,
+  user: guestUser,
+  currentUser: guestUser,
+  systemPrompt: defaultSystemPromptObj,
+
+  // ALL data starts empty — populated from database via API
+  activities: [],
+  notifications: [],
+  leads: [],
+  deals: [],
+  tasks: [],
+  masterLabels: [],
+  aiProviders: [],
+
+  // =====================================================================
+  // AUTH ACTIONS
+  // =====================================================================
+
+  login: (user, token) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('devpulse_token', token);
+      localStorage.setItem('devpulse_user', JSON.stringify(user));
+    }
+    set({
+      isAuthenticated: true,
+      token,
+      user,
+      currentUser: user,
+      systemPrompt: { ...get().systemPrompt, hourlyRate: user.hourlyRate || 250000 }
+    });
   },
-  {
-    id: 'task-2',
-    title: 'Desain Kanban Board & Trello Workspace UI',
-    description: `## UI/UX Requirement Document
 
-- [x] Layout Columns Drag & Drop
-- [x] Markdown Rich Renderer Component
-- [ ] Interactive Checklist Card Bar
-- [ ] Filter & Search Workspace Bar`,
-    status: 'TODO',
-    priority: 'MEDIUM',
-    dueDate: '2026-08-15',
-    assignee: 'Frontend Dev',
-    projectName: 'CRM Management',
-    coverGradient: 'from-purple-600 via-indigo-600 to-cyan-400',
-    labels: [
-      { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-      { id: 'lbl-4', name: 'UI/UX', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-5', text: 'Layout Columns Drag & Drop', isCompleted: true },
-      { id: 'chk-6', text: 'Markdown Rich Renderer Component', isCompleted: true },
-      { id: 'chk-7', text: 'Interactive Checklist Card Bar', isCompleted: false },
-      { id: 'chk-8', text: 'Filter & Search Workspace Bar', isCompleted: false },
-    ],
-    attachments: [],
-    comments: [],
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('devpulse_token');
+      localStorage.removeItem('devpulse_user');
+    }
+    set({
+      isAuthenticated: false,
+      token: null,
+      user: guestUser,
+      currentUser: guestUser,
+      leads: [],
+      deals: [],
+      tasks: [],
+      activities: [],
+      notifications: [],
+      masterLabels: [],
+      aiProviders: [],
+    });
   },
-  {
-    id: 'task-3',
-    title: 'Setup Database Prisma Schema & Migration',
-    description: 'Schema database PostgreSQL disiapkan untuk model User, Session, Lead, Deal, Task, Activity, dan AiProvider.',
-    status: 'DONE',
-    priority: 'URGENT',
-    dueDate: '2026-08-08',
-    assignee: 'Andi Konsultan',
-    projectName: 'CRM Management',
-    coverGradient: 'from-emerald-600 to-teal-500',
-    labels: [
-      { id: 'lbl-1', name: 'Backend', color: 'bg-blue-500/20 text-cyan-300 border-blue-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-9', text: 'Database Migration Script', isCompleted: true },
-    ],
-    attachments: [],
-    comments: [],
+
+  setUser: (user) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('devpulse_user', JSON.stringify(user));
+    }
+    set({ user, currentUser: user });
   },
-  {
-    id: 'task-4',
-    title: 'Testing Guardrail Simulator AI (Strict Scope)',
-    description: 'Memastikan prompt injection menolak pertanyaan off-topic seperti resep atau cuaca.',
-    status: 'REVIEW',
-    priority: 'HIGH',
-    dueDate: '2026-08-14',
-    assignee: 'QA Team',
-    projectName: 'CRM Management',
-    coverGradient: 'from-amber-600 to-red-600',
-    labels: [
-      { id: 'lbl-5', name: 'QA & Testing', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-    ],
-    checklists: [
-      { id: 'chk-10', text: 'Test Off-Topic Rejection', isCompleted: true },
-      { id: 'chk-11', text: 'Test Dynamic Rate Injection', isCompleted: true },
-    ],
-    attachments: [],
-    comments: [],
+
+  setSystemPrompt: (prompt) => {
+    if (typeof prompt === 'string') {
+      set((state) => ({
+        systemPrompt: { ...state.systemPrompt, systemInstruction: prompt },
+      }));
+    } else {
+      set({ systemPrompt: { ...get().systemPrompt, ...prompt } });
+    }
   },
-  {
-    id: 'task-5',
-    title: 'Optimasi Responsive Mobile & Tablet View',
-    description: 'Memastikan antarmuka CRM berjalan lancar pada perangkat mobile.',
-    status: 'BACKLOG',
-    priority: 'LOW',
-    dueDate: '2026-08-18',
-    assignee: 'Frontend Dev',
-    projectName: 'CRM Management',
-    labels: [
-      { id: 'lbl-3', name: 'Frontend', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-    ],
-    checklists: [],
-    attachments: [],
-    comments: [],
+
+  uploadFile: async (file: File) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('devpulse_token') : null;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    const res = await fetch(`${apiUrl}/api/v1/storage/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Upload failed');
+    return data.url;
   },
-];
 
-const initialLeads: LeadItem[] = [
-  { id: 'lead-1', name: 'Budi Santoso', company: 'PT Retail Bangun', email: 'budi@retailbangun.co.id', phone: '+62 812-3456-7890', source: 'LANDING_PAGE', status: 'NEW', createdAt: '2026-08-06 09:30', appTitle: 'Aplikasi E-Commerce SuperApp', prdContent: '# PRD E-Commerce SuperApp\n\n## 1. Scope Fitur\n- Auth User\n- Payment Gateway Midtrans' },
-  { id: 'lead-2', name: 'Siti Rahma', company: 'CV Logistik Maju', email: 'siti@logistikmaju.id', phone: '+62 813-9876-5432', source: 'LANDING_PAGE', status: 'CONTACTED', createdAt: '2026-08-05 14:15', appTitle: 'Portal CRM Management System' },
-  { id: 'lead-3', name: 'Hendra Gunawan', company: 'FinTech Digital', email: 'hendra@fintechdigital.com', phone: '+62 811-2233-4455', source: 'REFERRAL', status: 'QUALIFIED', createdAt: '2026-08-04 11:00' },
-];
+  // =====================================================================
+  // LEADS CRUD
+  // =====================================================================
 
-const initialActivities: ActivityItem[] = [
-  { id: 'act-1', type: 'MEETING', title: 'Konsultasi Requirement PRD dengan Budi', description: 'Membahas scope MVP dan integrasi payment gateway Midtrans.', leadName: 'Budi Santoso', date: '2026-08-06 10:00' },
-  { id: 'act-2', type: 'CALL', title: 'Follow-up Penawaran Proposal CRM', description: 'Klien menanyakan rincian durasi 120 jam kerja.', leadName: 'Siti Rahma', date: '2026-08-05 16:30' },
-  { id: 'act-3', type: 'NOTE', title: 'Catatan Teknis API Key Security', description: 'Memastikan API Key dienkripsi dengan AES-256-GCM.', date: '2026-08-04 13:00' },
-];
+  addLead: async (leadData) => {
+    const tempId = `temp_${Date.now()}`;
+    const optimisticLead = { 
+      ...leadData, 
+      id: tempId, 
+      status: leadData.status || 'NEW',
+      source: leadData.source || 'LANDING_PAGE',
+      createdAt: new Date().toLocaleString() 
+    } as LeadItem;
+    set((state) => ({ leads: [optimisticLead, ...state.leads] }));
 
-const initialNotifications: NotificationItem[] = [
-  { id: 'notif-1', title: 'Leads Baru dari Landing Page', message: 'Budi Santoso (PT Retail Bangun) telah submit PRD.', time: '5m lalu', isRead: false, type: 'LEAD' },
-  { id: 'notif-2', title: 'Deal Berpindah Stage', message: 'Custom Inventory Web App berpindah ke stage WON.', time: '1j lalu', isRead: false, type: 'DEAL' },
-  { id: 'notif-3', title: 'Reminder Deadline Task', message: 'Task "Testing Guardrail Simulator AI" mendekati deadline.', time: '3j lalu', isRead: true, type: 'TASK' },
-];
-
-const initialAiProviders: AiProviderConfig[] = [
-  { id: 'p-1', providerKey: 'GEMINI', name: 'Google Gemini AI', apiKey: 'sk-gemini-****8921', isActive: true, isDefault: true, selectedModel: 'gemini-1.5-flash', availableModels: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-ultra'] },
-  { id: 'p-2', providerKey: 'OPENAI', name: 'OpenAI GPT', apiKey: 'sk-proj-****4102', isActive: true, isDefault: false, selectedModel: 'gpt-4o-mini', availableModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'] },
-  { id: 'p-3', providerKey: 'ANTHROPIC', name: 'Anthropic Claude', apiKey: 'sk-ant-****9912', isActive: false, isDefault: false, selectedModel: 'claude-3-5-sonnet', availableModels: ['claude-3-5-sonnet', 'claude-3-haiku'] },
-  { id: 'p-4', providerKey: 'GROQ', name: 'Groq Llama-3', apiKey: 'gsk_****7712', isActive: false, isDefault: false, selectedModel: 'llama-3.1-70b-versatile', availableModels: ['llama-3.1-70b-versatile', 'mixtral-8x7b'] },
-  { id: 'p-5', providerKey: 'DEEPSEEK', name: 'DeepSeek AI', apiKey: 'sk-ds-****3311', isActive: false, isDefault: false, selectedModel: 'deepseek-chat', availableModels: ['deepseek-chat', 'deepseek-coder'] },
-];
-
-export const useAdminStore = create<AdminStore>((set, get) => ({
-  isAuthenticated: true,
-  currentUser: {
-    name: 'Andi Konsultan',
-    email: 'andi@crm-project.dev',
-    role: 'Super Admin / Owner',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    try {
+      const data = await apiFetch('/api/v1/leads', {
+        method: 'POST',
+        body: JSON.stringify(leadData),
+      });
+      const newLead = { ...data.lead, id: data.lead.id, createdAt: new Date(data.lead.createdAt).toLocaleString() };
+      set((state) => ({ leads: state.leads.map(l => l.id === tempId ? newLead : l) }));
+    } catch (err) {
+      console.warn('API lead save warning:', err);
+      set((state) => ({ leads: state.leads.filter(l => l.id !== tempId) }));
+    }
   },
-  login: () => set({ isAuthenticated: true }),
-  logout: () => set({ isAuthenticated: false }),
 
-  // Dynamic Master Labels
-  masterLabels: initialMasterLabels,
-  addMasterLabel: (name, color) =>
+  updateLeadStatus: async (id, status = 'CONTACTED', notes) => {
     set((state) => ({
-      masterLabels: [...state.masterLabels, { id: `lbl-${Date.now()}`, name, color }],
-    })),
-  removeMasterLabel: (id) =>
-    set((state) => ({
-      masterLabels: state.masterLabels.filter((l) => l.id !== id),
-    })),
+      leads: state.leads.map((l) => (l.id === id ? { ...l, status, notes: notes || l.notes } : l)),
+    }));
+    try {
+      await apiFetch(`/api/v1/leads/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, notes }),
+      });
+    } catch (err) {
+      console.warn('API lead status update warning:', err);
+    }
+  },
 
-  deals: initialDeals,
-  moveDeal: (id, newStage) =>
-    set((state) => ({
-      deals: state.deals.map((d) => (d.id === id ? { ...d, stage: newStage } : d)),
-    })),
-  addDeal: (deal) =>
-    set((state) => ({
-      deals: [...state.deals, { ...deal, id: `deal-${Date.now()}` }],
-    })),
+  updateLeadPrdFile: async (leadId, prdFileUrl, prdContent) => {
+    try {
+      await apiFetch(`/api/v1/leads/${leadId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ prdFileUrl, prdContent }),
+      });
+      set((state) => ({
+        leads: state.leads.map((l) => (l.id === leadId ? { ...l, prdFileUrl, prdContent } : l)),
+      }));
+    } catch (error) {
+      console.error('Update PRD File gagal:', error);
+    }
+  },
 
-  tasks: initialTasks,
-  moveTask: (id, newStatus) =>
+  convertLeadToDeal: async (leadId, dealValue = 15000000) => {
+    const lead = get().leads.find((l) => l.id === leadId);
+    if (!lead) return;
+
     set((state) => ({
-      tasks: state.tasks.map((t) => (t.id === id ? { ...t, status: newStatus } : t)),
-    })),
-  addTask: (task) =>
+      leads: state.leads.map((l) => (l.id === leadId ? { ...l, status: 'CONVERTED' } : l)),
+    }));
+
+    try {
+      const data = await apiFetch(`/api/v1/leads/${leadId}/convert`, { method: 'POST' });
+      const newDeal = {
+        id: data.deal.id,
+        title: data.deal.title,
+        clientName: lead.name,
+        company: lead.company || 'N/A',
+        value: data.deal.value,
+        stage: data.deal.stage,
+        expectedClose: '2026-09-15',
+        notes: data.deal.description,
+      };
+      set((state) => ({ deals: [newDeal, ...state.deals] }));
+    } catch (err) {
+      console.warn('API deal convert warning:', err);
+    }
+  },
+
+  // =====================================================================
+  // DEALS PIPELINE
+  // =====================================================================
+
+  addDeal: async (dealData) => {
+    const tempId = `temp_${Date.now()}`;
+    const optimisticDeal = {
+      ...dealData,
+      id: tempId,
+      clientName: dealData.clientName || 'N/A',
+      company: dealData.company || 'N/A',
+      value: dealData.value || 0,
+      stage: dealData.stage || 'NEW_LEAD',
+      expectedClose: '2026-09-15',
+      notes: dealData.description,
+    };
+    set((state) => ({ deals: [optimisticDeal, ...state.deals] }));
+
+    try {
+      const data = await apiFetch('/api/v1/deals', {
+        method: 'POST',
+        body: JSON.stringify(dealData),
+      });
+      const newDeal = { ...optimisticDeal, id: data.deal.id };
+      set((state) => ({ deals: state.deals.map(d => d.id === tempId ? newDeal : d) }));
+    } catch (err) {
+      console.warn('API deal insert warning:', err);
+      set((state) => ({ deals: state.deals.filter(d => d.id !== tempId) }));
+    }
+  },
+
+  updateDealStage: async (dealId, stage) => {
     set((state) => ({
-      tasks: [
-        ...state.tasks,
-        {
-          ...task,
-          id: `task-${Date.now()}`,
-          checklists: [],
-          attachments: [],
-          comments: [],
-        },
-      ],
-    })),
-  toggleChecklistItem: (taskId, checklistId) =>
+      deals: state.deals.map((d) => (d.id === dealId ? { ...d, stage } : d)),
+    }));
+    try {
+      await apiFetch(`/api/v1/deals/${dealId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ stage }),
+      });
+    } catch (err) {
+      console.warn('API deal stage update warning:', err);
+    }
+  },
+
+  moveDeal: async (dealId, stage) => get().updateDealStage(dealId, stage),
+
+  // =====================================================================
+  // PROJECT TASKS
+  // =====================================================================
+
+  addTask: async (taskData) => {
+    const currentUser = get().currentUser;
+    const tempId = `temp_${Date.now()}`;
+    const optimisticTask: TaskItem = {
+      ...taskData,
+      id: tempId,
+      assignee: currentUser.name,
+      projectName: 'DevPulse Studio',
+      coverGradient: 'from-blue-600 to-indigo-600',
+      labels: [],
+      checklists: [],
+      comments: [],
+      attachments: [],
+    };
+    set((state) => ({ tasks: [optimisticTask, ...state.tasks] }));
+
+    try {
+      const data = await apiFetch('/api/v1/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...taskData,
+          assigneeId: currentUser.id || 'usr_admin_ahmad_001'
+        }),
+      });
+      const newTask = { ...optimisticTask, id: data.task.id };
+      set((state) => ({ tasks: state.tasks.map(t => t.id === tempId ? newTask : t) }));
+    } catch (err) {
+      console.warn('API task insert warning:', err);
+      set((state) => ({ tasks: state.tasks.filter(t => t.id !== tempId) }));
+    }
+  },
+
+  updateTaskStatus: async (taskId, status) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, status } : t)),
+    }));
+    try {
+      await apiFetch(`/api/v1/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+    } catch (err) {
+      console.warn('API task status update warning:', err);
+    }
+  },
+
+  moveTask: async (taskId, targetStatus) => get().updateTaskStatus(taskId, targetStatus),
+
+  toggleChecklistItem: async (taskId, checklistId) => {
+    let newStatus = false;
     set((state) => ({
       tasks: state.tasks.map((t) => {
         if (t.id !== taskId) return t;
         return {
           ...t,
-          checklists: t.checklists.map((c) => (c.id === checklistId ? { ...c, isCompleted: !c.isCompleted } : c)),
+          checklists: t.checklists.map((c) => {
+            if (c.id === checklistId) {
+              newStatus = !c.isCompleted;
+              return { ...c, isCompleted: newStatus };
+            }
+            return c;
+          }),
         };
       }),
-    })),
-  addChecklistItem: (taskId, text) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return {
-          ...t,
-          checklists: [...t.checklists, { id: `chk-${Date.now()}`, text, isCompleted: false }],
-        };
-      }),
-    })),
-  addTaskComment: (taskId, author, avatar, text) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) => {
-        if (t.id !== taskId) return t;
-        return {
-          ...t,
-          comments: [
-            ...t.comments,
-            {
-              id: `cmt-${Date.now()}`,
-              author,
-              avatar,
-              text,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            },
-          ],
-        };
-      }),
-    })),
-  updateTaskDescription: (taskId, description) =>
+    }));
+    try {
+      await apiFetch(`/api/v1/tasks/checklists/${checklistId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ completed: newStatus }),
+      });
+    } catch (err) {
+      console.warn('API task checklist update warning:', err);
+    }
+  },
+
+  addChecklistItem: async (taskId, text) => {
+    try {
+      const data = await apiFetch(`/api/v1/tasks/${taskId}/checklists`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+      });
+      
+      const newChecklist = { id: data.checklist.id, text, isCompleted: false };
+      set((state) => ({
+        tasks: state.tasks.map((t) => {
+          if (t.id !== taskId) return t;
+          return { ...t, checklists: [...t.checklists, newChecklist] };
+        }),
+      }));
+    } catch (err) {
+      console.warn('API task checklist add warning:', err);
+    }
+  },
+
+  addTaskComment: async (taskId, text, author, avatar) => {
+    try {
+      const currentUser = get().currentUser;
+      const data = await apiFetch(`/api/v1/tasks/${taskId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({
+          text,
+          authorName: author || currentUser.name,
+          authorAvatar: avatar || currentUser.avatar,
+        }),
+      });
+      
+      const newComment = {
+        id: data.comment.id,
+        author: data.comment.authorName,
+        avatar: data.comment.authorAvatar || '',
+        text,
+        timestamp: 'Baru saja',
+      };
+
+      set((state) => ({
+        tasks: state.tasks.map((t) => {
+          if (t.id !== taskId) return t;
+          return { ...t, comments: [...t.comments, newComment] };
+        }),
+      }));
+    } catch (err) {
+      console.warn('API task comment add warning:', err);
+    }
+  },
+
+  updateTaskDescription: async (taskId, description) => {
     set((state) => ({
       tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, description } : t)),
-    })),
+    }));
+    try {
+      await apiFetch(`/api/v1/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ description }),
+      });
+    } catch (err) {
+      console.warn('API task description update warning:', err);
+    }
+  },
 
-  leads: initialLeads,
-  addLead: (lead) =>
+  // =====================================================================
+  // MASTER LABELS
+  // =====================================================================
+
+  addMasterLabel: async (labelData, colorArg = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30') => {
+    const name = typeof labelData === 'string' ? labelData : labelData.name;
+    const color = typeof labelData === 'string' ? colorArg : (labelData.color || colorArg);
+
+    try {
+      const data = await apiFetch('/api/v1/tasks/master-labels', {
+        method: 'POST',
+        body: JSON.stringify({ name, color, bgClass: 'bg-cyan-500/20', textClass: 'text-cyan-300', borderClass: 'border-cyan-500/30' }),
+      });
+      const newLabel = { id: data.label.id, name: data.label.name, color: data.label.color };
+      set((state) => ({ masterLabels: [...state.masterLabels, newLabel] }));
+    } catch (err) {
+      console.warn('API label insert warning:', err);
+    }
+  },
+
+  deleteMasterLabel: async (id) => {
     set((state) => ({
-      leads: [
-        { ...lead, id: `lead-${Date.now()}`, createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16) },
-        ...state.leads,
-      ],
-    })),
-  updateLeadStatus: (id, status) =>
-    set((state) => ({
-      leads: state.leads.map((l) => (l.id === id ? { ...l, status } : l)),
-    })),
+      masterLabels: state.masterLabels.filter((l) => l.id !== id),
+    }));
+    try {
+      await apiFetch(`/api/v1/tasks/master-labels/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API label delete warning:', err);
+    }
+  },
 
-  convertLeadToDeal: (leadId, dealValue) =>
-    set((state) => {
-      const targetLead = state.leads.find((l) => l.id === leadId);
-      if (!targetLead) return state;
+  removeMasterLabel: async (id) => get().deleteMasterLabel(id),
 
-      const newDealItem: DealItem = {
-        id: `deal-${Date.now()}`,
-        title: targetLead.appTitle || `Deal Proyek — ${targetLead.company}`,
-        clientName: targetLead.name,
-        company: targetLead.company,
-        value: dealValue,
-        stage: 'NEW_LEAD',
-        expectedClose: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-        prdFileUrl: targetLead.prdContent ? '/PRD.md' : undefined,
-      };
+  // =====================================================================
+  // ACTIVITIES
+  // =====================================================================
 
-      return {
-        leads: state.leads.map((l) => (l.id === leadId ? { ...l, status: 'CONVERTED' } : l)),
-        deals: [newDealItem, ...state.deals],
-        notifications: [
-          {
-            id: `notif-${Date.now()}`,
-            title: 'Lead Berhasil Dikonversi!',
-            message: `Lead ${targetLead.name} (${targetLead.company}) telah dikonversi menjadi Deal Baru di Pipeline.`,
-            time: 'Baru saja',
-            isRead: false,
-            type: 'DEAL',
-          },
-          ...state.notifications,
-        ],
-      };
-    }),
+  addActivity: async (actData) => {
+    const currentUser = get().currentUser;
+    const tempId = `temp_${Date.now()}`;
+    const optimisticAct: ActivityItem = {
+      ...actData,
+      id: tempId,
+      description: actData.description || '',
+      date: new Date().toLocaleString(),
+    };
+    set((state) => ({ activities: [optimisticAct, ...state.activities] }));
 
-  activities: initialActivities,
-  addActivity: (activity) =>
-    set((state) => ({
-      activities: [{ ...activity, id: `act-${Date.now()}` }, ...state.activities],
-    })),
+    try {
+      const data = await apiFetch('/api/v1/activities', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...actData,
+          userId: currentUser.id || 'usr_admin_ahmad_001'
+        }),
+      });
+      const newAct = { ...optimisticAct, id: data.data.id };
+      set((state) => ({ activities: state.activities.map(a => a.id === tempId ? newAct : a) }));
+    } catch (err) {
+      console.warn('API activity insert warning:', err);
+      set((state) => ({ activities: state.activities.filter(a => a.id !== tempId) }));
+    }
+  },
 
-  notifications: initialNotifications,
-  markAsRead: (id) =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    })),
-  markAllAsRead: () =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
-    })),
+  // =====================================================================
+  // AI PROVIDERS
+  // =====================================================================
 
-  aiProviders: initialAiProviders,
-  toggleAiProvider: (id) =>
+  toggleAiProvider: async (id) => {
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)),
-    })),
-  setDefaultAiProvider: (id) =>
+    }));
+    try {
+      const target = get().aiProviders.find((p) => p.id === id);
+      if (target) {
+        await apiFetch('/api/v1/ai/providers', {
+          method: 'POST',
+          body: JSON.stringify({ ...target, isActive: target.isActive }),
+        });
+      }
+    } catch (err) {
+      console.warn('API provider toggle warning:', err);
+    }
+  },
+
+  setDefaultAiProvider: async (id) => {
     set((state) => ({
       aiProviders: state.aiProviders.map((p) => ({ ...p, isDefault: p.id === id })),
-    })),
-  updateAiApiKey: (id, key) =>
-    set((state) => ({
-      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, apiKey: key } : p)),
-    })),
-  updateAiSelectedModel: (id, model) =>
-    set((state) => ({
-      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, selectedModel: model } : p)),
-    })),
-
-  systemPrompt: {
-    systemInstruction: 'Anda adalah AI PRD Consultant profesional. Tugas Anda adalah membantu calon klien merancang spesifikasi requirement aplikasi (PRD.md) secara terstruktur.',
-    scopeRestriction: 'Strict Project Guardrail: HANYA jawab percakapan seputar requirement software, scope fitur, platform, server, dan PRD. Tolak percakapan di luar topik proyek aplikasi.',
-    hourlyRate: 250000,
-    offTopicMessage: 'Maaf, saya adalah AI PRD Consultant yang khusus membantu perancangan requirement proyek aplikasi. Mari fokus pada pembahasan fitur dan kebutuhan aplikasi Anda.',
+    }));
   },
-  setSystemPrompt: (prompt) =>
+
+  updateAiApiKey: async (id, apiKey) => {
     set((state) => ({
-      systemPrompt: { ...state.systemPrompt, ...prompt },
-    })),
+      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, apiKey } : p)),
+    }));
+    try {
+      const target = get().aiProviders.find((p) => p.id === id);
+      if (target) {
+        await apiFetch('/api/v1/ai/providers', {
+          method: 'POST',
+          body: JSON.stringify({ ...target, apiKey }),
+        });
+      }
+    } catch (err) {
+      console.warn('API provider update API key warning:', err);
+    }
+  },
+
+  updateAiSelectedModel: async (id, selectedModel) => {
+    set((state) => ({
+      aiProviders: state.aiProviders.map((p) => (p.id === id ? { ...p, selectedModel } : p)),
+    }));
+    try {
+      const target = get().aiProviders.find((p) => p.id === id);
+      if (target) {
+        await apiFetch('/api/v1/ai/providers', {
+          method: 'POST',
+          body: JSON.stringify({ ...target, selectedModel }),
+        });
+      }
+    } catch (err) {
+      console.warn('API provider update model warning:', err);
+    }
+  },
+
+  // =====================================================================
+  // NOTIFICATIONS
+  // =====================================================================
+
+  markAsRead: async (id) => {
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n.id === id ? { ...n, read: true, isRead: true } : n
+      ),
+    }));
+    try {
+      await apiFetch(`/api/v1/notifications/${id}/read`, { method: 'PATCH' });
+    } catch {}
+  },
+
+  markAllAsRead: async () => {
+    set((state) => ({
+      notifications: state.notifications.map((n) => ({ ...n, read: true, isRead: true })),
+    }));
+    try {
+      await apiFetch('/api/v1/notifications/read-all', { method: 'PATCH' });
+    } catch {}
+  },
+
+  // =====================================================================
+  // FETCH ALL DATA FROM API (Not direct Supabase SDK)
+  // =====================================================================
+
+  fetchFromSupabase: async () => {
+    try {
+      const [leadsRes, dealsRes, tasksRes, labelsRes, aiRes, activitiesRes, notificationsRes] = await Promise.all([
+        apiFetch('/api/v1/leads').catch(() => ({ leads: [] })),
+        apiFetch('/api/v1/deals').catch(() => ({ deals: [] })),
+        apiFetch('/api/v1/tasks').catch(() => ({ tasks: [] })),
+        apiFetch('/api/v1/tasks/master-labels').catch(() => ({ labels: [] })),
+        apiFetch('/api/v1/ai/providers').catch(() => ({ providers: [] })),
+        apiFetch('/api/v1/activities').catch(() => ({ data: [] })),
+        apiFetch('/api/v1/notifications').catch(() => ({ data: [] })),
+      ]);
+
+      // Map Leads
+      if (leadsRes.leads && leadsRes.leads.length > 0) {
+        const leads: LeadItem[] = leadsRes.leads.map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          company: l.company || '',
+          email: l.email,
+          phone: l.phone || '',
+          status: l.status,
+          source: l.source || 'LANDING_PAGE',
+          notes: l.notes,
+          prdFileUrl: l.prdFileUrl,
+          appTitle: l.appTitle,
+          createdAt: l.createdAt,
+        }));
+        set({ leads });
+      }
+
+      // Map Deals
+      if (dealsRes.deals && dealsRes.deals.length > 0) {
+        const deals: DealItem[] = dealsRes.deals.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          clientName: d.lead?.name || d.title,
+          company: d.lead?.company || '',
+          value: Number(d.value) || 0,
+          stage: d.stage,
+          expectedClose: d.expectedClose || '',
+          notes: d.description,
+        }));
+        set({ deals });
+      }
+
+      // Map Tasks
+      if (tasksRes.tasks && tasksRes.tasks.length > 0) {
+        const currentUser = get().currentUser;
+        const tasks: TaskItem[] = tasksRes.tasks.map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description || '',
+          status: t.status,
+          priority: t.priority,
+          dueDate: t.dueDate || '',
+          assignee: t.assignee?.name || currentUser.name,
+          projectName: t.projectName || 'DevPulse Studio',
+          coverGradient: t.coverGradient || 'from-blue-600 to-indigo-600',
+          labels: [],
+          checklists: (t.checklists || []).map((c: any) => ({
+            id: c.id,
+            text: c.text,
+            isCompleted: c.completed,
+          })),
+          comments: (t.comments || []).map((c: any) => ({
+            id: c.id,
+            author: c.authorName,
+            avatar: c.authorAvatar || '',
+            text: c.text,
+            timestamp: c.createdAt,
+          })),
+          attachments: [],
+        }));
+        set({ tasks });
+      }
+
+      // Map Labels
+      if (labelsRes.labels && labelsRes.labels.length > 0) {
+        const masterLabels: TaskLabelItem[] = labelsRes.labels.map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          color: l.color,
+        }));
+        set({ masterLabels });
+      }
+
+      // Map AI
+      if (aiRes.providers && aiRes.providers.length > 0) {
+        const aiProviders: AiProviderItem[] = aiRes.providers.map((p: any) => ({
+          id: p.id,
+          providerKey: p.providerKey,
+          name: p.name,
+          apiKey: p.apiKey,
+          isActive: p.isActive,
+          isDefault: p.isDefault,
+          selectedModel: p.selectedModel || '',
+          availableModels: p.availableModels || [],
+        }));
+        set({ aiProviders });
+      }
+
+      // Map Activities
+      if (activitiesRes.data && activitiesRes.data.length > 0) {
+        const activities: ActivityItem[] = activitiesRes.data.map((a: any) => ({
+          id: a.id,
+          type: a.type,
+          title: a.title,
+          description: a.description || '',
+          date: a.date || a.createdAt,
+          leadName: a.leadName,
+        }));
+        set({ activities });
+      }
+
+      // Map Notifications
+      if (notificationsRes.data && notificationsRes.data.length > 0) {
+        const notifications: NotificationItem[] = notificationsRes.data.map((n: any) => ({
+          id: n.id,
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          time: n.time,
+          read: n.read,
+          isRead: n.isRead,
+        }));
+        set({ notifications });
+      }
+    } catch (error) {
+      console.error('Failed to fetch from API:', error);
+    }
+  },
 }));

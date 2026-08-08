@@ -9,21 +9,22 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 glass-nav transition-all">
+    <header className="sticky top-0 z-50 bg-[#060911]/60 backdrop-blur-2xl border-b border-white/5 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <Rocket className="w-5 h-5 text-cyan-400 group-hover:rotate-12 transition-transform" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-[1px] shadow-[0_0_20px_rgba(59,130,246,0.3)] group-hover:shadow-[0_0_25px_rgba(34,211,238,0.5)] transition-all duration-500">
+              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <Rocket className="w-5 h-5 text-cyan-400 group-hover:scale-110 group-hover:-translate-y-0.5 group-hover:rotate-12 transition-transform duration-500" />
               </div>
             </div>
             <div>
-              <span className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
-                DevPulse<span className="gradient-text-cyan">Studio</span>
+              <span className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5 group-hover:text-cyan-50 transition-colors">
+                DevPulse<span className="text-cyan-400">Studio</span>
               </span>
-              <span className="text-[10px] tracking-widest text-slate-400 uppercase font-medium block">
+              <span className="text-[10px] tracking-[0.2em] text-slate-400 uppercase font-medium block opacity-80 group-hover:opacity-100 transition-opacity">
                 AI PRD & App Consultancy
               </span>
             </div>
@@ -31,31 +32,27 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#layanan" className="hover:text-cyan-400 transition-colors">
-              Analisis Platform
-            </a>
-            <a href="#server" className="hover:text-cyan-400 transition-colors">
-              Opsi Server
-            </a>
-            <a href="#calculator" className="hover:text-cyan-400 transition-colors">
-              Kalkulator Biaya
-            </a>
-            <a href="#testimonials" className="hover:text-cyan-400 transition-colors">
-              Testimoni Klien
-            </a>
-            <a href="#alur" className="hover:text-cyan-400 transition-colors">
-              Alur Kerja
-            </a>
+            {['Analisis Platform', 'Opsi Server', 'Kalkulator Biaya', 'Testimoni Klien', 'Alur Kerja'].map((item, idx) => {
+              const hrefs = ['#layanan', '#server', '#calculator', '#testimonials', '#alur'];
+              return (
+                <a key={idx} href={hrefs[idx]} className="relative group text-slate-300 hover:text-white transition-colors py-2">
+                  {item}
+                  <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-cyan-400 group-hover:w-full transition-all duration-300 ease-out rounded-full" />
+                </a>
+              );
+            })}
           </nav>
 
           {/* Action CTA */}
           <div className="hidden sm:flex items-center gap-4">
             <Link
               href="/prd-builder"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all glow-button"
+              className="group relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all duration-300 overflow-hidden"
             >
-              <Sparkles className="w-4 h-4 text-cyan-200 animate-pulse" />
-              <span>Buat PRD dengan AI</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 transition-transform duration-500 group-hover:scale-[1.05]" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] transition-opacity duration-500" />
+              <Sparkles className="w-4 h-4 text-cyan-200 relative z-10 animate-pulse group-hover:animate-none group-hover:scale-110 transition-transform duration-300" />
+              <span className="relative z-10">Buat PRD dengan AI</span>
             </Link>
           </div>
 
@@ -63,7 +60,7 @@ export const Navbar: React.FC = () => {
           <div className="flex md:hidden items-center gap-3">
             <Link
               href="/prd-builder"
-              className="p-2 rounded-lg bg-blue-600/20 text-cyan-400 border border-blue-500/30 text-xs font-semibold"
+              className="px-3 py-1.5 rounded-lg bg-blue-600/10 text-cyan-400 border border-blue-500/20 text-xs font-semibold backdrop-blur-md"
             >
               AI PRD
             </Link>

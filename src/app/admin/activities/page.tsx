@@ -26,11 +26,15 @@ export default function SalesActivitiesPage() {
     setNewActivity({ type: 'CALL', title: '', description: '', leadName: '', date: new Date().toISOString().replace('T', ' ').slice(0, 16) });
   };
 
-  const activityIcons: Record<ActivityItem['type'], { icon: any; color: string }> = {
+  const activityIcons: Record<string, { icon: any; color: string }> = {
     CALL: { icon: Phone, color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+    call: { icon: Phone, color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
     EMAIL: { icon: Mail, color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' },
+    email: { icon: Mail, color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' },
     MEETING: { icon: Calendar, color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
+    meeting: { icon: Calendar, color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
     NOTE: { icon: MessageSquare, color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+    note: { icon: MessageSquare, color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
     FOLLOW_UP: { icon: Clock, color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
   };
 
@@ -59,7 +63,7 @@ export default function SalesActivitiesPage() {
       {/* Activity Timeline Stream */}
       <div className="glass-card rounded-2xl p-6 border-slate-800/80 space-y-4">
         {activities.map((act) => {
-          const Config = activityIcons[act.type];
+          const Config = activityIcons[act.type] || activityIcons['CALL'];
           const Icon = Config.icon;
 
           return (

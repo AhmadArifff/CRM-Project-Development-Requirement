@@ -757,7 +757,7 @@
       "label": "prisma",
       "file_type": "code",
       "source_file": "prisma/seed.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "_origin": "ast"
     },
     {
@@ -765,7 +765,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "prisma/seed.ts",
-      "source_location": "L5",
+      "source_location": "L6",
       "_origin": "ast"
     },
     {
@@ -781,7 +781,7 @@
       "label": "app",
       "file_type": "code",
       "source_file": "server/index.ts",
-      "source_location": "L14",
+      "source_location": "L16",
       "_origin": "ast"
     },
     {
@@ -789,7 +789,7 @@
       "label": "apiLimiter",
       "file_type": "code",
       "source_file": "server/index.ts",
-      "source_location": "L28",
+      "source_location": "L30",
       "_origin": "ast"
     },
     {
@@ -798,6 +798,22 @@
       "file_type": "code",
       "source_file": "server/lib/prisma.ts",
       "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_activities_routes",
+      "label": "activities.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_activities_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L4",
       "_origin": "ast"
     },
     {
@@ -877,6 +893,22 @@
       "label": "router",
       "file_type": "code",
       "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_notifications_routes",
+      "label": "notifications.routes.ts",
+      "file_type": "code",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "server_routes_notifications_routes_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "server/routes/notifications.routes.ts",
       "source_location": "L4",
       "_origin": "ast"
     },
@@ -1485,7 +1517,7 @@
       "label": "DealItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "_origin": "ast"
     },
     {
@@ -1493,7 +1525,7 @@
       "label": "TaskChecklistItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast"
     },
     {
@@ -1501,7 +1533,7 @@
       "label": "TaskLabelItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L21",
+      "source_location": "L22",
       "_origin": "ast"
     },
     {
@@ -1509,7 +1541,7 @@
       "label": "TaskAttachmentItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast"
     },
     {
@@ -1517,7 +1549,7 @@
       "label": "TaskCommentItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "_origin": "ast"
     },
     {
@@ -1525,7 +1557,7 @@
       "label": "TaskItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L42",
+      "source_location": "L43",
       "_origin": "ast"
     },
     {
@@ -1533,23 +1565,15 @@
       "label": "LeadItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_activityitem",
-      "label": "ActivityItem",
+      "id": "src_store_useadminstore_aiprovideritem",
+      "label": "AiProviderItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L71",
-      "_origin": "ast"
-    },
-    {
-      "id": "src_store_useadminstore_notificationitem",
-      "label": "NotificationItem",
-      "file_type": "code",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L80",
+      "source_location": "L74",
       "_origin": "ast"
     },
     {
@@ -1557,71 +1581,79 @@
       "label": "AiProviderConfig",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L89",
+      "source_location": "L85",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_adminstore",
-      "label": "AdminStore",
+      "id": "src_store_useadminstore_activityitem",
+      "label": "ActivityItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L100",
+      "source_location": "L87",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialmasterlabels",
-      "label": "initialMasterLabels",
+      "id": "src_store_useadminstore_notificationitem",
+      "label": "NotificationItem",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L157",
+      "source_location": "L96",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialdeals",
-      "label": "initialDeals",
+      "id": "src_store_useadminstore_systempromptconfig",
+      "label": "SystemPromptConfig",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L165",
+      "source_location": "L106",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialtasks",
-      "label": "initialTasks",
+      "id": "src_store_useadminstore_adminuser",
+      "label": "AdminUser",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L173",
+      "source_location": "L113",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialleads",
-      "label": "initialLeads",
+      "id": "src_store_useadminstore_adminstate",
+      "label": "AdminState",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L303",
+      "source_location": "L124",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialactivities",
-      "label": "initialActivities",
+      "id": "src_store_useadminstore_guestuser",
+      "label": "guestUser",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L309",
+      "source_location": "L186",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialnotifications",
-      "label": "initialNotifications",
+      "id": "src_store_useadminstore_defaultsystempromptobj",
+      "label": "defaultSystemPromptObj",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L315",
+      "source_location": "L193",
       "_origin": "ast"
     },
     {
-      "id": "src_store_useadminstore_initialaiproviders",
-      "label": "initialAiProviders",
+      "id": "src_store_useadminstore_getstoredtoken",
+      "label": "getStoredToken()",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L321",
+      "source_location": "L201",
+      "_origin": "ast"
+    },
+    {
+      "id": "src_store_useadminstore_getstoreduser",
+      "label": "getStoredUser()",
+      "file_type": "code",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L206",
       "_origin": "ast"
     },
     {
@@ -1629,7 +1661,7 @@
       "label": "useAdminStore",
       "file_type": "code",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L329",
+      "source_location": "L216",
       "_origin": "ast"
     },
     {
@@ -1645,7 +1677,7 @@
       "label": "TestimonialCMSItem",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "_origin": "ast"
     },
     {
@@ -1653,23 +1685,15 @@
       "label": "LandingContentState",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "_origin": "ast"
     },
     {
-      "id": "src_store_uselandingcontentstore_defaulttestimonialslist",
-      "label": "defaultTestimonialsList",
+      "id": "src_store_uselandingcontentstore_initialdefaultstate",
+      "label": "initialDefaultState",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L93",
-      "_origin": "ast"
-    },
-    {
-      "id": "src_store_uselandingcontentstore_defaultlandingcontent",
-      "label": "defaultLandingContent",
-      "file_type": "code",
-      "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L144",
+      "source_location": "L107",
       "_origin": "ast"
     },
     {
@@ -1677,7 +1701,7 @@
       "label": "useLandingContentStore",
       "file_type": "code",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L209",
+      "source_location": "L199",
       "_origin": "ast"
     },
     {
@@ -3184,11 +3208,22 @@
     },
     {
       "source": "prisma_seed",
+      "target": "ref_bcryptjs",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "prisma/seed.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "prisma_seed",
       "target": "prisma_seed_prisma",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "prisma/seed.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3198,7 +3233,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "prisma/seed.ts",
-      "source_location": "L5",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3325,11 +3360,33 @@
     },
     {
       "source": "server_index",
+      "target": "server_routes_activities_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_notifications_routes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
       "target": "server_index_app",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.ts",
-      "source_location": "L14",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3339,7 +3396,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.ts",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3351,6 +3408,49 @@
       "confidence": "EXTRACTED",
       "source_file": "server/lib/prisma.ts",
       "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_activities_routes",
+      "target": "server_routes_activities_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/activities.routes.ts",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -3587,6 +3687,49 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/routes/leads.routes.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "ref_express",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "server_lib_prisma",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "server_lib_prisma_prisma",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_routes_notifications_routes",
+      "target": "server_routes_notifications_routes_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/notifications.routes.ts",
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
@@ -6277,11 +6420,33 @@
     },
     {
       "source": "src_store_useadminstore",
+      "target": "src_lib_supabase",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_useadminstore",
+      "target": "src_lib_supabase_supabase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_useadminstore",
       "target": "src_store_useadminstore_dealitem",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6291,7 +6456,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6301,7 +6466,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6311,7 +6476,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6321,7 +6486,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6331,7 +6496,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6341,27 +6506,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_activityitem",
+      "target": "src_store_useadminstore_aiprovideritem",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L71",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_notificationitem",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L80",
+      "source_location": "L74",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6371,87 +6526,97 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L89",
+      "source_location": "L85",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_adminstore",
+      "target": "src_store_useadminstore_activityitem",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L100",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialmasterlabels",
+      "target": "src_store_useadminstore_notificationitem",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L157",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialdeals",
+      "target": "src_store_useadminstore_systempromptconfig",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L165",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialtasks",
+      "target": "src_store_useadminstore_adminuser",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L173",
+      "source_location": "L113",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialleads",
+      "target": "src_store_useadminstore_adminstate",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L303",
+      "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialactivities",
+      "target": "src_store_useadminstore_guestuser",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L309",
+      "source_location": "L186",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialnotifications",
+      "target": "src_store_useadminstore_defaultsystempromptobj",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L315",
+      "source_location": "L193",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_useadminstore",
-      "target": "src_store_useadminstore_initialaiproviders",
+      "target": "src_store_useadminstore_getstoredtoken",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L321",
+      "source_location": "L201",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_useadminstore",
+      "target": "src_store_useadminstore_getstoreduser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useAdminStore.ts",
+      "source_location": "L206",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6461,7 +6626,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useAdminStore.ts",
-      "source_location": "L329",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6478,11 +6643,33 @@
     },
     {
       "source": "src_store_uselandingcontentstore",
+      "target": "src_lib_supabase",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useLandingContentStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_uselandingcontentstore",
+      "target": "src_lib_supabase_supabase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/store/useLandingContentStore.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_store_uselandingcontentstore",
       "target": "src_store_uselandingcontentstore_testimonialcmsitem",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6492,27 +6679,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "src_store_uselandingcontentstore",
-      "target": "src_store_uselandingcontentstore_defaulttestimonialslist",
+      "target": "src_store_uselandingcontentstore_initialdefaultstate",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L93",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "src_store_uselandingcontentstore",
-      "target": "src_store_uselandingcontentstore_defaultlandingcontent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L144",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6522,7 +6699,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/store/useLandingContentStore.ts",
-      "source_location": "L209",
+      "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -6954,6 +7131,28 @@
       "_origin": "ast"
     },
     {
+      "source": "server_index",
+      "target": "server_routes_activities_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "server_index",
+      "target": "server_routes_notifications_routes_router",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "src_app_admin_activities_page_salesactivitiespage",
       "target": "src_store_useadminstore_useadminstore",
       "relation": "calls",
@@ -7010,6 +7209,18 @@
       "confidence_score": 1.0,
       "source_file": "src/app/admin/landing-content/page.tsx",
       "source_location": "L185",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "src_app_admin_layout_adminlayout",
+      "target": "src_store_useadminstore_useadminstore",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/admin/layout.tsx",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7261,7 +7472,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/admin/login/page.tsx",
-      "source_location": "L153",
+      "source_location": "L172",
       "weight": 1.0,
       "_origin": "ast"
     },

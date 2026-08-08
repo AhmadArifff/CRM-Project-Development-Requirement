@@ -76,4 +76,21 @@ router.post('/:id/convert', async (req: Request, res: Response): Promise<void> =
   }
 });
 
+// PATCH /api/v1/leads/:id
+router.patch('/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { status, notes } = req.body;
+    const lead = await prisma.lead.update({
+      where: { id: String(req.params.id) },
+      data: {
+        ...(status && { status }),
+        ...(notes !== undefined && { notes }),
+      },
+    });
+    res.json({ success: true, lead });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;

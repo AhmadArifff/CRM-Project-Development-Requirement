@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 
 import authRoutes from './routes/auth.routes';
 import leadsRoutes from './routes/leads.routes';
@@ -10,6 +11,9 @@ import dealsRoutes from './routes/deals.routes';
 import tasksRoutes from './routes/tasks.routes';
 import landingRoutes from './routes/landing.routes';
 import aiRoutes from './routes/ai.routes';
+import activitiesRoutes from './routes/activities.routes';
+import notificationsRoutes from './routes/notifications.routes';
+import storageRoutes from './routes/storage.routes';
 
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +24,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || '*',
   credentials: true,
 }));
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -49,6 +54,9 @@ app.use('/api/v1/deals', dealsRoutes);
 app.use('/api/v1/tasks', tasksRoutes);
 app.use('/api/v1/landing-content', landingRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/activities', activitiesRoutes);
+app.use('/api/v1/notifications', notificationsRoutes);
+app.use('/api/v1/storage', storageRoutes);
 
 // Global 404 Handler
 app.use((req: Request, res: Response) => {
@@ -65,8 +73,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start Express Server
-app.listen(PORT, () => {
-  console.log(`🚀 DevPulse Studio Express API Server running on port ${PORT}`);
+app.listen(Number(PORT), '127.0.0.1', () => {
+  console.log(`🚀 DevPulse Studio Express API Server running on http://127.0.0.1:${PORT}`);
 });
 
 export default app;

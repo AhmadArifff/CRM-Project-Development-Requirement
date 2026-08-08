@@ -39,4 +39,23 @@ router.patch('/:id', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/v1/deals
+router.post('/', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { title, value, stage, leadId, description } = req.body;
+    const deal = await prisma.deal.create({
+      data: {
+        title,
+        value: Number(value),
+        stage: stage || 'NEW_LEAD',
+        leadId,
+        description,
+      },
+    });
+    res.status(201).json({ success: true, deal });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;

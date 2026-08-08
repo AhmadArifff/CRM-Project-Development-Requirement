@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const router = Router();
-const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'devpulse-studio-super-secret-jwt-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'devpulse_studio_super_secret_jwt_key_2026';
 
 // POST /api/v1/auth/login
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
@@ -16,18 +16,19 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Find user by email in database
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      res.status(401).json({ success: false, message: 'Invalid credentials.' });
+      res.status(401).json({ success: false, message: 'Invalid email or password.' });
       return;
     }
 
-    // Compare password (support both plain-text demo and bcrypt hash)
-    const isMatch = password === 'AdminPass2026!' || await bcrypt.compare(password, user.password).catch(() => false);
+    // Compare password with bcrypt hash in database
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      res.status(401).json({ success: false, message: 'Invalid credentials.' });
+      res.status(401).json({ success: false, message: 'Invalid email or password.' });
       return;
     }
 
@@ -38,7 +39,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       { expiresIn: '24h' }
     );
 
-    // Save session
+    // Save session to database
     await prisma.session.create({
       data: {
         userId: user.id,
@@ -57,7 +58,9 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
+        bio: user.bio,
         hourlyRate: user.hourlyRate,
+        timezone: user.timezone,
       },
     });
   } catch (error: any) {
@@ -65,7 +68,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// GET /api/v1/auth/me
+// GET /api/v1/auth/me — Validate token & return user profile from database
 router.get('/me', async (req: Request, res: Response): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
@@ -99,6 +102,30 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
     res.json({ success: true, user });
   } catch (error: any) {
     res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+});
+
+import { authenticateToken, AuthRequest } from '../middleware/auth.middleware';
+
+// PUT /api/v1/auth/profile — Update user profile
+router.put('/profile', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { name, email, hourlyRate, avatar } = req.body;
+    const userId = req.user.id;
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        email,
+        avatar: avatar !== undefined ? avatar : undefined,
+        hourlyRate: hourlyRate !== undefined ? Number(hourlyRate) : undefined,
+      },
+    });
+
+    res.json({ success: true, message: 'Profile updated successfully', user });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
