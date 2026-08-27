@@ -31,6 +31,7 @@ import {
   FastForward,
   Activity,
   CheckCircle2,
+  Lock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -142,6 +143,40 @@ const DevPulseMarkdownComponents = {
   ),
 };
 
+interface ShortcutItem {
+  id: 'auth' | 'payment' | 'websockets' | 'mvp';
+  label: string;
+  appliedLabel: string;
+  prompt: string;
+}
+
+const SHORTCUT_ITEMS: ShortcutItem[] = [
+  {
+    id: 'auth',
+    label: '+ Auth & Security',
+    appliedLabel: '✓ Auth Terpasang',
+    prompt: 'Tambahkan modul Better Auth + JWT Token',
+  },
+  {
+    id: 'payment',
+    label: '+ Payment Gateway',
+    appliedLabel: '✓ Payment Terpasang',
+    prompt: 'Tambahkan integrasi Payment Gateway Midtrans',
+  },
+  {
+    id: 'websockets',
+    label: '+ WebSockets',
+    appliedLabel: '✓ WebSockets Terpasang',
+    prompt: 'Tambahkan sistem Realtime Chat & WebSockets',
+  },
+  {
+    id: 'mvp',
+    label: '⚡ Fast MVP',
+    appliedLabel: '✓ Fast MVP Aktif',
+    prompt: 'Sederhanakan scope ke versi MVP saja',
+  },
+];
+
 export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onOpenSubmission }) => {
   const {
     chatMessages,
@@ -160,6 +195,16 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [copied, setCopied] = useState(false);
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview'>('chat');
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Applied shortcuts tracking to prevent double-clicks & duplicates
+  const [appliedShortcuts, setAppliedShortcuts] = useState<string[]>(() => {
+    const initial: string[] = [];
+    if (prdMarkdown.includes('Better Auth') || prdMarkdown.includes('Modul Keamanan')) initial.push('auth');
+    if (prdMarkdown.includes('Midtrans') || prdMarkdown.includes('Payment Gateway')) initial.push('payment');
+    if (prdMarkdown.includes('WebSockets') || prdMarkdown.includes('Real-Time Communication')) initial.push('websockets');
+    if (prdMarkdown.includes('Fast-Track MVP')) initial.push('mvp');
+    return initial;
+  });
 
   // Typewriter Streaming State
   const [displayPrdMarkdown, setDisplayPrdMarkdown] = useState(prdMarkdown);
@@ -292,7 +337,23 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       let prdAppend = '';
       const lower = text.toLowerCase();
 
-      if (lower.includes('auth') || lower.includes('login') || lower.includes('security')) {
+      const isAuth = lower.includes('auth') || lower.includes('login') || lower.includes('security');
+      const isPayment = lower.includes('payment') || lower.includes('bayar') || lower.includes('midtrans') || lower.includes('xendit');
+      const isRealtime = lower.includes('realtime') || lower.includes('chat') || lower.includes('notifikasi') || lower.includes('websocket');
+      const isMvp = lower.includes('mvp') || lower.includes('sederhana') || lower.includes('fast');
+
+      // 1. Auth & Security Check
+      if (isAuth) {
+        if (prdMarkdown.includes('Modul Keamanan & Better Auth Guard') || appliedShortcuts.includes('auth')) {
+          aiReply = `🔒 **Modul Keamanan & Auth Sudah Terpasang**
+
+Modul otentikasi enterprise **Better Auth + JWT Token Rotation & Session Fingerprinting** sudah aktif di dalam dokumen **PRD.md** (Bagian 5.3). Tidak perlu diduplikasi.`;
+          addChatMessage('ai', aiReply);
+          setIsAiTyping(false);
+          return;
+        }
+
+        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'auth'])));
         aiReply = `🔒 **Modul Keamanan & Auth Berhasil Ditambahkan ke PRD**
 
 - **Teknologi Ditambahkan:** \`Better Auth + JWT Token Rotation & Session Fingerprinting\`
@@ -300,7 +361,7 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 - **Diagram Disertakan:** Alur Otentikasi & Refresh Token Sequence.
 - **Estimasi Tambahan:** +15 Jam Kerja.
 
-> Hasil result telah di-inject ke dokumen **PRD.md** dengan simulasi pengetikan AI.`;
+> Modul telah di-inject ke dokumen **PRD.md** dengan simulasi pengetikan AI.`;
         hoursAdd = 15;
         prdAppend = `\n\n### 5.3 Modul Keamanan & Better Auth Guard
 Modul otentikasi enterprise dengan proteksi anti-tampering dan token rotation:
@@ -325,7 +386,19 @@ sequenceDiagram
 - [ ] **Given** kredensial login valid, **When** pengguna login, **Then** server menerbitkan JWT terenkripsi dengan masa berlaku 15 menit dan HttpOnly cookie.
 - [ ] **Given** token kadaluarsa, **When** request endpoint berikutnya masuk, **Then** middleware otomatis melakukan refresh token tanpa logout paksa.
 `;
-      } else if (lower.includes('payment') || lower.includes('bayar') || lower.includes('midtrans') || lower.includes('xendit')) {
+      } 
+      // 2. Payment Gateway Check
+      else if (isPayment) {
+        if (prdMarkdown.includes('Modul Payment Gateway & Invoicing Otomatis') || appliedShortcuts.includes('payment')) {
+          aiReply = `💳 **Modul Payment Gateway Sudah Terpasang**
+
+Integrasi **Midtrans / Xendit Payment Gateway & Auto Invoicing** sudah aktif di dalam dokumen **PRD.md** (Bagian 5.4). Tidak perlu diduplikasi.`;
+          addChatMessage('ai', aiReply);
+          setIsAiTyping(false);
+          return;
+        }
+
+        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'payment'])));
         aiReply = `💳 **Integrasi Payment Gateway & Auto Invoicing Ditambahkan**
 
 - **Gateway Terpilih:** \`Midtrans / Xendit Integration\`
@@ -361,7 +434,19 @@ sequenceDiagram
 - **Signature Security:** SHA-512 Hash Checksum verification pada setiap webhook callback.
 - **Reconciliation:** Cron job otomatis setiap 1 jam untuk memeriksa transaksi pending.
 `;
-      } else if (lower.includes('realtime') || lower.includes('chat') || lower.includes('notifikasi') || lower.includes('websocket')) {
+      } 
+      // 3. Real-Time WebSockets Check
+      else if (isRealtime) {
+        if (prdMarkdown.includes('Modul Real-Time Communication & WebSockets') || appliedShortcuts.includes('websockets')) {
+          aiReply = `⚡ **Modul Real-Time WebSockets Sudah Terpasang**
+
+Sistem **Real-Time Communication & WebSockets** sudah aktif di dalam dokumen **PRD.md** (Bagian 5.5).`;
+          addChatMessage('ai', aiReply);
+          setIsAiTyping(false);
+          return;
+        }
+
+        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'websockets'])));
         aiReply = `⚡ **Modul Real-Time Communication & WebSockets Ditambahkan**
 
 - **Teknologi:** \`WebSockets / Server-Sent Events (SSE) Engine\`
@@ -393,7 +478,19 @@ flowchart LR
     Server -- "Push Update" --> WS_Client
 \`\`\`
 `;
-      } else if (lower.includes('mvp') || lower.includes('sederhana') || lower.includes('fast')) {
+      } 
+      // 4. Fast MVP Scope Optimization Check
+      else if (isMvp) {
+        if (prdMarkdown.includes('Fast-Track MVP Edition') || appliedShortcuts.includes('mvp')) {
+          aiReply = `⚡ **Scope Sudah Berstatus Fast-Track MVP**
+
+Scope proyek sudah dioptimasi ke standar peluncuran cepat 100 Jam Kerja.`;
+          addChatMessage('ai', aiReply);
+          setIsAiTyping(false);
+          return;
+        }
+
+        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'mvp'])));
         aiReply = `⚡ **Scope Proyek Disederhanakan ke Fast-Track MVP**
 
 - **Fokus Utama:** Fitur Inti (Auth Security, AI PRD Engine, Kanban Workspace).
@@ -406,8 +503,24 @@ flowchart LR
 > - **Fokus Utama:** Peluncuran cepat fitur inti dengan estimasi waktu dipadatkan menjadi **100 Jam Kerja**.
 > - **Total Investasi Disesuaikan:** Rp 25.000.000 (100 Jam × Rp 250.000/jam).
 `;
-      } else {
-        aiReply = `📝 **Fitur Khusus Berhasil Ditambahkan ke PRD**
+      } 
+      // 5. Custom User Prompts (with Deduplication and Dynamic Sub-section numbering)
+      else {
+        const cleanSnippet = text.trim().slice(0, 30);
+        if (prdMarkdown.toLowerCase().includes(cleanSnippet.toLowerCase())) {
+          aiReply = `📝 **Permintaan Teknis Sudah Tercatat**
+
+Spesifikasi mengenai \`${text}\` sudah tercatat di dalam dokumen **PRD.md**. Tidak perlu penambahan ganda.`;
+          addChatMessage('ai', aiReply);
+          setIsAiTyping(false);
+          return;
+        }
+
+        // Calculate dynamic sub-section number (e.g. 5.6, 5.7, ...)
+        const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
+        const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
+
+        aiReply = `📝 **Fitur Khusus Berhasil Ditambahkan ke PRD (Bagian ${nextSubSec})**
 
 Permintaan: \`${text}\` telah dianalisis dan diformulasikan menjadi spesifikasi teknis lengkap dalam dokumen **PRD.md**.
 
@@ -416,7 +529,7 @@ Permintaan: \`${text}\` telah dianalisis dan diformulasikan menjadi spesifikasi 
 
 > Simak simulasi pengetikan AI pada panel dokumen di sebelah kanan!`;
         hoursAdd = 15;
-        prdAppend = `\n\n### 5.6 Modul Kustom: ${text}
+        prdAppend = `\n\n### ${nextSubSec} Modul Kustom: ${text}
 Modul spesifikasi teknis tambahan sesuai kebutuhan bisnis klien:
 
 \`\`\`mermaid
@@ -442,7 +555,12 @@ flowchart TD
       const previousLength = prdMarkdown.length;
       const updatedFullPrd = `${prdMarkdown}${prdAppend}`;
       startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik pembaruan modul "${text.slice(0, 30)}..."`);
-    }, 900);
+    }, 850);
+  };
+
+  const handleResetChat = () => {
+    addChatMessage('ai', 'Riwayat chat telah di-reset. Anda dapat mengetik instruksi atau memilih modul baru.');
+    setAppliedShortcuts([]);
   };
 
   const handleCopyMarkdown = () => {
@@ -530,9 +648,9 @@ flowchart TD
             </div>
 
             <button
-              onClick={() => addChatMessage('ai', 'Silakan ketik instruksi atau revisi fitur untuk PRD Anda.')}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              title="Reset Chat History"
+              onClick={handleResetChat}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Reset Chat & Pintasan"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
@@ -577,7 +695,7 @@ flowchart TD
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 pl-1">
                         <button
                           onClick={() => handleSendMessage('Terapkan rekomendasi ini ke PRD')}
-                          disabled={isPrdStreaming}
+                          disabled={isPrdStreaming || isAiTyping}
                           className="flex items-center gap-1 hover:text-cyan-300 transition-colors cursor-pointer disabled:opacity-50"
                         >
                           <CornerDownRight className="w-3 h-3 text-cyan-400" />
@@ -618,40 +736,38 @@ flowchart TD
             <div ref={chatBottomRef} />
           </div>
 
-          {/* Quick Suggest Chips */}
+          {/* Quick Suggest Chips with Deduplication & Disabled State */}
           <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800/80 flex items-center gap-2 overflow-x-auto text-[11px]">
             <span className="text-slate-500 shrink-0 font-medium flex items-center gap-1">
               <Zap className="w-3 h-3 text-amber-400" />
               <span>Pintasan:</span>
             </span>
-            <button
-              onClick={() => handleSendMessage('Tambahkan modul Better Auth + JWT Token')}
-              disabled={isPrdStreaming || isAiTyping}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
-            >
-              + Auth & Security
-            </button>
-            <button
-              onClick={() => handleSendMessage('Tambahkan integrasi Payment Gateway Midtrans')}
-              disabled={isPrdStreaming || isAiTyping}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
-            >
-              + Payment Gateway
-            </button>
-            <button
-              onClick={() => handleSendMessage('Tambahkan sistem Realtime Chat & WebSockets')}
-              disabled={isPrdStreaming || isAiTyping}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
-            >
-              + WebSockets
-            </button>
-            <button
-              onClick={() => handleSendMessage('Sederhanakan scope ke versi MVP saja')}
-              disabled={isPrdStreaming || isAiTyping}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
-            >
-              ⚡ Fast MVP
-            </button>
+
+            {SHORTCUT_ITEMS.map((sc) => {
+              const isApplied = appliedShortcuts.includes(sc.id);
+              return (
+                <button
+                  key={sc.id}
+                  onClick={() => handleSendMessage(sc.prompt)}
+                  disabled={isApplied || isPrdStreaming || isAiTyping}
+                  className={`px-3 py-1.5 rounded-full shrink-0 transition-all text-[11px] font-semibold flex items-center gap-1.5 ${
+                    isApplied
+                      ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 opacity-80 cursor-not-allowed shadow-inner'
+                      : 'bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 cursor-pointer disabled:opacity-50'
+                  }`}
+                  title={isApplied ? 'Pintasan ini sudah diterapkan ke PRD' : `Klik untuk menerapkan ${sc.label}`}
+                >
+                  {isApplied ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{sc.appliedLabel}</span>
+                    </>
+                  ) : (
+                    <span>{sc.label}</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Chat Input Bar */}
