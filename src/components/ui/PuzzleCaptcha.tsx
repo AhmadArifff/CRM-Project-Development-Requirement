@@ -52,9 +52,10 @@ const CANVAS_WIDTH = 340;
 const CANVAS_HEIGHT = 180;
 const PIECE_SIZE = 44;
 const PIECE_RADIUS = 7;
-const TAB_OFFSET = PIECE_RADIUS + 5; // 12px padding for tabs
+const TAB_OFFSET = PIECE_RADIUS + 5; // 12px
 const PIECE_CANVAS_SIZE = PIECE_SIZE + TAB_OFFSET * 2; // 68px
-const TOLERANCE = 10; // Precision tolerance in px (human-friendly and secure)
+const TAB_PERCENT_OFFSET = (TAB_OFFSET / PIECE_CANVAS_SIZE) * 100; // ~17.647%
+const TOLERANCE = 10; // Precision tolerance in px
 
 // Web Audio API Sound Synthesizer
 const playSound = (type: 'success' | 'fail' | 'snap') => {
@@ -66,7 +67,7 @@ const playSound = (type: 'success' | 'fail' | 'snap') => {
     const ctx = new AudioCtx();
 
     if (type === 'success') {
-      const notes = [523.25, 659.25, 783.99, 1046.5]; // Harmonic C5-E5-G5-C6 chord
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
       notes.forEach((freq, index) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -104,7 +105,7 @@ const playSound = (type: 'success' | 'fail' | 'snap') => {
       osc.stop(ctx.currentTime + 0.04);
     }
   } catch {
-    // Audio Context not allowed or blocked — gracefully ignore
+    // Audio Context not allowed or blocked — ignore
   }
 };
 
@@ -114,9 +115,8 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
   description = 'Geser slider di bawah hingga potongan puzzle tepat mengisi lubang gambar untuk memverifikasi Anda adalah manusia.',
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
-  const [targetX, setTargetX] = useState(200);
-  const [targetY, setTargetY] = useState(65);
-  const [sliderRatio, setSliderRatio] = useState(0); // 0.0 to 1.0 normalized progress
+  const [targetCoords, setTargetCoords] = useState<{ x: number; y: number }>({ x: 200, y: 55 });
+  const [sliderRatio, setSliderRatio] = useState(0); // 0.0 to 1.0
   const [isDragging, setIsDragging] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -128,8 +128,9 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
   const trackRef = useRef<HTMLDivElement | null>(null);
   const dragStartXRef = useRef<number>(0);
   const initialRatioRef = useRef<number>(0);
+  const activeCoordsRef = useRef<{ x: number; y: number }>({ x: 200, y: 55 });
 
-  // Min and Max horizontal position for the puzzle piece on the canvas
+  // Safe horizontal travel bounds for the piece on the canvas
   const MIN_PIECE_X = 12;
   const MAX_PIECE_X = CANVAS_WIDTH - PIECE_SIZE - 12;
 
@@ -169,8 +170,8 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
       ctx.closePath();
 
       if (isPiece) {
-        ctx.shadowColor = 'rgba(0, 242, 254, 0.75)';
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = 'rgba(0, 242, 254, 0.85)';
+        ctx.shadowBlur = 14;
         ctx.strokeStyle = '#00f2fe';
         ctx.lineWidth = 2.5;
         ctx.stroke();
@@ -236,17 +237,17 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
     setSliderRatio(0);
     setErrorMessage('');
 
-    // Safe random target coordinates (placed between 48% and 82% of width)
+    // Generate random target coordinates (between 48% and 80% of width, and 15% to 65% of height)
     const minX = Math.floor(CANVAS_WIDTH * 0.48);
     const maxX = Math.floor(CANVAS_WIDTH - PIECE_SIZE - 20);
-    const minY = 25;
-    const maxY = Math.floor(CANVAS_HEIGHT - PIECE_SIZE - 25);
+    const minY = 20;
+    const maxY = Math.floor(CANVAS_HEIGHT - PIECE_SIZE - 20);
 
     const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
     const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
-    setTargetX(randomX);
-    setTargetY(randomY);
+    activeCoordsRef.current = { x: randomX, y: randomY };
+    setTargetCoords({ x: randomX, y: randomY });
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -261,11 +262,14 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
       const pieceCtx = pieceCanvas.getContext('2d');
       if (!bgCtx || !pieceCtx) return;
 
-      // 1. Draw main background image
+      const { x: tX, y: tY } = activeCoordsRef.current;
+
+      // STEP 1: Draw full background image onto bgCanvas
       bgCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       bgCtx.drawImage(source, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-      // 2. Extract Piece Canvas (Sized to fit puzzle shape + tabs + border)
+      // STEP 2: Extract piece from the SCALED bgCanvas BEFORE cutting the hole!
+      // This guarantees 100% pixel-perfect image matching ("seiras") between piece and background.
       pieceCanvas.width = PIECE_CANVAS_SIZE;
       pieceCanvas.height = PIECE_CANVAS_SIZE;
 
@@ -276,11 +280,11 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
       drawPuzzleShape(pieceCtx, TAB_OFFSET, TAB_OFFSET, PIECE_SIZE, PIECE_RADIUS, true);
       pieceCtx.clip();
 
-      // Draw source image into piece canvas with inverse offset
+      // Draw EXACT pixels from bgCanvas at the target location into pieceCanvas
       pieceCtx.drawImage(
-        source,
-        randomX - TAB_OFFSET,
-        randomY - TAB_OFFSET,
+        bgCanvas,
+        tX - TAB_OFFSET,
+        tY - TAB_OFFSET,
         PIECE_CANVAS_SIZE,
         PIECE_CANVAS_SIZE,
         0,
@@ -290,12 +294,12 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
       );
       pieceCtx.restore();
 
-      // 3. Draw Dark Cutout Hole on Background Canvas
+      // STEP 3: Now draw the dark cutout hole on bgCanvas at the exact same (tX, tY)
       bgCtx.save();
-      drawPuzzleShape(bgCtx, randomX, randomY, PIECE_SIZE, PIECE_RADIUS);
+      drawPuzzleShape(bgCtx, tX, tY, PIECE_SIZE, PIECE_RADIUS);
       bgCtx.fillStyle = 'rgba(4, 6, 11, 0.82)';
       bgCtx.fill();
-      bgCtx.strokeStyle = 'rgba(0, 242, 254, 0.8)';
+      bgCtx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
       bgCtx.lineWidth = 2;
       bgCtx.setLineDash([5, 3]);
       bgCtx.stroke();
@@ -329,11 +333,11 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
     playSound('snap');
   };
 
-  // Calculate current piece horizontal position based on slider ratio
+  // Calculate horizontal position of the sliding piece in canvas units
   const currentPieceX = MIN_PIECE_X + sliderRatio * (MAX_PIECE_X - MIN_PIECE_X);
 
   // Exact target ratio required for 100% perfect match
-  const targetRatio = (targetX - MIN_PIECE_X) / (MAX_PIECE_X - MIN_PIECE_X);
+  const targetRatio = (targetCoords.x - MIN_PIECE_X) / (MAX_PIECE_X - MIN_PIECE_X);
 
   // Drag Handlers
   const handleDragStart = (clientX: number) => {
@@ -357,7 +361,7 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
 
       const trackWidth = track.clientWidth;
       const knobWidth = 44;
-      const maxKnobTravel = Math.max(1, trackWidth - knobWidth - 8); // 8px internal padding
+      const maxKnobTravel = Math.max(1, trackWidth - knobWidth - 8);
 
       const deltaX = clientX - dragStartXRef.current;
       const deltaRatio = deltaX / maxKnobTravel;
@@ -379,7 +383,7 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
 
     // Calculate actual pixel difference between piece position and target hole
     const piecePosition = MIN_PIECE_X + sliderRatio * (MAX_PIECE_X - MIN_PIECE_X);
-    const diff = Math.abs(piecePosition - targetX);
+    const diff = Math.abs(piecePosition - targetCoords.x);
 
     if (diff <= TOLERANCE) {
       // Success Match!
@@ -412,7 +416,7 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
       // Spring bounce back to initial state
       setSliderRatio(0);
     }
-  }, [isDragging, isSuccess, sliderRatio, targetX, targetRatio, onSuccess]);
+  }, [isDragging, isSuccess, sliderRatio, targetCoords.x, targetRatio, onSuccess]);
 
   // Global mouse & touch event listeners for smooth drag outside bounding box
   useEffect(() => {
@@ -459,7 +463,7 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
   const progressPercent = Math.min(100, Math.max(0, sliderRatio * 100));
 
   // Determine if the piece is close enough to show proximity glow
-  const isNearTarget = Math.abs(currentPieceX - targetX) <= TOLERANCE;
+  const isNearTarget = Math.abs(currentPieceX - targetCoords.x) <= TOLERANCE;
 
   return (
     <motion.div
@@ -510,15 +514,15 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
         {/* Sliding Puzzle Piece */}
         <div
           style={{
-            // Percentage-based horizontal and vertical translation ensures 100% parity across resolutions
+            // Percentage-based horizontal and vertical translation ensures 100% visual parity
             left: `${(currentPieceX / CANVAS_WIDTH) * 100}%`,
-            top: `${(targetY / CANVAS_HEIGHT) * 100}%`,
-            transform: 'translate(-17.65%, -17.65%)', // Inverse offset for TAB_OFFSET (12px / 68px = ~17.65%)
+            top: `${(targetCoords.y / CANVAS_HEIGHT) * 100}%`,
+            transform: `translate(-${TAB_PERCENT_OFFSET}%, -${TAB_PERCENT_OFFSET}%)`,
             width: `${(PIECE_CANVAS_SIZE / CANVAS_WIDTH) * 100}%`,
           }}
           className={`absolute pointer-events-none transition-transform ${
             isDragging ? 'duration-0' : 'duration-300 ease-out'
-          } ${isNearTarget && !isSuccess ? 'filter drop-shadow-[0_0_12px_rgba(0,242,254,0.9)]' : ''}`}
+          } ${isNearTarget && !isSuccess ? 'filter drop-shadow-[0_0_14px_rgba(0,242,254,0.95)]' : ''}`}
         >
           <canvas ref={pieceCanvasRef} className="w-full h-auto block drop-shadow-xl" />
         </div>
@@ -568,7 +572,6 @@ export const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({
           tabIndex={0}
           onKeyDown={handleKeyDown}
           onMouseDown={(e) => {
-            // Allow clicking track directly to position knob
             if (isSuccess || isImageLoading) return;
             handleDragStart(e.clientX);
           }}
