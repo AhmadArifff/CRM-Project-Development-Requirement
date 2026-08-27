@@ -1,6 +1,6 @@
 # DevPulse Studio — Digital App Consultancy & AI PRD Engine 🚀
 
-![DevPulse Studio Banner](https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&auto=format&fit=crop&q=80)
+![DevPulse Studio Landing Hero](public/screenshots/01_landing_hero.png)
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -11,16 +11,67 @@
 
 ---
 
+## 📸 Tampilan Antarmuka Aplikasi (Application Showcase)
+
+### 1. 🛡️ Security Gate: Interactive Sliding Jigsaw Puzzle CAPTCHA
+Sistem proteksi anti-bot presisi tinggi dengan mekanika potongan puzzle HTML5 Canvas bezier clip-paths sebelum mengakses wizard pembuatan PRD.
+
+![Security Gate Puzzle CAPTCHA](public/screenshots/02_puzzle_captcha.png)
+
+---
+
+### 2. 🤖 AI PRD Builder & Live Notion Document dengan Diagram Mermaid
+Wizard kuesioner cerdas terintegrasi AI yang menghasilkan dokumen PRD.md berstandar Notion lengkap dengan diagram alur arsitektur sistem, user journey, ERD database, dan user stories.
+
+![AI PRD Builder & Notion Live Document](public/screenshots/03_prd_builder_notion.png)
+
+---
+
+### 3. 🔐 Portal Admin Login (Better Auth + JWT Token)
+Antarmuka login administrator yang aman dengan enkripsi password *bcrypt*, *refresh token rotation*, dan autofill kredensial demo.
+
+![Admin Login Portal](public/screenshots/04_admin_login.png)
+
+---
+
+### 4. 📊 Overview CRM Analytics & Control Portal
+Pusat statistik data prospek (*leads*), nilai proyek dalam pipeline, aktivitas pengerjaan, dan ringkasan deal klien secara *real-time*.
+
+![CRM Overview Dashboard](public/screenshots/05_crm_dashboard.png)
+
+---
+
+### 5. 🎨 Figma Studio Visual Landing CMS (`/admin/landing-content`)
+Penyunting konten visual 3 kolom ala Figma Studio: *Layers Tree Navigator*, *Central Live Viewport Canvas*, dan *Properties Inspector* dengan dukungan upload gambar lokal.
+
+![Figma Studio Visual CMS](public/screenshots/06_figma_studio_cms.png)
+
+---
+
+### 6. 📋 Project Task Board (Trello-Style Kanban Workspace)
+Manajemen kartu tugas proyek interaktif berbasis status (*Backlog, To Do, In Progress, In Review, Completed*) dengan *Rich Markdown Editor* dan *Task Checklist*.
+
+![Project Tasks Trello Kanban](public/screenshots/07_trello_kanban.png)
+
+---
+
+### 7. 💼 Deals Pipeline Kanban Board (`/admin/deals`)
+Pipeline sales CRM untuk memonitor progres negosiasi deal proyek dari tahap *New Lead*, *Contacted*, *Proposal Sent*, *Negotiation*, hingga *Deal Won*.
+
+![Deals Pipeline Kanban](public/screenshots/08_deals_pipeline.png)
+
+---
+
 ## 🌟 Fitur Utama (Key Features)
 
 ### 1. 🤖 AI PRD Builder & Interactive Questionnaire
 - **Interaktif Questionnaire**: Pengisian kebutuhan non-teknis dengan rekomendasi AI otomatis (autofill jawaban esay & highlight pilihan ganda).
 - **Interactive AI Chatbot**: Asisten AI bergaya Notion yang memverifikasi kebutuhan dan memperbarui draft PRD secara langsung.
-- **Preview PRD Notion Style**: Tampilan dokumen PRD.md yang terstruktur rapi dengan poin ringkasan, arsitektur sistem, pilihan tech stack, dan alokasi waktu.
+- **Engine Diagram Mermaid**: Render visual dinamis untuk flowchart arsitektur multi-tier, alur logika sequence diagram, dan ERD skema basis data.
 
 ### 2. 🧮 Rate Calculator & Estimasi Biaya Transparan
-- Hitung estimasi investasi proyek berdasarkan jumlah jam kerja riil dikalikan rate hourly yang fleksibel.
-- Preset jam pengerjaan (Small MVP, Medium App, Full Enterprise Platform).
+- Hitung estimasi investasi proyek berdasarkan formula transparan: `Total Jam Kerja × Rate Per Jam`.
+- Preset alokasi jam kerja modular untuk peluncuran cepat MVP hingga platform enterprise.
 
 ### 3. 🎨 Figma Studio Visual Landing CMS (`/admin/landing-content`)
 - **Workspace 3 Kolom ala Figma Studio**: Panel Layers Tree Navigator, Central Live Viewport Canvas, dan Properties Inspector.
@@ -29,7 +80,7 @@
 - **100% Elemen Editable**: Seluruh teks, tombol CTA, grid ikon Lucide, dan foto testimoni klien dapat dikelola tanpa menyentuh codebase.
 
 ### 4. 💼 CRM Admin Panel & Master Data Management
-- **Lead-to-Deal Conversion (1-Click)**: Konversi data propek klien dari kuisioner langsung menjadi deal proyek CRM.
+- **Lead-to-Deal Conversion (1-Click)**: Konversi data prospek klien dari kuisioner langsung menjadi deal proyek CRM.
 - **Workspace Trello Kanban (`/admin/tasks`)**: Pengelolaan task proyek dengan Rich WYSIWYG Markdown Editor Toolbar.
 - **Dynamic Master Data CRUD**: Kelola label, prioritas, dan kategori data secara dinamis dari antarmuka Admin Panel.
 
@@ -40,10 +91,11 @@
 - **Developer**: Ahmad Arif
 - **Frontend Framework**: Next.js 16 (App Router + Turbopack)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS & Glassmorphism Aesthetics
+- **Styling**: Tailwind CSS & Cyber Dark Glassmorphism
 - **State Management**: Zustand
+- **Diagramming Engine**: Mermaid.js
 - **Icons & Animation**: Lucide React & Framer Motion
-- **CMS Canvas Engine**: Figma Studio Live Canvas Viewport
+- **Database & Auth**: Supabase PostgreSQL & Express.js 5 REST API
 
 ---
 
