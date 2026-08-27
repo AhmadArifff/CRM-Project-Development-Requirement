@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { generateProfessionalPrd } from '@/lib/prdGenerator';
 
 export interface ChatMessage {
   id: string;
@@ -49,6 +50,7 @@ interface PrdStore {
   setPrdMarkdown: (markdown: string) => void;
   estimatedHours: number;
   setEstimatedHours: (hours: number) => void;
+  buildPrdFromQuestionnaire: () => void;
 
   // Client Submission
   submission: SubmissionData;
@@ -59,39 +61,16 @@ interface PrdStore {
 }
 
 const initialQuestionnaire: QuestionnaireData = {
-  appCategory: '',
-  targetAudience: '',
-  keyFeatures: '',
-  userScale: '',
-  referenceApp: '',
-  budgetRange: '',
-  timeline: '',
+  appCategory: 'Aplikasi CRM & Konsultasi AI Scoping',
+  targetAudience: 'Pengembang, Konsultan Digital, & Pemilik Bisnis',
+  keyFeatures: 'AI PRD Scoping Otomatis, Figma Studio Visual CMS, Deals Pipeline, Kanban Board',
+  userScale: '10.000 - 50.000 Pengguna Aktif Bulanan',
+  referenceApp: 'Notion + Linear + Trello',
+  budgetRange: 'Rp 30.000.000 - Rp 60.000.000',
+  timeline: '4 - 6 Minggu',
 };
 
-const initialPrdSample = `# PRD Draft: Aplikasi CRM & Konsultasi
-
-## 1. Ringkasan Eksekutif
-Aplikasi platform konsultasi berbasis web dan mobile yang memungkinkan klien membuat PRD otomatis dengan bantuan AI.
-
-## 2. Fitur Utama
-- **Landing Page & Consultation Analyzer**: Analisis kebutuhan platform & server
-- **AI PRD Builder**: Chat bot interaktif dengan verifikasi CAPTCHA
-- **Rate Calculator**: Estimasi biaya otomatis (Total Jam x Rate Per Jam)
-- **Client Submission**: Upload PRD dan pendaftaran kontak klien
-
-## 3. Infrastruktur & Server
-- **Opsi Server**: Cloud (Supabase / Managed PostgreSQL)
-- **Frontend**: Next.js + PWA + Tailwind CSS
-- **Backend**: Express JS + Prisma ORM
-- **Keamanan**: Better Auth + JWT Token & CAPTCHA Protection
-
-## 4. Estimasi Waktu Development
-- **Landing Page & AI Chat**: 40 Jam
-- **CRM Admin Panel (Kanban & Tasks)**: 60 Jam
-- **Backend API & DB Schema**: 40 Jam
-- **Testing & Deployment**: 20 Jam
-- **Total Estimasi**: 160 Jam
-`;
+const initialGenerated = generateProfessionalPrd(initialQuestionnaire);
 
 export const usePrdStore = create<PrdStore>((set, get) => ({
   hourlyRate: 250000, // Rp 250.000 / jam
@@ -114,7 +93,7 @@ export const usePrdStore = create<PrdStore>((set, get) => ({
     {
       id: 'msg-1',
       sender: 'ai',
-      text: 'Halo! Saya AI PRD Consultant. Saya siap membantu merancang dokumen PRD lengkap untuk aplikasi impian Anda. Mari mulai dari kebutuhan fitur utama!',
+      text: 'Halo! Saya AI PRD Consultant. Saya siap membantu merancang dokumen PRD berstandar Notion lengkap dengan arsitektur & diagram alur Mermaid untuk aplikasi impian Anda. Mari mulai dari kebutuhan fitur utama!',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ],
@@ -133,13 +112,26 @@ export const usePrdStore = create<PrdStore>((set, get) => ({
   isAiTyping: false,
   setIsAiTyping: (typing) => set({ isAiTyping: typing }),
 
-  prdMarkdown: initialPrdSample,
+  prdMarkdown: initialGenerated.markdown,
   setPrdMarkdown: (markdown) => set({ prdMarkdown: markdown }),
-  estimatedHours: 160,
+  estimatedHours: initialGenerated.estimatedHours,
   setEstimatedHours: (hours) => set({ estimatedHours: hours }),
 
+  buildPrdFromQuestionnaire: () => {
+    const q = get().questionnaire;
+    const generated = generateProfessionalPrd(q);
+    set({
+      prdMarkdown: generated.markdown,
+      estimatedHours: generated.estimatedHours,
+      submission: {
+        ...get().submission,
+        appTitle: q.appCategory || 'Proyek Aplikasi Digital',
+      },
+    });
+  },
+
   submission: {
-    appTitle: '',
+    appTitle: 'Aplikasi CRM & Konsultasi AI Scoping',
     companyName: '',
     contactPhone: '',
     email: '',
@@ -149,7 +141,8 @@ export const usePrdStore = create<PrdStore>((set, get) => ({
       submission: { ...state.submission, [field]: value },
     })),
 
-  resetAll: () =>
+  resetAll: () => {
+    const resetPrd = generateProfessionalPrd(initialQuestionnaire);
     set({
       captchaVerified: false,
       questionnaire: initialQuestionnaire,
@@ -161,13 +154,14 @@ export const usePrdStore = create<PrdStore>((set, get) => ({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ],
-      prdMarkdown: initialPrdSample,
-      estimatedHours: 160,
+      prdMarkdown: resetPrd.markdown,
+      estimatedHours: resetPrd.estimatedHours,
       submission: {
-        appTitle: '',
+        appTitle: 'Aplikasi CRM & Konsultasi AI Scoping',
         companyName: '',
         contactPhone: '',
         email: '',
       },
-    }),
+    });
+  },
 }));

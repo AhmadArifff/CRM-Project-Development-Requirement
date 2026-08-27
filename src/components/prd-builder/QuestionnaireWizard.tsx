@@ -6,7 +6,7 @@ import { HelpCircle, ChevronRight, ChevronLeft, Check, Sparkles, Send, Zap, Bot,
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
-  const { questionnaire, setQuestionnaireField } = usePrdStore();
+  const { questionnaire, setQuestionnaireField, buildPrdFromQuestionnaire } = usePrdStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [aiAppliedNotification, setAiAppliedNotification] = useState<string | null>(null);
@@ -153,6 +153,7 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      buildPrdFromQuestionnaire();
       onComplete();
     }
   };
