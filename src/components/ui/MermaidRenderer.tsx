@@ -2,27 +2,69 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
-import { Copy, Check, Eye, Code2, AlertCircle } from 'lucide-react';
+import { Copy, Check, Eye, Code2, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 
 interface MermaidRendererProps {
   chart: string;
 }
 
+const VALID_DIAGRAM_PREFIXES = [
+  'flowchart',
+  'graph',
+  'sequencediagram',
+  'classdiagram',
+  'statediagram',
+  'erdiagram',
+  'journey',
+  'gantt',
+  'pie',
+  'gitgraph',
+  'mindmap',
+  'timeline',
+  'c4',
+  'sankey',
+  'block',
+];
+
+const isValidDiagramHeader = (code: string): boolean => {
+  if (!code || typeof code !== 'string') return false;
+  const trimmed = code.trim().toLowerCase();
+  const firstLine = trimmed.split('\n')[0].replace(/\s+/g, '').toLowerCase();
+  return VALID_DIAGRAM_PREFIXES.some((prefix) => firstLine.startsWith(prefix));
+};
+
 export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgHtml, setSvgHtml] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isCompiling, setIsCompiling] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'diagram' | 'code'>('diagram');
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    const renderChart = async () => {
+    // Reset previous debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    const cleanChart = (chart || '').trim();
+
+    // 1. Guard against empty or incomplete keyword during typewriter typing
+    if (!cleanChart || !isValidDiagramHeader(cleanChart)) {
+      setIsCompiling(true);
+      setHasError(false);
+      return;
+    }
+
+    // 2. Debounce to prevent parsing incomplete lines during rapid typewriter typing
+    debounceTimerRef.current = setTimeout(async () => {
       try {
-        setHasError(false);
         mermaid.initialize({
           startOnLoad: false,
+          suppressErrorRendering: true,
           theme: 'dark',
           themeVariables: {
             darkMode: true,
@@ -38,27 +80,36 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart }) => {
           securityLevel: 'loose',
         });
 
+        // Test syntax with parse() first
+        const isValid = await mermaid.parse(cleanChart, { suppressErrors: true });
+        if (!isValid && isValid !== undefined) {
+          if (isMounted) {
+            setIsCompiling(true);
+          }
+          return;
+        }
+
         const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
-        const cleanChart = chart.trim();
         const { svg } = await mermaid.render(id, cleanChart);
-        
+
         if (isMounted) {
           setSvgHtml(svg);
+          setHasError(false);
+          setIsCompiling(false);
         }
       } catch (err) {
-        console.error('Mermaid render error:', err);
+        // Silently handle partial streaming syntax without polluting console
         if (isMounted) {
-          setHasError(true);
+          setIsCompiling(true);
         }
       }
-    };
-
-    if (chart) {
-      renderChart();
-    }
+    }, 120);
 
     return () => {
       isMounted = false;
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
     };
   }, [chart]);
 
@@ -69,13 +120,13 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart }) => {
   };
 
   return (
-    <div className="my-6 rounded-2xl border border-cyan-500/30 bg-slate-950/95 overflow-hidden shadow-2xl">
+    <div className="my-6 rounded-2xl border border-cyan-500/30 bg-slate-950/95 overflow-hidden shadow-2xl transition-all">
       {/* Diagram Header Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-sm shadow-cyan-400" />
+          <div className={`w-2.5 h-2.5 rounded-full ${isCompiling ? 'bg-amber-400 animate-ping' : 'bg-cyan-400 animate-pulse'} shadow-sm shadow-cyan-400`} />
           <span className="font-mono font-bold text-cyan-300 tracking-wider text-[11px]">
-            MERMAID DIAGRAM ENGINE
+            {isCompiling ? 'DIAGRAM COMPILING...' : 'MERMAID DIAGRAM ENGINE'}
           </span>
         </div>
 
@@ -121,7 +172,19 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart }) => {
       {/* Diagram Canvas Body */}
       <div className="p-4 sm:p-6 overflow-x-auto min-h-[140px] flex items-center justify-center bg-[#04060b]">
         {viewMode === 'diagram' ? (
-          hasError ? (
+          isCompiling || !svgHtml ? (
+            <div className="flex flex-col items-center justify-center p-6 space-y-3 text-center">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-300 shadow-lg shadow-cyan-500/10">
+                <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
+              </div>
+              <p className="text-xs text-cyan-300/80 font-medium">
+                AI sedang menyusun struktur diagram Mermaid...
+              </p>
+              <pre className="text-[10px] font-mono text-slate-400 bg-slate-900/60 p-2.5 rounded-lg max-w-sm overflow-hidden text-ellipsis whitespace-nowrap border border-slate-800">
+                {chart.slice(0, 80)}...
+              </pre>
+            </div>
+          ) : hasError ? (
             <div className="text-center p-4 space-y-2">
               <div className="inline-flex p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <AlertCircle className="w-5 h-5" />
@@ -137,7 +200,7 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart }) => {
             <div
               ref={containerRef}
               dangerouslySetInnerHTML={{ __html: svgHtml }}
-              className="w-full flex justify-center items-center [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:drop-shadow-lg"
+              className="w-full flex justify-center items-center [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:drop-shadow-lg animate-fade-in"
             />
           )
         ) : (
