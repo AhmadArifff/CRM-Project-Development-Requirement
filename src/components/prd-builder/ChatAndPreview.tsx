@@ -196,15 +196,27 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview'>('chat');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Dynamic helper to check if a module is currently present in PRD markdown
+  const checkModulesInPrd = (markdown: string): string[] => {
+    const detected: string[] = [];
+    if (!markdown) return detected;
+    if (markdown.includes('### 5.3 Modul Keamanan & Better Auth Guard') || markdown.includes('Modul Keamanan & Better Auth Guard')) {
+      detected.push('auth');
+    }
+    if (markdown.includes('### 5.4 Modul Payment Gateway & Invoicing Otomatis') || markdown.includes('Modul Payment Gateway & Invoicing Otomatis')) {
+      detected.push('payment');
+    }
+    if (markdown.includes('### 5.5 Modul Real-Time Communication & WebSockets') || markdown.includes('Modul Real-Time Communication & WebSockets')) {
+      detected.push('websockets');
+    }
+    if (markdown.includes('Pembaruan Scope: Fast-Track MVP Edition')) {
+      detected.push('mvp');
+    }
+    return detected;
+  };
+
   // Applied shortcuts tracking to prevent double-clicks & duplicates
-  const [appliedShortcuts, setAppliedShortcuts] = useState<string[]>(() => {
-    const initial: string[] = [];
-    if (prdMarkdown.includes('Better Auth') || prdMarkdown.includes('Modul Keamanan')) initial.push('auth');
-    if (prdMarkdown.includes('Midtrans') || prdMarkdown.includes('Payment Gateway')) initial.push('payment');
-    if (prdMarkdown.includes('WebSockets') || prdMarkdown.includes('Real-Time Communication')) initial.push('websockets');
-    if (prdMarkdown.includes('Fast-Track MVP')) initial.push('mvp');
-    return initial;
-  });
+  const [appliedShortcuts, setAppliedShortcuts] = useState<string[]>(() => checkModulesInPrd(prdMarkdown));
 
   // Typewriter Streaming State
   const [displayPrdMarkdown, setDisplayPrdMarkdown] = useState(prdMarkdown);
@@ -216,10 +228,11 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const streamingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const targetFullPrdRef = useRef<string>(prdMarkdown);
 
-  // Sync display with store on mount or when not streaming
+  // Sync display & reactive shortcuts with store whenever prdMarkdown changes (from wizard regenerate or reset)
   useEffect(() => {
     if (!isPrdStreaming) {
       setDisplayPrdMarkdown(prdMarkdown);
+      setAppliedShortcuts(checkModulesInPrd(prdMarkdown));
     }
   }, [prdMarkdown, isPrdStreaming]);
 
