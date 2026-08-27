@@ -28,11 +28,14 @@ import {
   CheckSquare,
   CornerDownRight,
   BookOpen,
+  FastForward,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Notion-Style Custom Markdown Components
-const NotionComponents = {
+// DevPulse Studio Pro Custom Markdown Components
+const DevPulseMarkdownComponents = {
   h1: ({ children }: any) => (
     <div className="border-b-2 border-blue-600/40 pb-3 mb-6 mt-4">
       <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
@@ -157,35 +160,127 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [copied, setCopied] = useState(false);
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview'>('chat');
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Typewriter Streaming State
+  const [displayPrdMarkdown, setDisplayPrdMarkdown] = useState(prdMarkdown);
+  const [isPrdStreaming, setIsPrdStreaming] = useState(false);
+  const [streamStatusText, setStreamStatusText] = useState<string>('');
+  
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const previewScrollRef = useRef<HTMLDivElement>(null);
+  const streamingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const targetFullPrdRef = useRef<string>(prdMarkdown);
+
+  // Sync display with store on mount or when not streaming
+  useEffect(() => {
+    if (!isPrdStreaming) {
+      setDisplayPrdMarkdown(prdMarkdown);
+    }
+  }, [prdMarkdown, isPrdStreaming]);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isAiTyping]);
 
-  // Initial prompt generation based on questionnaire
+  // Clean up streaming timer on unmount
+  useEffect(() => {
+    return () => {
+      if (streamingTimerRef.current) {
+        clearInterval(streamingTimerRef.current);
+      }
+    };
+  }, []);
+
+  const playSuccessChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    } catch (e) {
+      // Ignore audio failure
+    }
+  };
+
+  // Progressive Typewriter Streaming Engine
+  const startTypewriterPrd = (fullText: string, startIndex: number, statusMsg: string) => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current);
+    }
+
+    targetFullPrdRef.current = fullText;
+    setIsPrdStreaming(true);
+    setStreamStatusText(statusMsg);
+
+    let currentIndex = startIndex;
+    setDisplayPrdMarkdown(fullText.slice(0, currentIndex));
+
+    // Chunk size and speed for smooth organic typing
+    const chunkSize = 14; 
+    const intervalMs = 20;
+
+    streamingTimerRef.current = setInterval(() => {
+      currentIndex = Math.min(currentIndex + chunkSize, fullText.length);
+      setDisplayPrdMarkdown(fullText.slice(0, currentIndex));
+
+      // Auto scroll right preview pane following typewriter
+      if (previewScrollRef.current) {
+        previewScrollRef.current.scrollTop = previewScrollRef.current.scrollHeight;
+      }
+
+      if (currentIndex >= fullText.length) {
+        if (streamingTimerRef.current) {
+          clearInterval(streamingTimerRef.current);
+          streamingTimerRef.current = null;
+        }
+        setIsPrdStreaming(false);
+        setPrdMarkdown(fullText);
+        playSuccessChime();
+      }
+    }, intervalMs);
+  };
+
+  const handleSkipStreaming = () => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current);
+      streamingTimerRef.current = null;
+    }
+    setDisplayPrdMarkdown(targetFullPrdRef.current);
+    setPrdMarkdown(targetFullPrdRef.current);
+    setIsPrdStreaming(false);
+    playSuccessChime();
+  };
+
+  const timelineFormat = (hrs: number) => `${hrs} Jam (~${Math.ceil(hrs / 40)} Minggu)`;
+
+  // Initial welcome analysis
   useEffect(() => {
     if (chatMessages.length === 1 && questionnaire.appCategory) {
       const summaryText = `💡 **DevPulse AI Architect Analysis**
 
-Saya telah menyusun dokumen PRD lengkap berstandar **DevPulse Studio Pro** dengan **Diagram Arsitektur Multi-Tier & Flowchart Mermaid** di panel kanan:
+Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap berstandar **DevPulse Studio Pro** dengan **Diagram Arsitektur Multi-Tier & Flowchart Mermaid** di panel kanan:
 - **Kategori Aplikasi:** \`${questionnaire.appCategory}\`
 - **Target Pengguna:** \`${questionnaire.targetAudience}\`
 - **Fitur Terpilih:** \`${questionnaire.keyFeatures}\`
 - **Skala Sistem:** \`${questionnaire.userScale}\`
 - **Estimasi Total:** \`${estimatedHours} Jam Kerja (${timelineFormat(estimatedHours)})\`
 
-> Anda dapat mengetik instruksi tambahan untuk merevisi modul, menambah diagram alur logika baru, atau menyesuaikan budget!`;
+> Anda dapat mengetik instruksi penambahan modul, revisi alur, atau fitur spesifik di chat ini. Dokumen PRD.md di panel kanan akan otomatis diperbarui dengan **animasi live typewriter**!`;
       addChatMessage('ai', summaryText);
     }
   }, [questionnaire]);
 
-  const timelineFormat = (hrs: number) => `${hrs} Jam (~${Math.ceil(hrs / 40)} Minggu)`;
-
   const handleSendMessage = (textToSend?: string) => {
     const text = textToSend || inputMessage;
-    if (!text.trim() || isAiTyping) return;
+    if (!text.trim() || isAiTyping || isPrdStreaming) return;
 
     addChatMessage('user', text);
     if (!textToSend) setInputMessage('');
@@ -195,79 +290,159 @@ Saya telah menyusun dokumen PRD lengkap berstandar **DevPulse Studio Pro** denga
       let aiReply = '';
       let hoursAdd = 0;
       let prdAppend = '';
-
       const lower = text.toLowerCase();
 
       if (lower.includes('auth') || lower.includes('login') || lower.includes('security')) {
-        aiReply = `🔒 **Modul Keamanan & Auth Diperbarui**
+        aiReply = `🔒 **Modul Keamanan & Auth Berhasil Ditambahkan ke PRD**
 
 - **Teknologi Ditambahkan:** \`Better Auth + JWT Token Rotation & Session Fingerprinting\`
-- **Fitur Baru:** Rate Limiter, CSRF Protection, & RLS Supabase Policies.
+- **Fitur Keamanan:** Rate Limiting Express, CSRF Guard, HttpOnly Cookie, & RLS Supabase Policies.
+- **Diagram Disertakan:** Alur Otentikasi & Refresh Token Sequence.
 - **Estimasi Tambahan:** +15 Jam Kerja.
 
-> Dokumen **PRD.md** dan diagram arsitektur telah diperbarui secara otomatis.`;
+> Hasil result telah di-inject ke dokumen **PRD.md** dengan simulasi pengetikan AI.`;
         hoursAdd = 15;
-        prdAppend = `\n\n### 5.3 Modul Keamanan Tambahan (Security Hardening)
-- **Token Security:** Enkripsi JWT dengan Refresh Token Rotation & HttpOnly Cookies.
-- **Bot Defense:** Integrasi CAPTCHA Puzzle Gate pada seluruh formulir publik.
-`;
-      } else if (lower.includes('payment') || lower.includes('bayar') || lower.includes('midtrans')) {
-        aiReply = `💳 **Integrasi Payment Gateway Otomatis**
+        prdAppend = `\n\n### 5.3 Modul Keamanan & Better Auth Guard
+Modul otentikasi enterprise dengan proteksi anti-tampering dan token rotation:
 
-- **Gateway Terpilih:** \`Midtrans / Xendit Integration\`
-- **Fitur:** Snap Popup, Webhook Auto-Verification, QRIS, & Virtual Account.
-- **Estimasi Tambahan:** +20 Jam Kerja.
-
-> Dokumen **PRD.md** telah dilengkapi spesifikasi Payment Gateway.`;
-        hoursAdd = 20;
-        prdAppend = `\n\n### 5.4 Modul Payment Gateway & Invoicing
 \`\`\`mermaid
 sequenceDiagram
     autonumber
-    actor Client as Klien
-    participant App as Frontend
-    participant Server as Express Backend
-    participant Gateway as Midtrans / Xendit
+    actor Client as User / Web Client
+    participant API as Express API Server
+    participant Auth as Better Auth Guard
+    participant DB as Supabase PostgreSQL
 
-    Client->>App: Klik Bayar Proyek / DP
-    App->>Server: Request Payment Token
-    Server->>Gateway: Buat Transaksi Snap Token
-    Gateway-->>Server: Token Snap Diterima
-    Server-->>App: Tampilkan Snap Modal Popup
-    Client->>Gateway: Pembayaran Selesai (QRIS / VA)
-    Gateway->>Server: Webhook Notifikasi Sukses
-    Server->>Server: Update Status Invoice 'PAID'
-    Server-->>App: Notifikasi Realtime Pembayaran Berhasil
+    Client->>API: POST /api/v1/auth/login (Kredensial)
+    API->>Auth: Validasi Password (Bcrypt Hash)
+    Auth->>DB: Query User & Role RBAC
+    DB-->>Auth: User Record Valid
+    Auth->>API: Generate Access Token (15m) + Refresh Token (7d)
+    API-->>Client: Set HttpOnly Cookie & Return User Profile
+\`\`\`
+
+**Kriteria Penerimaan (Security Acceptance Criteria):**
+- [ ] **Given** kredensial login valid, **When** pengguna login, **Then** server menerbitkan JWT terenkripsi dengan masa berlaku 15 menit dan HttpOnly cookie.
+- [ ] **Given** token kadaluarsa, **When** request endpoint berikutnya masuk, **Then** middleware otomatis melakukan refresh token tanpa logout paksa.
+`;
+      } else if (lower.includes('payment') || lower.includes('bayar') || lower.includes('midtrans') || lower.includes('xendit')) {
+        aiReply = `💳 **Integrasi Payment Gateway & Auto Invoicing Ditambahkan**
+
+- **Gateway Terpilih:** \`Midtrans / Xendit Integration\`
+- **Metode Pembayaran:** QRIS, Virtual Account (BCA, Mandiri, BRI, BNI), & Kartu Kredit.
+- **Fitur Otomatis:** Webhook Callback Auto-Verification & Auto Invoice Generator.
+- **Estimasi Tambahan:** +20 Jam Kerja.
+
+> Dokumen **PRD.md** di sebelah kanan telah diperbarui dengan diagram alur pembayaran online.`;
+        hoursAdd = 20;
+        prdAppend = `\n\n### 5.4 Modul Payment Gateway & Invoicing Otomatis
+Sistem pembayaran online instan dengan verifikasi webhook otomatis:
+
+\`\`\`mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Klien Pembeli
+    participant Frontend as Web PWA Client
+    participant Server as Express Backend
+    participant Gateway as Midtrans / Xendit Gateway
+
+    Client->>Frontend: Klik Bayar Invoice / Deposit Proyek
+    Frontend->>Server: POST /api/v1/payments/create-transaction
+    Server->>Gateway: Request Snap Payment Token
+    Gateway-->>Server: Kembalikan Snap Token & Redirect URL
+    Server-->>Frontend: Buka Modal Pembayaran (QRIS / VA)
+    Client->>Gateway: Selesaikan Pembayaran
+    Gateway->>Server: Webhook POST /api/v1/payments/webhook
+    Server->>Server: Verifikasi Signature Key & Update Status 'PAID'
+    Server-->>Frontend: Realtime Broadcast Event 'Payment Confirmed'
+\`\`\`
+
+**Spesifikasi Teknis Payment:**
+- **Signature Security:** SHA-512 Hash Checksum verification pada setiap webhook callback.
+- **Reconciliation:** Cron job otomatis setiap 1 jam untuk memeriksa transaksi pending.
+`;
+      } else if (lower.includes('realtime') || lower.includes('chat') || lower.includes('notifikasi') || lower.includes('websocket')) {
+        aiReply = `⚡ **Modul Real-Time Communication & WebSockets Ditambahkan**
+
+- **Teknologi:** \`WebSockets / Server-Sent Events (SSE) Engine\`
+- **Fitur:** Real-time push notification, live team activity feed, dan instant sync deals board.
+- **Estimasi Tambahan:** +15 Jam Kerja.
+
+> Dokumen PRD telah dilengkapi arsitektur real-time data streaming.`;
+        hoursAdd = 15;
+        prdAppend = `\n\n### 5.5 Modul Real-Time Communication & WebSockets
+Arsitektur broadcast event instan untuk sinkronisasi aktivitas tim secara live:
+
+\`\`\`mermaid
+flowchart LR
+    subgraph Client ["🖥️ Web Client"]
+        WS_Client["WebSocket Client Listener"]
+    end
+    subgraph Backend ["⚙️ Realtime Dispatcher"]
+        Server["Express WebSocket Server"]
+        PubSub["Event Bus / Redis PubSub"]
+    end
+    subgraph Storage ["🗄️ Database"]
+        DB[("Supabase Realtime")]
+    end
+
+    Client -- "Subscribe Event" --> Server
+    Server --> PubSub
+    PubSub --> DB
+    DB -- "Trigger Notification" --> Server
+    Server -- "Push Update" --> WS_Client
 \`\`\`
 `;
-      } else if (lower.includes('mvp') || lower.includes('sederhana')) {
-        aiReply = `⚡ **Scope Proyek Dioptimasi ke Fast-Track MVP**
+      } else if (lower.includes('mvp') || lower.includes('sederhana') || lower.includes('fast')) {
+        aiReply = `⚡ **Scope Proyek Disederhanakan ke Fast-Track MVP**
 
-- **Fokus Utama:** Fitur Inti (Auth, PRD Builder, Deals Kanban Dasar).
-- **Estimasi Disesuaikan:** Total durasi dipangkas menjadi **100 Jam Kerja**.
+- **Fokus Utama:** Fitur Inti (Auth Security, AI PRD Engine, Kanban Workspace).
+- **Optimasi Biaya:** Estimasi total durasi dipangkas menjadi **100 Jam Kerja**.
+- **Target Rilis:** 2 - 3 Minggu.
 
-> Dokumen PRD telah disesuaikan ke versi peluncuran cepat (MVP Launch).`;
+> Dokumen PRD telah disesuaikan ke versi Fast-Track MVP.`;
         setEstimatedHours(100);
+        prdAppend = `\n\n> ⚡ **Pembaruan Scope: Fast-Track MVP Edition**
+> - **Fokus Utama:** Peluncuran cepat fitur inti dengan estimasi waktu dipadatkan menjadi **100 Jam Kerja**.
+> - **Total Investasi Disesuaikan:** Rp 25.000.000 (100 Jam × Rp 250.000/jam).
+`;
       } else {
-        aiReply = `📝 **Permintaan Teknis Diterapkan**
+        aiReply = `📝 **Fitur Khusus Berhasil Ditambahkan ke PRD**
 
-Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokumen **PRD.md**.
+Permintaan: \`${text}\` telah dianalisis dan diformulasikan menjadi spesifikasi teknis lengkap dalam dokumen **PRD.md**.
 
-- Status Sinkronisasi: 🟢 **Active (DevPulse Studio Pro Synced)**
-- Diagram & spesifikasi siap diekspor menjadi berkas \`.md\`.`;
-        hoursAdd = 10;
-        prdAppend = `\n\n> 💡 **Revisi AI Architect (${new Date().toLocaleTimeString()}):**
-> - **Permintaan Klien:** ${text}
-> - **Status Integrasi:** Disetujui & Diimplementasikan ke Scope PRD.
+- **Status Integrasi:** 🟢 **Approved & Synced to DevPulse Studio Pro**
+- **Estimasi Tambahan:** +15 Jam Kerja.
+
+> Simak simulasi pengetikan AI pada panel dokumen di sebelah kanan!`;
+        hoursAdd = 15;
+        prdAppend = `\n\n### 5.6 Modul Kustom: ${text}
+Modul spesifikasi teknis tambahan sesuai kebutuhan bisnis klien:
+
+\`\`\`mermaid
+flowchart TD
+    Req["Permintaan Klien: ${text}"] --> Process["Pemrosesan Logic & Controller"]
+    Process --> Val["Validasi Input & Security Guard"]
+    Val --> DB[("Penyimpanan Supabase DB")]
+    DB --> Out["Output Realtime & Konfirmasi"]
+\`\`\`
+
+**Kriteria Penerimaan (Acceptance Criteria):**
+- [ ] **Given** pengguna menjalankan fungsi '${text}', **When** sistem memproses data, **Then** hasil tersimpan aman dan memberikan feedback instan.
+- [ ] **Given** terjadi kegagalan koneksi, **When** API menerima error, **Then** sistem menampilkan pesan kesalahan user-friendly.
 `;
       }
 
       addChatMessage('ai', aiReply);
       if (hoursAdd > 0) setEstimatedHours(estimatedHours + hoursAdd);
 
-      setPrdMarkdown(`${prdMarkdown}${prdAppend}`);
       setIsAiTyping(false);
-    }, 1000);
+
+      // Start Progressive Typewriter Streaming in PRD Pane
+      const previousLength = prdMarkdown.length;
+      const updatedFullPrd = `${prdMarkdown}${prdAppend}`;
+      startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik pembaruan modul "${text.slice(0, 30)}..."`);
+    }, 900);
   };
 
   const handleCopyMarkdown = () => {
@@ -317,6 +492,9 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
         >
           <FileText className="w-3.5 h-3.5" />
           <span>Live PRD Document</span>
+          {isPrdStreaming && (
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+          )}
         </button>
       </div>
 
@@ -387,7 +565,7 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
                       }`}
                     >
                       {isAi ? (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={NotionComponents}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={DevPulseMarkdownComponents}>
                           {msg.text}
                         </ReactMarkdown>
                       ) : (
@@ -399,7 +577,8 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 pl-1">
                         <button
                           onClick={() => handleSendMessage('Terapkan rekomendasi ini ke PRD')}
-                          className="flex items-center gap-1 hover:text-cyan-300 transition-colors cursor-pointer"
+                          disabled={isPrdStreaming}
+                          className="flex items-center gap-1 hover:text-cyan-300 transition-colors cursor-pointer disabled:opacity-50"
                         >
                           <CornerDownRight className="w-3 h-3 text-cyan-400" />
                           <span>Terapkan ke PRD</span>
@@ -431,7 +610,7 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
                     <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.4s]" />
                   </div>
                   <span className="text-[11px] font-mono text-cyan-300">
-                    Menyusun diagram Mermaid & PRD...
+                    Menyusun diagram Mermaid & modul PRD...
                   </span>
                 </div>
               </div>
@@ -447,19 +626,29 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
             </span>
             <button
               onClick={() => handleSendMessage('Tambahkan modul Better Auth + JWT Token')}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer"
+              disabled={isPrdStreaming || isAiTyping}
+              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
             >
               + Auth & Security
             </button>
             <button
               onClick={() => handleSendMessage('Tambahkan integrasi Payment Gateway Midtrans')}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer"
+              disabled={isPrdStreaming || isAiTyping}
+              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
             >
               + Payment Gateway
             </button>
             <button
+              onClick={() => handleSendMessage('Tambahkan sistem Realtime Chat & WebSockets')}
+              disabled={isPrdStreaming || isAiTyping}
+              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
+            >
+              + WebSockets
+            </button>
+            <button
               onClick={() => handleSendMessage('Sederhanakan scope ke versi MVP saja')}
-              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer"
+              disabled={isPrdStreaming || isAiTyping}
+              className="px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-800 shrink-0 transition-colors font-medium cursor-pointer disabled:opacity-50"
             >
               ⚡ Fast MVP
             </button>
@@ -476,16 +665,19 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
             >
               <input
                 type="text"
-                placeholder="Ketik masukan revisi fitur atau tambah modul..."
+                placeholder="Ketik masukan revisi fitur atau modul yang ingin ditambahkan..."
                 value={inputMessage}
+                disabled={isPrdStreaming || isAiTyping}
                 onChange={(e) => setInputMessage(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!inputMessage.trim() || isAiTyping}
+                disabled={!inputMessage.trim() || isAiTyping || isPrdStreaming}
                 className={`px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
-                  !inputMessage.trim() || isAiTyping ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95 shadow-lg'
+                  !inputMessage.trim() || isAiTyping || isPrdStreaming
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:scale-105 active:scale-95 shadow-lg'
                 }`}
               >
                 <span>Kirim</span>
@@ -497,7 +689,7 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
 
         {/* RIGHT COLUMN: DevPulse Workspace Document Editor View */}
         <div
-          className={`md:col-span-7 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl ${
+          className={`md:col-span-7 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl relative ${
             mobileTab === 'chat' ? 'hidden md:flex' : 'flex'
           }`}
         >
@@ -507,12 +699,32 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
               <BookOpen className="w-4 h-4 text-cyan-400" />
               <span className="text-slate-400">Workspace /</span>
               <span className="text-white font-bold">PRD Document</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
-                🟢 Live DevPulse Doc
-              </span>
+              
+              {isPrdStreaming ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/40 animate-pulse shadow-sm">
+                  <Activity className="w-3 h-3 text-cyan-400 animate-spin" />
+                  <span>AI Typing Live...</span>
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                  🟢 Live DevPulse Doc
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
+              {isPrdStreaming && (
+                <button
+                  type="button"
+                  onClick={handleSkipStreaming}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  title="Lewati animasi ketikan"
+                >
+                  <FastForward className="w-3.5 h-3.5" />
+                  <span>Lewati Animasi</span>
+                </button>
+              )}
+
               <button
                 onClick={handleCopyMarkdown}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
@@ -540,8 +752,31 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
             </div>
           </div>
 
+          {/* Streaming Live Alert Banner */}
+          <AnimatePresence>
+            {isPrdStreaming && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-4 py-2 bg-gradient-to-r from-blue-950 via-cyan-950 to-indigo-950 border-b border-cyan-500/30 text-xs text-cyan-200 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-spin" />
+                  <span className="font-semibold text-[11px]">{streamStatusText || 'AI sedang memperbarui dokumen PRD...'}</span>
+                </div>
+                <span className="font-mono text-[10px] text-cyan-400 animate-pulse">Typing Stream Active ⚡</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* DevPulse Document Body Container */}
-          <div ref={previewScrollRef} className="flex-1 overflow-y-auto bg-[#0a0e1a] text-slate-200">
+          <div
+            ref={previewScrollRef}
+            className={`flex-1 overflow-y-auto bg-[#0a0e1a] text-slate-200 scroll-smooth ${
+              isPrdStreaming ? 'ring-1 ring-cyan-500/40 shadow-inner' : ''
+            }`}
+          >
             {/* DevPulse Cover Gradient Banner */}
             <div className="h-28 bg-gradient-to-r from-blue-900 via-indigo-950 to-purple-900 relative overflow-hidden">
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -567,7 +802,7 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
                 </p>
               </div>
 
-              {/* Notion Properties Grid */}
+              {/* DevPulse Properties Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-900/80 rounded-xl border border-slate-800/80 text-xs">
                 <div>
                   <span className="text-slate-500 text-[10px] block font-semibold uppercase tracking-wider">Author</span>
@@ -588,11 +823,16 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
               </div>
             </div>
 
-            {/* Rendered Markdown Viewer with Mermaid Renderer */}
-            <div className="px-6 sm:px-10 pb-12 text-xs leading-relaxed space-y-4">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={NotionComponents}>
-                {prdMarkdown}
+            {/* Rendered Markdown Viewer with Progressive Typewriter & Mermaid Renderer */}
+            <div className="px-6 sm:px-10 pb-12 text-xs leading-relaxed space-y-4 relative">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={DevPulseMarkdownComponents}>
+                {displayPrdMarkdown}
               </ReactMarkdown>
+
+              {/* Streaming Blinking Cursor */}
+              {isPrdStreaming && (
+                <span className="inline-block w-2.5 h-4 bg-cyan-400 ml-1 rounded-xs animate-pulse align-middle shadow-md shadow-cyan-400/80" />
+              )}
             </div>
           </div>
 
@@ -605,7 +845,8 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
 
             <button
               onClick={onOpenSubmission}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2 glow-button cursor-pointer min-h-[44px]"
+              disabled={isPrdStreaming}
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2 glow-button cursor-pointer min-h-[44px] disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 text-cyan-200" />
               <span>Setujui PRD & Submit Kontak</span>
