@@ -20,10 +20,10 @@ Sistem proteksi anti-bot presisi tinggi dengan mekanika potongan puzzle HTML5 Ca
 
 ---
 
-### 2. 🤖 AI PRD Builder & Live Notion Document dengan Diagram Mermaid
-Wizard kuesioner cerdas terintegrasi AI yang menghasilkan dokumen PRD.md berstandar Notion lengkap dengan diagram alur arsitektur sistem, user journey, ERD database, dan user stories.
+### 2. 🤖 AI PRD Builder & Live Document dengan Diagram Mermaid (DevPulse Studio Pro)
+Wizard kuesioner cerdas terintegrasi AI yang menghasilkan dokumen PRD.md berstandar **DevPulse Studio Pro** lengkap dengan diagram alur arsitektur sistem, user journey, ERD database, dan user stories.
 
-![AI PRD Builder & Notion Live Document](public/screenshots/03_prd_builder_notion.png)
+![AI PRD Builder & Live Document](public/screenshots/03_prd_builder_notion.png)
 
 ---
 
@@ -41,17 +41,17 @@ Pusat statistik data prospek (*leads*), nilai proyek dalam pipeline, aktivitas p
 
 ---
 
-### 5. 🎨 Figma Studio Visual Landing CMS (`/admin/landing-content`)
-Penyunting konten visual 3 kolom ala Figma Studio: *Layers Tree Navigator*, *Central Live Viewport Canvas*, dan *Properties Inspector* dengan dukungan upload gambar lokal.
+### 5. 🎨 DevPulse Live Canvas Visual CMS (`/admin/landing-content`)
+Penyunting konten visual 3 kolom: *Layers Tree Navigator*, *Central Live Viewport Canvas*, dan *Properties Inspector* dengan dukungan upload gambar lokal.
 
-![Figma Studio Visual CMS](public/screenshots/06_figma_studio_cms.png)
+![DevPulse Live Canvas Visual CMS](public/screenshots/06_figma_studio_cms.png)
 
 ---
 
-### 6. 📋 Project Task Board (Trello-Style Kanban Workspace)
+### 6. 📋 Project Task Board (DevPulse Kanban Workspace)
 Manajemen kartu tugas proyek interaktif berbasis status (*Backlog, To Do, In Progress, In Review, Completed*) dengan *Rich Markdown Editor* dan *Task Checklist*.
 
-![Project Tasks Trello Kanban](public/screenshots/07_trello_kanban.png)
+![Project Tasks Kanban Workspace](public/screenshots/07_trello_kanban.png)
 
 ---
 
@@ -66,22 +66,22 @@ Pipeline sales CRM untuk memonitor progres negosiasi deal proyek dari tahap *New
 
 ### 1. 🤖 AI PRD Builder & Interactive Questionnaire
 - **Interaktif Questionnaire**: Pengisian kebutuhan non-teknis dengan rekomendasi AI otomatis (autofill jawaban esay & highlight pilihan ganda).
-- **Interactive AI Chatbot**: Asisten AI bergaya Notion yang memverifikasi kebutuhan dan memperbarui draft PRD secara langsung.
+- **Interactive AI Chatbot**: Asisten AI **DevPulse Studio Pro** yang memverifikasi kebutuhan dan memperbarui draft PRD secara langsung.
 - **Engine Diagram Mermaid**: Render visual dinamis untuk flowchart arsitektur multi-tier, alur logika sequence diagram, dan ERD skema basis data.
 
 ### 2. 🧮 Rate Calculator & Estimasi Biaya Transparan
 - Hitung estimasi investasi proyek berdasarkan formula transparan: `Total Jam Kerja × Rate Per Jam`.
 - Preset alokasi jam kerja modular untuk peluncuran cepat MVP hingga platform enterprise.
 
-### 3. 🎨 Figma Studio Visual Landing CMS (`/admin/landing-content`)
-- **Workspace 3 Kolom ala Figma Studio**: Panel Layers Tree Navigator, Central Live Viewport Canvas, dan Properties Inspector.
+### 3. 🎨 DevPulse Live Canvas Visual CMS (`/admin/landing-content`)
+- **Workspace 3 Kolom Modern**: Panel Layers Tree Navigator, Central Live Viewport Canvas, dan Properties Inspector.
 - **Real-Time Auto-Scroll Focus**: Section yang sedang di-highlight otomatis meluncur halus (*smooth scroll*) ke posisi paling atas viewport.
 - **Upload File Gambar Lokal (`ImageUploadPicker`)**: Dukungan upload file gambar dari komputer (Data URL persistent) & link URL.
 - **100% Elemen Editable**: Seluruh teks, tombol CTA, grid ikon Lucide, dan foto testimoni klien dapat dikelola tanpa menyentuh codebase.
 
 ### 4. 💼 CRM Admin Panel & Master Data Management
 - **Lead-to-Deal Conversion (1-Click)**: Konversi data prospek klien dari kuisioner langsung menjadi deal proyek CRM.
-- **Workspace Trello Kanban (`/admin/tasks`)**: Pengelolaan task proyek dengan Rich WYSIWYG Markdown Editor Toolbar.
+- **Workspace Kanban Tasks (`/admin/tasks`)**: Pengelolaan task proyek dengan DevPulse Rich Markdown Editor Toolbar.
 - **Dynamic Master Data CRUD**: Kelola label, prioritas, dan kategori data secara dinamis dari antarmuka Admin Panel.
 
 ---

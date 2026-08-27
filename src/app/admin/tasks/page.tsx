@@ -453,10 +453,10 @@ export default function ProjectTasksPage() {
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <CheckSquare className="w-6 h-6 text-cyan-400" />
-            <span>Project Tasks <span className="gradient-text-cyan">Trello Workspace</span></span>
+            <span>Project Tasks <span className="gradient-text-cyan">Kanban Workspace</span></span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Manajemen pengerjaan tugas proyek CRM dengan Rich Trello Markdown Editor, Checklist, & Comments.
+            Manajemen pengerjaan tugas proyek CRM dengan DevPulse Studio Pro Markdown Editor, Checklist, & Comments.
           </p>
         </div>
 

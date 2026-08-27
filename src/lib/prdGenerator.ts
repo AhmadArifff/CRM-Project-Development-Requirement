@@ -3,9 +3,9 @@ import { QuestionnaireData } from '@/store/usePrdStore';
 export function generateProfessionalPrd(q: QuestionnaireData): { markdown: string; estimatedHours: number } {
   const appTitle = q.appCategory ? `${q.appCategory}` : 'Aplikasi SaaS & CRM Enterprise';
   const target = q.targetAudience || 'Pengembang, Konsultan Digital, & Tim Manajemen Proyek';
-  const features = q.keyFeatures || 'Otomatisasi PRD dengan AI, Visual CMS Landing Page, Pipeline Deals, dan Kanban Board';
+  const features = q.keyFeatures || 'Otomatisasi PRD dengan AI, DevPulse Live Canvas Visual CMS, Pipeline Deals, dan Kanban Board';
   const scale = q.userScale || '10.000 - 50.000 Pengguna Aktif Bulanan';
-  const refApp = q.referenceApp || 'Notion + Linear + Trello';
+  const refApp = q.referenceApp || 'DevPulse Studio Pro Suite (Dark Cyber Glassmorphism)';
   const timeline = q.timeline || '4 - 6 Minggu';
 
   const estimatedHours = 160;
@@ -191,8 +191,8 @@ Rincian modul pengerjaan transparan selama **${timeline}**:
 | :--- | :--- | :--- | :--- |
 | 1 | **Foundation & Auth Security** | Setup Next.js PWA, Express API, Better Auth + JWT Token | 40 Jam |
 | 2 | **AI PRD Builder & Puzzle CAPTCHA** | Wizard Questionnaire, Mermaid Parser, & Anti-Bot Protection | 45 Jam |
-| 3 | **CRM Pipeline & Trello Kanban** | Deals Management, Drag-and-Drop Task Board, Master Data | 45 Jam |
-| 4 | **Figma Visual CMS & Landing** | Live Preview Canvas, Image Upload Supabase, Viewport Toggle | 30 Jam |
+| 3 | **CRM Pipeline & DevPulse Kanban** | Deals Management, Drag-and-Drop Task Board, Master Data | 45 Jam |
+| 4 | **DevPulse Live Canvas Visual CMS** | Live Preview Canvas, Image Upload Supabase, Viewport Toggle | 30 Jam |
 | **TOTAL** | **Total Estimasi Jam Kerja** | **Garansi Rate 100% Transparan** | **${estimatedHours} Jam** |
 
 > 💰 **Kalkulasi Biaya Investasi Proyek:**

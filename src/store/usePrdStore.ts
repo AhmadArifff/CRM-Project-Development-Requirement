@@ -63,9 +63,9 @@ interface PrdStore {
 const initialQuestionnaire: QuestionnaireData = {
   appCategory: 'Aplikasi CRM & Konsultasi AI Scoping',
   targetAudience: 'Pengembang, Konsultan Digital, & Pemilik Bisnis',
-  keyFeatures: 'AI PRD Scoping Otomatis, Figma Studio Visual CMS, Deals Pipeline, Kanban Board',
+  keyFeatures: 'AI PRD Scoping Otomatis, DevPulse Live Canvas Visual CMS, Deals Pipeline, Kanban Board',
   userScale: '10.000 - 50.000 Pengguna Aktif Bulanan',
-  referenceApp: 'Notion + Linear + Trello',
+  referenceApp: 'DevPulse Studio Pro Suite (CRM + Kanban Workspace + AI PRD)',
   budgetRange: 'Rp 30.000.000 - Rp 60.000.000',
   timeline: '4 - 6 Minggu',
 };
@@ -93,7 +93,7 @@ export const usePrdStore = create<PrdStore>((set, get) => ({
     {
       id: 'msg-1',
       sender: 'ai',
-      text: 'Halo! Saya AI PRD Consultant. Saya siap membantu merancang dokumen PRD berstandar Notion lengkap dengan arsitektur & diagram alur Mermaid untuk aplikasi impian Anda. Mari mulai dari kebutuhan fitur utama!',
+      text: 'Halo! Saya AI PRD Consultant dari DevPulse Studio Pro. Saya siap membantu merancang dokumen PRD lengkap dengan arsitektur & diagram alur Mermaid untuk aplikasi impian Anda. Mari mulai dari kebutuhan fitur utama!',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ],

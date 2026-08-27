@@ -167,9 +167,9 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   // Initial prompt generation based on questionnaire
   useEffect(() => {
     if (chatMessages.length === 1 && questionnaire.appCategory) {
-      const summaryText = `💡 **Notion AI Architect Analysis**
+      const summaryText = `💡 **DevPulse AI Architect Analysis**
 
-Saya telah menyusun dokumen PRD lengkap berstandar *Enterprise Notion* dengan **Diagram Arsitektur Multi-Tier & Flowchart Mermaid** di panel kanan:
+Saya telah menyusun dokumen PRD lengkap berstandar **DevPulse Studio Pro** dengan **Diagram Arsitektur Multi-Tier & Flowchart Mermaid** di panel kanan:
 - **Kategori Aplikasi:** \`${questionnaire.appCategory}\`
 - **Target Pengguna:** \`${questionnaire.targetAudience}\`
 - **Fitur Terpilih:** \`${questionnaire.keyFeatures}\`
@@ -253,7 +253,7 @@ sequenceDiagram
 
 Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokumen **PRD.md**.
 
-- Status Sinkronisasi: 🟢 **Active (Notion Document Live Synced)**
+- Status Sinkronisasi: 🟢 **Active (DevPulse Studio Pro Synced)**
 - Diagram & spesifikasi siap diekspor menjadi berkas \`.md\`.`;
         hoursAdd = 10;
         prdAppend = `\n\n> 💡 **Revisi AI Architect (${new Date().toLocaleTimeString()}):**
@@ -307,7 +307,7 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          <span>Notion AI Chat</span>
+          <span>DevPulse AI Chat</span>
         </button>
         <button
           onClick={() => setMobileTab('preview')}
@@ -323,13 +323,13 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
       {/* Main Dual Grid */}
       <div className={`grid grid-cols-1 md:grid-cols-12 gap-6 ${isFullscreen ? 'h-[calc(100vh-2rem)]' : 'h-[780px]'}`}>
         
-        {/* LEFT COLUMN: Notion AI Chat Window */}
+        {/* LEFT COLUMN: DevPulse AI Chat Window */}
         <div
           className={`md:col-span-5 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl ${
             mobileTab === 'preview' ? 'hidden md:flex' : 'flex'
           }`}
         >
-          {/* Notion AI Chat Header */}
+          {/* DevPulse AI Chat Header */}
           <div className="p-4 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-0.5 shadow-lg shadow-purple-500/20">
@@ -341,7 +341,7 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
                 <div className="flex items-center gap-1.5">
                   <h4 className="text-sm font-bold text-white tracking-tight">AI PRD Architect</h4>
                   <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-md font-semibold border border-purple-500/30">
-                    Notion Pro
+                    DevPulse Studio Pro
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
@@ -495,20 +495,20 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Notion Workspace Document Editor View */}
+        {/* RIGHT COLUMN: DevPulse Workspace Document Editor View */}
         <div
           className={`md:col-span-7 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl ${
             mobileTab === 'chat' ? 'hidden md:flex' : 'flex'
           }`}
         >
-          {/* Notion Header Bar */}
+          {/* DevPulse Header Bar */}
           <div className="px-4 py-3 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
               <BookOpen className="w-4 h-4 text-cyan-400" />
               <span className="text-slate-400">Workspace /</span>
               <span className="text-white font-bold">PRD Document</span>
               <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
-                🟢 Live Notion Format
+                🟢 Live DevPulse Doc
               </span>
             </div>
 
@@ -540,13 +540,13 @@ Permintaan \`${text}\` telah berhasil dianalisis dan disinkronkan ke dalam dokum
             </div>
           </div>
 
-          {/* Notion Document Body Container */}
+          {/* DevPulse Document Body Container */}
           <div ref={previewScrollRef} className="flex-1 overflow-y-auto bg-[#0a0e1a] text-slate-200">
-            {/* Notion Cover Gradient Banner */}
+            {/* DevPulse Cover Gradient Banner */}
             <div className="h-28 bg-gradient-to-r from-blue-900 via-indigo-950 to-purple-900 relative overflow-hidden">
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]" />
               <div className="absolute bottom-2 right-4 text-[10px] text-slate-400/80 font-mono" suppressHydrationWarning>
-                Notion Doc ID: prd-{Date.now().toString().slice(-6)}
+                DevPulse Doc ID: prd-{Date.now().toString().slice(-6)}
               </div>
             </div>
 
