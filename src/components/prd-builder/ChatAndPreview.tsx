@@ -40,6 +40,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // OpenRouter Free Models
 const OPENROUTER_MODELS = [
   { id: 'poolside/laguna-s-2.1:free', name: 'Poolside Laguna S-2.1 (Free)', provider: 'Poolside' },
+  { id: 'minimax/minimax-m3:free', name: 'MiniMax M3 (Free)', provider: 'MiniMax' },
   { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Free)', provider: 'Google' },
   { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', provider: 'Meta' },
   { id: 'deepseek/deepseek-chat:free', name: 'DeepSeek Chat (Free)', provider: 'DeepSeek' },

@@ -204,6 +204,7 @@ const initialAiProviders: AiProviderItem[] = [
     selectedModel: 'poolside/laguna-s-2.1:free',
     availableModels: [
       'poolside/laguna-s-2.1:free',
+      'minimax/minimax-m3:free',
       'google/gemini-2.0-flash-exp:free',
       'meta-llama/llama-3.3-70b-instruct:free',
       'deepseek/deepseek-chat:free',

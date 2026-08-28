@@ -349,8 +349,8 @@ async function main() {
       apiKey: 'sk-or-v1-****',
       isActive: false,
       isDefault: false,
-      selectedModel: 'google/gemini-2.0-flash-exp:free',
-      availableModels: ['google/gemini-2.0-flash-exp:free', 'meta-llama/llama-3.3-70b-instruct:free', 'deepseek/deepseek-chat:free'],
+      selectedModel: 'poolside/laguna-s-2.1:free',
+      availableModels: ['poolside/laguna-s-2.1:free', 'minimax/minimax-m3:free', 'google/gemini-2.0-flash-exp:free', 'meta-llama/llama-3.3-70b-instruct:free', 'deepseek/deepseek-chat:free', 'qwen/qwen-2.5-coder-32b-instruct:free', 'mistralai/mistral-7b-instruct:free'],
     },
   ];
 
