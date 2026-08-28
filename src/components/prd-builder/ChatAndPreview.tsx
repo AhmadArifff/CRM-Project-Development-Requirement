@@ -365,7 +365,8 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
     moduleName: string,
     hoursDelta: number,
     rate: number,
-    currentTotalHours: number
+    currentTotalHours: number,
+    rawCustomContent?: string
   ): { updatedPrd: string; subSecTitle: string } => {
     let prd = currentPrd;
 
@@ -377,10 +378,25 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       if (!isNaN(num) && num > maxSubNum) maxSubNum = num;
     }
     const nextSubNum = maxSubNum + 1;
-    const subSecTitle = `5.${nextSubNum} User Story: ${moduleName}`;
+    const subSecTitle = `5.${nextSubNum} User Story & Spesifikasi: ${moduleName}`;
 
-    // 2. Generate clean Gherkin & Mermaid specification
-    const snippet = `\n\n### ${subSecTitle}
+    let snippet = '';
+
+    if (rawCustomContent && rawCustomContent.trim().length > 60) {
+      // Clean and normalize rich AI markdown to fit nicely into Section 5.x
+      let cleanContent = rawCustomContent
+        // Remove markdown title if it starts with #
+        .replace(/^#\s+[^\n]+\n/i, '')
+        .replace(/^##\s+[^\n]+\n/i, '')
+        // Downgrade sub-headings to ####
+        .replace(/^###\s+/gm, '#### ')
+        .replace(/^##\s+/gm, '#### ')
+        .trim();
+
+      snippet = `\n\n### ${subSecTitle}\n\n${cleanContent}\n`;
+    } else {
+      // Fallback: Structured User Story + Mermaid Flow
+      snippet = `\n\n### ${subSecTitle}
 - **As a** Pengguna / Admin,
 - **I want to** menggunakan modul ${moduleName},
 - **So that** alur transaksi dan operasional aplikasi menjadi terotomatisasi, transparan, dan terukur.
@@ -415,6 +431,7 @@ flowchart TD
     Event -- "4. Push Response" --> UI
 \`\`\`
 `;
+    }
 
     // 3. Insert cleanly right before Section 6 (so Section 5 stays strictly sequential)
     const sec6Regex = /(\n*---\n*##\s+6\.)/i;
@@ -527,7 +544,8 @@ flowchart TD
       prop.title,
       prop.hours,
       hourlyRate,
-      estimatedHours
+      estimatedHours,
+      prop.prdAppend
     );
     const newHours = estimatedHours + prop.hours;
     const previousLength = prdMarkdown.length;
@@ -674,12 +692,26 @@ flowchart TD
         }));
       } else if (addMatch || isExplicitAddCommand) {
         const moduleName = (addMatch ? addMatch[1] : clientInferredAddTitle).trim();
+
+        // Extract rich AI content (strip conversational intro greetings & footer text)
+        let richAiContent = fullAccumulatedText
+          .replace(/<<<ACTION:(ADD|REMOVE):[^>]+>>>/g, '')
+          .replace(/^(\s*Baik[^\n]*\n|\s*Tentu[^\n]*\n|\s*Permintaan Anda[^\n]*\n|\s*Berikut rancangan[^\n]*\n)+/i, '')
+          .replace(/(\n\s*Memperbarui dokumen[^\n]*|\n\s*✨\s*Section[^\n]*|\n\s*Penambahan jadwal[^\n]*|\n\s*Silakan beri instruksi[^\n]*|\n\s*Bagaimana keputusan Anda[^\n]*)+$/i, '')
+          .trim();
+
+        // Extract hours if present in response text (e.g. 24 Jam or 15 Jam)
+        const hoursMatch = fullAccumulatedText.match(/Total\s*(?:Estimasi)?\s*[:|]?\s*(\d+)\s*Jam/i) ||
+                           fullAccumulatedText.match(/\+(\d+)\s*Jam\s*Kerja/i);
+        const extractedHours = hoursMatch ? parseInt(hoursMatch[1], 10) : 15;
+
         setMessageProposals((prev) => ({
           ...prev,
           [tempAiMsgId]: {
             actionType: 'ADD',
             title: moduleName,
-            hours: 15,
+            prdAppend: richAiContent,
+            hours: extractedHours > 0 ? extractedHours : 15,
           },
         }));
       }
