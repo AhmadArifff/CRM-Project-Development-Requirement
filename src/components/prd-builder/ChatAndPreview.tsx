@@ -366,20 +366,49 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 
     if (prop.actionType === 'REMOVE') {
       let updated = prdMarkdown;
-      const cleanTarget = prop.title.toLowerCase().replace(/modul\s+/gi, '').trim();
+      const cleanTarget = prop.title.replace(/^["'\s]+|["'\s]+$/g, '');
+      let sectionRemoved = false;
 
-      // Strategy: Remove the section matching the target keyword
-      const sections = updated.split(/(?=\n\n###\s+)/g);
-      const filteredSections = sections.filter((sec) => {
-        const headingLine = sec.split('\n')[0] || '';
-        return !headingLine.toLowerCase().includes(cleanTarget);
-      });
+      // 1. Check if it starts with a section number like "8." or "5.3"
+      const numMatch = cleanTarget.match(/^(\d+(\.\d+)?)/);
+      if (numMatch) {
+        const secNum = numMatch[1].replace('.', '\\.');
+        const numRegex = new RegExp(`(\\n*---)?\\n*##+\\s+${secNum}[^\\n]*[\\s\\S]*?(?=\\n*---?\\n*##+|$)`, 'i');
+        if (numRegex.test(updated)) {
+          updated = updated.replace(numRegex, '');
+          sectionRemoved = true;
+        }
+      }
 
-      if (filteredSections.length < sections.length) {
-        updated = filteredSections.join('');
-      } else {
+      // 2. Try matching exact title in heading
+      if (!sectionRemoved) {
+        const escaped = cleanTarget.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const titleRegex = new RegExp(`(\\n*---)?\\n*##+[^\\n]*${escaped}[\\s\\S]*?(?=\\n*---?\\n*##+|$)`, 'i');
+        if (titleRegex.test(updated)) {
+          updated = updated.replace(titleRegex, '');
+          sectionRemoved = true;
+        }
+      }
+
+      // 3. Fallback: Split by sections and filter out matching heading
+      if (!sectionRemoved) {
+        const keywords = cleanTarget.split(/[\s,.-]+/).filter((w) => w.length > 3);
+        const sections = updated.split(/(?=\n\n##+)/g);
+        const filteredSections = sections.filter((sec) => {
+          const headingLine = (sec.split('\n')[0] || '').toLowerCase();
+          return !keywords.some((kw) => headingLine.includes(kw.toLowerCase()));
+        });
+
+        if (filteredSections.length < sections.length) {
+          updated = filteredSections.join('');
+          sectionRemoved = true;
+        }
+      }
+
+      // 4. Line level fallback
+      if (!sectionRemoved) {
         const lines = updated.split('\n');
-        const filteredLines = lines.filter((line) => !line.toLowerCase().includes(cleanTarget));
+        const filteredLines = lines.filter((line) => !line.toLowerCase().includes(cleanTarget.toLowerCase()));
         updated = filteredLines.join('\n');
       }
 
@@ -398,7 +427,7 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 
       addChatMessage(
         'ai',
-        `🗑️ **Modul "${prop.title}" Berhasil Dihapus dari Dokumen PRD.md!**\n\nPenyesuaian jadwal: \`-15 Jam Kerja\`. Total estimasi biaya dan durasi proyek telah dikurangi secara otomatis.`
+        `🗑️ **Section / Modul "${prop.title}" Berhasil Dihapus dari Dokumen PRD.md!**\n\nPenyesuaian jadwal: \`-15 Jam Kerja\`. Dokumen panel kanan dan kalkulasi biaya telah diperbarui secara otomatis.`
       );
       return;
     }
@@ -444,6 +473,32 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
     // Add empty placeholder message for live streaming
     addChatMessageWithId(tempAiMsgId, 'ai', '');
 
+    // Check if user input is an explicit removal command (Client-Side Safety Guarantee)
+    const cleanUserInput = text.trim();
+    const lowerUserInput = cleanUserInput.toLowerCase();
+    const isExplicitRemoveCommand =
+      (lowerUserInput.includes('remove') ||
+        lowerUserInput.includes('hapus') ||
+        lowerUserInput.includes('hilangkan') ||
+        lowerUserInput.includes('delete') ||
+        lowerUserInput.includes('buang') ||
+        lowerUserInput.includes('pangkas')) &&
+      !lowerUserInput.startsWith('apakah') &&
+      !cleanUserInput.includes('?');
+
+    let clientInferredRemoveTitle = '';
+    if (isExplicitRemoveCommand) {
+      const quoteMatch = cleanUserInput.match(/["'“]([^"'”]+)["'”]/);
+      if (quoteMatch) {
+        clientInferredRemoveTitle = quoteMatch[1].trim();
+      } else {
+        clientInferredRemoveTitle = cleanUserInput
+          .replace(/^(saya ingin|tolong|mohon)?\s*(remove|hapus|hilangkan|delete|buang|pangkas)\s*(content point|modul|fitur|section|bagian)?\s*/gi, '')
+          .replace(/["'!]/g, '')
+          .trim();
+      }
+    }
+
     try {
       // 1. Call real OpenRouter AI Chat streaming endpoint
       const response = await fetch('/api/v1/ai/chat', {
@@ -483,11 +538,21 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 
       setIsAiTyping(false);
 
-      // 2. Check if the final AI response has an action marker
+      // 2. Check if the final AI response has an action marker OR user requested removal
       const addMatch = fullAccumulatedText.match(/<<<ACTION:ADD:([^>]+)>>>/);
       const removeMatch = fullAccumulatedText.match(/<<<ACTION:REMOVE:([^>]+)>>>/);
 
-      if (addMatch) {
+      if (removeMatch || clientInferredRemoveTitle) {
+        const targetTitle = (removeMatch ? removeMatch[1] : clientInferredRemoveTitle).trim();
+        setMessageProposals((prev) => ({
+          ...prev,
+          [tempAiMsgId]: {
+            actionType: 'REMOVE',
+            title: targetTitle,
+            hours: -15,
+          },
+        }));
+      } else if (addMatch) {
         const moduleName = addMatch[1].trim();
         const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
         const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
@@ -544,16 +609,6 @@ flowchart TD
             title: moduleName,
             prdAppend: prdSnippet,
             hours: 15,
-          },
-        }));
-      } else if (removeMatch) {
-        const moduleName = removeMatch[1].trim();
-        setMessageProposals((prev) => ({
-          ...prev,
-          [tempAiMsgId]: {
-            actionType: 'REMOVE',
-            title: moduleName,
-            hours: -15,
           },
         }));
       }
