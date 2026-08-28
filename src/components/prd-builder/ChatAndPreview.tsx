@@ -32,8 +32,19 @@ import {
   Activity,
   CheckCircle2,
   Lock,
+  Cpu,
+  PlusCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// OpenRouter Free Models
+const OPENROUTER_MODELS = [
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Free)', provider: 'Google' },
+  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', provider: 'Meta' },
+  { id: 'deepseek/deepseek-chat:free', name: 'DeepSeek Chat (Free)', provider: 'DeepSeek' },
+  { id: 'qwen/qwen-2.5-coder-32b-instruct:free', name: 'Qwen 2.5 Coder (Free)', provider: 'Alibaba' },
+  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B (Free)', provider: 'Mistral' },
+];
 
 // DevPulse Studio Pro Custom Markdown Components
 const DevPulseMarkdownComponents = {
@@ -177,6 +188,12 @@ const SHORTCUT_ITEMS: ShortcutItem[] = [
   },
 ];
 
+interface ProposalData {
+  title: string;
+  prdAppend: string;
+  hours: number;
+}
+
 export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onOpenSubmission }) => {
   const {
     chatMessages,
@@ -195,6 +212,10 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [copied, setCopied] = useState(false);
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview'>('chat');
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // OpenRouter Model Selector State
+  const [selectedModel, setSelectedModel] = useState<string>('google/gemini-2.0-flash-exp:free');
+  const [messageProposals, setMessageProposals] = useState<Record<string, ProposalData>>({});
 
   // Dynamic helper to check if a module is currently present in PRD markdown
   const checkModulesInPrd = (markdown: string): string[] => {
@@ -281,7 +302,6 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
     let currentIndex = startIndex;
     setDisplayPrdMarkdown(fullText.slice(0, currentIndex));
 
-    // Chunk size and speed for smooth organic typing
     const chunkSize = 14; 
     const intervalMs = 20;
 
@@ -289,7 +309,6 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
       currentIndex = Math.min(currentIndex + chunkSize, fullText.length);
       setDisplayPrdMarkdown(fullText.slice(0, currentIndex));
 
-      // Auto scroll right preview pane following typewriter
       if (previewScrollRef.current) {
         previewScrollRef.current.scrollTop = previewScrollRef.current.scrollHeight;
       }
@@ -322,7 +341,7 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   // Initial welcome analysis
   useEffect(() => {
     if (chatMessages.length === 1 && questionnaire.appCategory) {
-      const summaryText = `💡 **DevPulse AI Architect Analysis**
+      const summaryText = `💡 **DevPulse AI Product Manager (/pm) Analysis**
 
 Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap berstandar **DevPulse Studio Pro** dengan **Diagram Arsitektur Multi-Tier & Flowchart Mermaid** di panel kanan:
 - **Kategori Aplikasi:** \`${questionnaire.appCategory}\`
@@ -331,12 +350,33 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 - **Skala Sistem:** \`${questionnaire.userScale}\`
 - **Estimasi Total:** \`${estimatedHours} Jam Kerja (${timelineFormat(estimatedHours)})\`
 
-> Anda dapat mengetik instruksi penambahan modul, revisi alur, atau fitur spesifik di chat ini. Dokumen PRD.md di panel kanan akan otomatis diperbarui dengan **animasi live typewriter**!`;
+> Anda dapat mengetik instruksi penambahan modul, berdiskusi mengenai arsitektur, atau memilih pintasan fitur di bawah. Dokumen PRD.md di panel kanan hanya akan diperbarui saat Anda menyetujuinya!`;
       addChatMessage('ai', summaryText);
     }
   }, [questionnaire]);
 
-  const handleSendMessage = (textToSend?: string) => {
+  // Execute PRD Module Injection upon User Confirmation
+  const handleApplyProposalToPrd = (msgId: string) => {
+    const prop = messageProposals[msgId];
+    if (!prop || isPrdStreaming) return;
+
+    const previousLength = prdMarkdown.length;
+    const updatedFullPrd = `${prdMarkdown}${prop.prdAppend}`;
+    setEstimatedHours(estimatedHours + prop.hours);
+
+    startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik modul "${prop.title}"...`);
+
+    // Remove proposal after application
+    setMessageProposals((prev) => {
+      const copy = { ...prev };
+      delete copy[msgId];
+      return copy;
+    });
+
+    addChatMessage('ai', `✅ **Spesifikasi Modul "${prop.title}" Berhasil Diterapkan ke PRD.md!**\n\nPenambahan durasi: \`+${prop.hours} Jam Kerja\`. Dokumen live di panel kanan telah diperbarui.`);
+  };
+
+  const handleSendMessage = async (textToSend?: string, isShortcutClick?: boolean) => {
     const text = textToSend || inputMessage;
     if (!text.trim() || isAiTyping || isPrdStreaming) return;
 
@@ -344,227 +384,54 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
     if (!textToSend) setInputMessage('');
     setIsAiTyping(true);
 
-    setTimeout(() => {
-      let aiReply = '';
-      let hoursAdd = 0;
-      let prdAppend = '';
-      const lower = text.toLowerCase();
+    try {
+      // 1. Call real OpenRouter AI Chat endpoint
+      const response = await fetch('/api/v1/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...chatMessages, { sender: 'user', text }],
+          model: selectedModel,
+          hourlyRate,
+          currentPrd: prdMarkdown,
+        }),
+      });
 
-      const isAuth = lower.includes('auth') || lower.includes('login') || lower.includes('security');
-      const isPayment = lower.includes('payment') || lower.includes('bayar') || lower.includes('midtrans') || lower.includes('xendit');
-      const isRealtime = lower.includes('realtime') || lower.includes('chat') || lower.includes('notifikasi') || lower.includes('websocket');
-      const isMvp = lower.includes('mvp') || lower.includes('sederhana') || lower.includes('fast');
+      const data = await response.json();
+      const aiReply = data.reply || 'Maaf, terjadi kendala saat memproses jawaban AI.';
+      const newMsgId = `msg-${Date.now()}`;
 
-      // 1. Auth & Security Check
-      if (isAuth) {
-        if (prdMarkdown.includes('Modul Keamanan & Better Auth Guard') || appliedShortcuts.includes('auth')) {
-          aiReply = `🔒 **Modul Keamanan & Auth Sudah Terpasang**
+      addChatMessage('ai', aiReply);
+      setIsAiTyping(false);
 
-Modul otentikasi enterprise **Better Auth + JWT Token Rotation & Session Fingerprinting** sudah aktif di dalam dokumen **PRD.md** (Bagian 5.3). Tidak perlu diduplikasi.`;
-          addChatMessage('ai', aiReply);
-          setIsAiTyping(false);
-          return;
-        }
-
-        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'auth'])));
-        aiReply = `🔒 **Modul Keamanan & Auth Berhasil Ditambahkan ke PRD**
-
-- **Teknologi Ditambahkan:** \`Better Auth + JWT Token Rotation & Session Fingerprinting\`
-- **Fitur Keamanan:** Rate Limiting Express, CSRF Guard, HttpOnly Cookie, & RLS Supabase Policies.
-- **Diagram Disertakan:** Alur Otentikasi & Refresh Token Sequence.
-- **Estimasi Tambahan:** +15 Jam Kerja.
-
-> Modul telah di-inject ke dokumen **PRD.md** dengan simulasi pengetikan AI.`;
-        hoursAdd = 15;
-        prdAppend = `\n\n### 5.3 Modul Keamanan & Better Auth Guard
-Modul otentikasi enterprise dengan proteksi anti-tampering dan token rotation:
-
-\`\`\`mermaid
-sequenceDiagram
-    autonumber
-    actor Client as User / Web Client
-    participant API as Express API Server
-    participant Auth as Better Auth Guard
-    participant DB as Supabase PostgreSQL
-
-    Client->>API: POST /api/v1/auth/login (Kredensial)
-    API->>Auth: Validasi Password (Bcrypt Hash)
-    Auth->>DB: Query User & Role RBAC
-    DB-->>Auth: User Record Valid
-    Auth->>API: Generate Access Token (15m) + Refresh Token (7d)
-    API-->>Client: Set HttpOnly Cookie & Return User Profile
-\`\`\`
-
-**Kriteria Penerimaan (Security Acceptance Criteria):**
-- [ ] **Given** kredensial login valid, **When** pengguna login, **Then** server menerbitkan JWT terenkripsi dengan masa berlaku 15 menit dan HttpOnly cookie.
-- [ ] **Given** token kadaluarsa, **When** request endpoint berikutnya masuk, **Then** middleware otomatis melakukan refresh token tanpa logout paksa.
-`;
-      } 
-      // 2. Payment Gateway Check
-      else if (isPayment) {
-        if (prdMarkdown.includes('Modul Payment Gateway & Invoicing Otomatis') || appliedShortcuts.includes('payment')) {
-          aiReply = `💳 **Modul Payment Gateway Sudah Terpasang**
-
-Integrasi **Midtrans / Xendit Payment Gateway & Auto Invoicing** sudah aktif di dalam dokumen **PRD.md** (Bagian 5.4). Tidak perlu diduplikasi.`;
-          addChatMessage('ai', aiReply);
-          setIsAiTyping(false);
-          return;
-        }
-
-        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'payment'])));
-        aiReply = `💳 **Integrasi Payment Gateway & Auto Invoicing Ditambahkan**
-
-- **Gateway Terpilih:** \`Midtrans / Xendit Integration\`
-- **Metode Pembayaran:** QRIS, Virtual Account (BCA, Mandiri, BRI, BNI), & Kartu Kredit.
-- **Fitur Otomatis:** Webhook Callback Auto-Verification & Auto Invoice Generator.
-- **Estimasi Tambahan:** +20 Jam Kerja.
-
-> Dokumen **PRD.md** di sebelah kanan telah diperbarui dengan diagram alur pembayaran online.`;
-        hoursAdd = 20;
-        prdAppend = `\n\n### 5.4 Modul Payment Gateway & Invoicing Otomatis
-Sistem pembayaran online instan dengan verifikasi webhook otomatis:
-
-\`\`\`mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Klien Pembeli
-    participant Frontend as Web PWA Client
-    participant Server as Express Backend
-    participant Gateway as Midtrans / Xendit Gateway
-
-    Client->>Frontend: Klik Bayar Invoice / Deposit Proyek
-    Frontend->>Server: POST /api/v1/payments/create-transaction
-    Server->>Gateway: Request Snap Payment Token
-    Gateway-->>Server: Kembalikan Snap Token & Redirect URL
-    Server-->>Frontend: Buka Modal Pembayaran (QRIS / VA)
-    Client->>Gateway: Selesaikan Pembayaran
-    Gateway->>Server: Webhook POST /api/v1/payments/webhook
-    Server->>Server: Verifikasi Signature Key & Update Status 'PAID'
-    Server-->>Frontend: Realtime Broadcast Event 'Payment Confirmed'
-\`\`\`
-
-**Spesifikasi Teknis Payment:**
-- **Signature Security:** SHA-512 Hash Checksum verification pada setiap webhook callback.
-- **Reconciliation:** Cron job otomatis setiap 1 jam untuk memeriksa transaksi pending.
-`;
-      } 
-      // 3. Real-Time WebSockets Check
-      else if (isRealtime) {
-        if (prdMarkdown.includes('Modul Real-Time Communication & WebSockets') || appliedShortcuts.includes('websockets')) {
-          aiReply = `⚡ **Modul Real-Time WebSockets Sudah Terpasang**
-
-Sistem **Real-Time Communication & WebSockets** sudah aktif di dalam dokumen **PRD.md** (Bagian 5.5).`;
-          addChatMessage('ai', aiReply);
-          setIsAiTyping(false);
-          return;
-        }
-
-        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'websockets'])));
-        aiReply = `⚡ **Modul Real-Time Communication & WebSockets Ditambahkan**
-
-- **Teknologi:** \`WebSockets / Server-Sent Events (SSE) Engine\`
-- **Fitur:** Real-time push notification, live team activity feed, dan instant sync deals board.
-- **Estimasi Tambahan:** +15 Jam Kerja.
-
-> Dokumen PRD telah dilengkapi arsitektur real-time data streaming.`;
-        hoursAdd = 15;
-        prdAppend = `\n\n### 5.5 Modul Real-Time Communication & WebSockets
-Arsitektur broadcast event instan untuk sinkronisasi aktivitas tim secara live:
-
-\`\`\`mermaid
-flowchart LR
-    subgraph Client ["🖥️ Web Client"]
-        WS_Client["WebSocket Client Listener"]
-    end
-    subgraph Backend ["⚙️ Realtime Dispatcher"]
-        Server["Express WebSocket Server"]
-        PubSub["Event Bus / Redis PubSub"]
-    end
-    subgraph Storage ["🗄️ Database"]
-        DB[("Supabase Realtime")]
-    end
-
-    Client -- "Subscribe Event" --> Server
-    Server --> PubSub
-    PubSub --> DB
-    DB -- "Trigger Notification" --> Server
-    Server -- "Push Update" --> WS_Client
-\`\`\`
-`;
-      } 
-      // 4. Fast MVP Scope Optimization Check
-      else if (isMvp) {
-        if (prdMarkdown.includes('Fast-Track MVP Edition') || appliedShortcuts.includes('mvp')) {
-          aiReply = `⚡ **Scope Sudah Berstatus Fast-Track MVP**
-
-Scope proyek sudah dioptimasi ke standar peluncuran cepat 100 Jam Kerja.`;
-          addChatMessage('ai', aiReply);
-          setIsAiTyping(false);
-          return;
-        }
-
-        setAppliedShortcuts((prev) => Array.from(new Set([...prev, 'mvp'])));
-        aiReply = `⚡ **Scope Proyek Disederhanakan ke Fast-Track MVP**
-
-- **Fokus Utama:** Fitur Inti (Auth Security, AI PRD Engine, Kanban Workspace).
-- **Optimasi Biaya:** Estimasi total durasi dipangkas menjadi **100 Jam Kerja**.
-- **Target Rilis:** 2 - 3 Minggu.
-
-> Dokumen PRD telah disesuaikan ke versi Fast-Track MVP.`;
-        setEstimatedHours(100);
-        prdAppend = `\n\n> ⚡ **Pembaruan Scope: Fast-Track MVP Edition**
-> - **Fokus Utama:** Peluncuran cepat fitur inti dengan estimasi waktu dipadatkan menjadi **100 Jam Kerja**.
-> - **Total Investasi Disesuaikan:** Rp 25.000.000 (100 Jam × Rp 250.000/jam).
-`;
-      } 
-      // 5. Custom User Prompts (with Deduplication and Dynamic Sub-section numbering)
-      else {
-        const cleanSnippet = text.trim().slice(0, 30);
-        if (prdMarkdown.toLowerCase().includes(cleanSnippet.toLowerCase())) {
-          aiReply = `📝 **Permintaan Teknis Sudah Tercatat**
-
-Spesifikasi mengenai \`${text}\` sudah tercatat di dalam dokumen **PRD.md**. Tidak perlu penambahan ganda.`;
-          addChatMessage('ai', aiReply);
-          setIsAiTyping(false);
-          return;
-        }
-
-        // Calculate dynamic sub-section number (e.g. 5.6, 5.7, ...)
+      // 2. If PRD Action is proposed (e.g. shortcut clicked or feature requested)
+      if (data.isPrdActionProposed) {
+        const lower = text.toLowerCase();
         const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
         const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
+        const moduleName = data.proposedModuleTitle || text;
 
-        aiReply = `👨‍💼 **Lead PM Analysis: Spesifikasi Modul Berhasil Ditambahkan ke PRD (Bagian ${nextSubSec})**
-
-Permintaan: \`${text}\` telah dianalisis sesuai standar **Technical Product Manager (/pm)** dan diformulasikan menjadi spesifikasi requirement enterprise di dokumen **PRD.md**:
-
-- **Struktur Disusun:** Problem Statement, User Story Gherkin, Acceptance Criteria, & Diagram Flowchart Mermaid.
-- **Status Scope:** 🟢 **Approved & Injected to Live PRD.md Workspace**
-- **Estimasi Tambahan:** +15 Jam Kerja (Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)}).
-
-> Perhatikan dokumen **PRD.md** pada panel kanan yang otomatis memperbarui susunan spesifikasi secara live!`;
-
-        hoursAdd = 15;
-        prdAppend = `\n\n### ${nextSubSec} Modul Spesifikasi: ${text}
+        const prdSnippet = `\n\n### ${nextSubSec} Modul Spesifikasi: ${moduleName}
 
 > **Problem Statement & Business Context:**
-> Pengguna memerlukan kemampuan untuk \`${text}\` guna meningkatkan efisiensi operasional dan pengalaman pengguna pada platform.
+> Pengguna memerlukan modul \`${moduleName}\` guna meningkatkan efisiensi operasional dan kapabilitas aplikasi.
 
 #### User Story:
 **As a** Pengguna / Admin,  
-**I want to** menggunakan modul ${text},  
+**I want to** menggunakan modul ${moduleName},  
 **So that** alur kerja bisnis menjadi terotomatisasi, transparan, dan terukur.
 
 #### Kriteria Penerimaan (Acceptance Criteria):
-- [ ] **Given** pengguna mengakses modul '${text}', **When** aksi atau data diinputkan, **Then** sistem melakukan validasi & memproses data secara real-time.
+- [ ] **Given** pengguna mengakses modul '${moduleName}', **When** aksi atau data diinputkan, **Then** sistem melakukan validasi & memproses data secara real-time.
 - [ ] **Given** data berhasil diproses, **When** transaksi selesai, **Then** database memperbarui state & memberikan notifikasi feedback visual.
-- [ ] **Given** terjadi kegagalan koneksi/server error, **When** API mengembalikan HTTP error, **Then** sistem menampilkan pesan kesalahan user-friendly tanpa crash.
+- [ ] **Given** terjadi kegagalan server, **When** API mengembalikan HTTP error, **Then** sistem menampilkan pesan kesalahan user-friendly tanpa crash.
 
 #### Rekomendasi Arsitektur Teknikal & Data Flow:
 
 \`\`\`mermaid
 flowchart TD
-    subgraph Client ["🖥️ Frontend Client Layer"]
-        UI["User Interface (${text})"]
+    subgraph Client ["🖥️ Frontend Layer"]
+        UI["User Interface (${moduleName})"]
     end
 
     subgraph Server ["⚙️ Backend API Controller"]
@@ -588,23 +455,36 @@ flowchart TD
 - **Estimasi Durasi:** +15 Jam Kerja
 - **Investasi Tambahan:** Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)} (15 Jam × Rp ${new Intl.NumberFormat('id-ID').format(hourlyRate)}/jam)
 `;
+
+        if (isShortcutClick) {
+          // Direct shortcut click: Apply directly
+          const previousLength = prdMarkdown.length;
+          const updatedFullPrd = `${prdMarkdown}${prdSnippet}`;
+          setEstimatedHours(estimatedHours + 15);
+          startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik modul "${moduleName}"...`);
+        } else {
+          // Chat prompt: Store proposal and require User Confirmation
+          setMessageProposals((prev) => ({
+            ...prev,
+            [newMsgId]: {
+              title: moduleName,
+              prdAppend: prdSnippet,
+              hours: 15,
+            },
+          }));
+        }
       }
-
-      addChatMessage('ai', aiReply);
-      if (hoursAdd > 0) setEstimatedHours(estimatedHours + hoursAdd);
-
+    } catch (err: any) {
+      console.error('Chat error:', err);
+      addChatMessage('ai', `⚠️ Maaf, terjadi kesalahan koneksi AI: ${err.message}. Silakan coba lagi.`);
       setIsAiTyping(false);
-
-      // Start Progressive Typewriter Streaming in PRD Pane
-      const previousLength = prdMarkdown.length;
-      const updatedFullPrd = `${prdMarkdown}${prdAppend}`;
-      startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik pembaruan modul "${text.slice(0, 30)}..."`);
-    }, 850);
+    }
   };
 
   const handleResetChat = () => {
     addChatMessage('ai', 'Riwayat chat telah di-reset. Anda dapat mengetik instruksi atau memilih modul baru.');
     setAppliedShortcuts([]);
+    setMessageProposals({});
   };
 
   const handleCopyMarkdown = () => {
@@ -669,41 +549,70 @@ flowchart TD
             mobileTab === 'preview' ? 'hidden md:flex' : 'flex'
           }`}
         >
-          {/* DevPulse AI Chat Header */}
-          <div className="p-4 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-0.5 shadow-lg shadow-purple-500/20">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse" />
+          {/* DevPulse AI Chat Header with OpenRouter Model Selector */}
+          <div className="p-3.5 bg-slate-900/95 border-b border-slate-800 flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-0.5 shadow-lg shadow-purple-500/20">
+                  <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-white tracking-tight">AI PRD Architect</h4>
+                    <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-semibold border border-purple-500/30">
+                      TPM (/pm)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span>OpenRouter AI Engine Active</span>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h4 className="text-sm font-bold text-white tracking-tight">AI PRD Architect</h4>
-                  <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-md font-semibold border border-purple-500/30">
-                    DevPulse Studio Pro
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Mermaid Diagrams Enabled</span>
-                </div>
-              </div>
+
+              <button
+                onClick={handleResetChat}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Reset Chat & Pintasan"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            <button
-              onClick={handleResetChat}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Reset Chat & Pintasan"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
+            {/* Model Selector Bar */}
+            <div className="flex items-center gap-2 p-1.5 bg-slate-950/80 rounded-xl border border-slate-800 text-[11px]">
+              <div className="flex items-center gap-1 text-slate-400 pl-1">
+                <Cpu className="w-3 h-3 text-cyan-400" />
+                <span className="font-semibold text-[10px] text-slate-300">Model:</span>
+              </div>
+
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                disabled={isAiTyping || isPrdStreaming}
+                className="flex-1 bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-cyan-300 text-[11px] font-mono focus:outline-none focus:border-cyan-500 cursor-pointer"
+              >
+                {OPENROUTER_MODELS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+
+              <span className="text-[9px] bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold border border-emerald-500/20 shrink-0">
+                100% Free
+              </span>
+            </div>
           </div>
 
           {/* Chat Message History */}
           <div className="flex-1 p-4 overflow-y-auto space-y-4 text-xs bg-slate-950/60">
             {chatMessages.map((msg) => {
               const isAi = msg.sender === 'ai';
+              const proposal = messageProposals[msg.id];
+
               return (
                 <motion.div
                   key={msg.id}
@@ -735,17 +644,37 @@ flowchart TD
                       )}
                     </div>
 
+                    {/* Interactive Proposal Confirmation Button */}
+                    {isAi && proposal && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-3 bg-gradient-to-r from-purple-950/70 via-indigo-950/70 to-slate-900 border border-purple-500/40 rounded-xl space-y-2 shadow-lg"
+                      >
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-purple-200 font-bold flex items-center gap-1.5">
+                            <PlusCircle className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Terapkan Modul ke PRD.md?</span>
+                          </span>
+                          <span className="text-[10px] text-cyan-300 font-mono">+{proposal.hours} Jam Kerja</span>
+                        </div>
+                        <p className="text-[10px] text-slate-300">
+                          Spesifikasi untuk modul <strong className="text-white font-semibold">{proposal.title}</strong> siap di-inject ke dokumen panel kanan.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleApplyProposalToPrd(msg.id)}
+                          disabled={isPrdStreaming}
+                          className="w-full py-2 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white font-bold text-[11px] shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                          <span>✨ Konfirmasi & Terapkan ke PRD.md</span>
+                        </button>
+                      </motion.div>
+                    )}
+
                     {isAi && (
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 pl-1">
-                        <button
-                          onClick={() => handleSendMessage('Terapkan rekomendasi ini ke PRD')}
-                          disabled={isPrdStreaming || isAiTyping}
-                          className="flex items-center gap-1 hover:text-cyan-300 transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          <CornerDownRight className="w-3 h-3 text-cyan-400" />
-                          <span>Terapkan ke PRD</span>
-                        </button>
-                        <span>•</span>
                         <span className="font-mono text-[9px]">{msg.timestamp}</span>
                       </div>
                     )}
@@ -772,7 +701,7 @@ flowchart TD
                     <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.4s]" />
                   </div>
                   <span className="text-[11px] font-mono text-cyan-300">
-                    Menyusun diagram Mermaid & modul PRD...
+                    OpenRouter AI sedang memproses analisa TPM...
                   </span>
                 </div>
               </div>
@@ -792,7 +721,7 @@ flowchart TD
               return (
                 <button
                   key={sc.id}
-                  onClick={() => handleSendMessage(sc.prompt)}
+                  onClick={() => handleSendMessage(sc.prompt, true)}
                   disabled={isApplied || isPrdStreaming || isAiTyping}
                   className={`px-3 py-1.5 rounded-full shrink-0 transition-all text-[11px] font-semibold flex items-center gap-1.5 ${
                     isApplied
@@ -825,7 +754,7 @@ flowchart TD
             >
               <input
                 type="text"
-                placeholder="Ketik masukan revisi fitur atau modul yang ingin ditambahkan..."
+                placeholder="Ketik pesan atau instruksi revisi fitur (misal: 'Halo', 'Tambahkan payment gateway')..."
                 value={inputMessage}
                 disabled={isPrdStreaming || isAiTyping}
                 onChange={(e) => setInputMessage(e.target.value)}
