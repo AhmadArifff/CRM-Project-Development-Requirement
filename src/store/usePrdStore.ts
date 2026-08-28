@@ -42,6 +42,9 @@ interface PrdStore {
   // AI Chat & PRD Generation
   chatMessages: ChatMessage[];
   addChatMessage: (sender: 'ai' | 'user', text: string) => void;
+  addChatMessageWithId: (id: string, sender: 'ai' | 'user', text: string) => void;
+  updateChatMessage: (id: string, text: string) => void;
+  setChatMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
   isAiTyping: boolean;
   setIsAiTyping: (typing: boolean) => void;
   
@@ -108,6 +111,26 @@ export const usePrdStore = create<PrdStore>((set, get) => ({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ],
+    })),
+  addChatMessageWithId: (id, sender, text) =>
+    set((state) => ({
+      chatMessages: [
+        ...state.chatMessages,
+        {
+          id,
+          sender,
+          text,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ],
+    })),
+  updateChatMessage: (id, text) =>
+    set((state) => ({
+      chatMessages: state.chatMessages.map((m) => (m.id === id ? { ...m, text } : m)),
+    })),
+  setChatMessages: (messages) =>
+    set((state) => ({
+      chatMessages: typeof messages === 'function' ? messages(state.chatMessages) : messages,
     })),
   isAiTyping: false,
   setIsAiTyping: (typing) => set({ isAiTyping: typing }),

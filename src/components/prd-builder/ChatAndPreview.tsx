@@ -200,6 +200,8 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const {
     chatMessages,
     addChatMessage,
+    addChatMessageWithId,
+    updateChatMessage,
     isAiTyping,
     setIsAiTyping,
     prdMarkdown,
@@ -438,8 +440,12 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
     if (!textToSend) setInputMessage('');
     setIsAiTyping(true);
 
+    const tempAiMsgId = `ai-msg-${Date.now()}`;
+    // Add empty placeholder message for live streaming
+    addChatMessageWithId(tempAiMsgId, 'ai', '');
+
     try {
-      // 1. Call real OpenRouter AI Chat endpoint
+      // 1. Call real OpenRouter AI Chat streaming endpoint
       const response = await fetch('/api/v1/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -451,23 +457,42 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
         }),
       });
 
-      const data = await response.json();
-      const aiReply = data.reply || 'Maaf, terjadi kendala saat memproses jawaban AI.';
-      const newMsgId = `msg-${Date.now()}`;
+      if (!response.ok || !response.body) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
 
-      addChatMessage('ai', aiReply);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullAccumulatedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        fullAccumulatedText += chunk;
+
+        // Clean out action marker from display during streaming
+        const cleanDisplayText = fullAccumulatedText
+          .replace(/<<<ACTION:(ADD|REMOVE):[^>]+>>>/g, '')
+          .trimStart();
+
+        // Update the AI message in real time
+        updateChatMessage(tempAiMsgId, cleanDisplayText);
+      }
+
       setIsAiTyping(false);
 
-      // 2. If PRD Action is proposed (e.g. ADD or REMOVE feature)
-      if (data.isPrdActionProposed) {
+      // 2. Check if the final AI response has an action marker
+      const addMatch = fullAccumulatedText.match(/<<<ACTION:ADD:([^>]+)>>>/);
+      const removeMatch = fullAccumulatedText.match(/<<<ACTION:REMOVE:([^>]+)>>>/);
+
+      if (addMatch) {
+        const moduleName = addMatch[1].trim();
         const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
         const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
-        const moduleName = data.proposedModuleTitle || text;
-        const isRemove = data.actionType === 'REMOVE' || data.intentCase === 'REMOVE';
 
-        const prdSnippet = isRemove
-          ? ''
-          : `\n\n### ${nextSubSec} Modul Spesifikasi: ${moduleName}
+        const prdSnippet = `\n\n### ${nextSubSec} Modul Spesifikasi: ${moduleName}
 
 > **Problem Statement & Business Context:**
 > Pengguna memerlukan modul \`${moduleName}\` guna meningkatkan efisiensi operasional dan kapabilitas aplikasi.
@@ -512,21 +537,30 @@ flowchart TD
 - **Investasi Tambahan:** Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)} (15 Jam × Rp ${new Intl.NumberFormat('id-ID').format(hourlyRate)}/jam)
 `;
 
-        // ALWAYS require user confirmation via Pop-up Card (NO auto-injection from text alone)
         setMessageProposals((prev) => ({
           ...prev,
-          [newMsgId]: {
-            actionType: isRemove ? 'REMOVE' : 'ADD',
+          [tempAiMsgId]: {
+            actionType: 'ADD',
             title: moduleName,
             prdAppend: prdSnippet,
-            hours: isRemove ? -15 : 15,
+            hours: 15,
+          },
+        }));
+      } else if (removeMatch) {
+        const moduleName = removeMatch[1].trim();
+        setMessageProposals((prev) => ({
+          ...prev,
+          [tempAiMsgId]: {
+            actionType: 'REMOVE',
+            title: moduleName,
+            hours: -15,
           },
         }));
       }
     } catch (err: any) {
       console.error('Chat error:', err);
-      addChatMessage('ai', `⚠️ Maaf, terjadi kesalahan koneksi AI: ${err.message}. Silakan coba lagi.`);
       setIsAiTyping(false);
+      updateChatMessage(tempAiMsgId, `⚠️ Maaf, terjadi kesalahan koneksi AI: ${err.message}. Silakan coba lagi.`);
     }
   };
 
