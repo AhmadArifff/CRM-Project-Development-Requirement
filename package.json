@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "server:dev": "tsx watch server/index.ts",
     "server:start": "node server/index.js",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "dev:all": "npx concurrently \"npm run server:dev\" \"npm run dev\""
+    "dev:all": "next dev"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
