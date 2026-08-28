@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
           })),
         ];
 
-        // Call OpenRouter SDK stream
+        // Call OpenRouter SDK
         const stream = await openrouter.chat.send({
           chatRequest: {
             model: model || 'poolside/laguna-s-2.1:free',
@@ -88,14 +88,14 @@ export async function POST(req: NextRequest) {
         let aiReplyText = '';
         let reasoningTokens = 0;
 
-        for await (const chunk of stream) {
-          const content = (chunk as any).choices?.[0]?.delta?.content;
+        for await (const chunk of (stream as any)) {
+          const content = chunk?.choices?.[0]?.delta?.content;
           if (content) {
             aiReplyText += content;
           }
 
-          if ((chunk as any).usage) {
-            reasoningTokens = (chunk as any).usage?.completionTokensDetails?.reasoningTokens || 0;
+          if (chunk?.usage) {
+            reasoningTokens = chunk.usage?.completionTokensDetails?.reasoningTokens || 0;
           }
         }
 
