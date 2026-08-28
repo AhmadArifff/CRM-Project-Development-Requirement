@@ -37,15 +37,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// OpenRouter Free Models
+// OpenRouter Free Models (Active & Verified)
 const OPENROUTER_MODELS = [
+  { id: 'minimax/minimax-m3:free', name: 'MiniMax M3 (Free - 1M Context)', provider: 'MiniMax' },
   { id: 'poolside/laguna-s-2.1:free', name: 'Poolside Laguna S-2.1 (Free)', provider: 'Poolside' },
-  { id: 'minimax/minimax-m3:free', name: 'MiniMax M3 (Free)', provider: 'MiniMax' },
-  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Free)', provider: 'Google' },
-  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', provider: 'Meta' },
-  { id: 'deepseek/deepseek-chat:free', name: 'DeepSeek Chat (Free)', provider: 'DeepSeek' },
-  { id: 'qwen/qwen-2.5-coder-32b-instruct:free', name: 'Qwen 2.5 Coder (Free)', provider: 'Alibaba' },
-  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B (Free)', provider: 'Mistral' },
+  { id: 'nvidia/nemotron-3-ultra-550b-a55b:free', name: 'NVIDIA Nemotron 3 Ultra (Free)', provider: 'NVIDIA' },
+  { id: 'google/gemma-4-31b-it:free', name: 'Google Gemma 4 31B (Free)', provider: 'Google' },
+  { id: 'z-ai/glm-5.2:free', name: 'Z.ai GLM 5.2 (Free)', provider: 'Z.ai' },
+  { id: 'openrouter/free', name: 'Auto Best Free Router (Free)', provider: 'OpenRouter' },
 ];
 
 // DevPulse Studio Pro Custom Markdown Components
@@ -216,7 +215,7 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // OpenRouter Model Selector State
-  const [selectedModel, setSelectedModel] = useState<string>('poolside/laguna-s-2.1:free');
+  const [selectedModel, setSelectedModel] = useState<string>('minimax/minimax-m3:free');
   const [messageProposals, setMessageProposals] = useState<Record<string, ProposalData>>({});
 
   // Dynamic helper to check if a module is currently present in PRD markdown
@@ -458,8 +457,8 @@ flowchart TD
 - **Investasi Tambahan:** Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)} (15 Jam × Rp ${new Intl.NumberFormat('id-ID').format(hourlyRate)}/jam)
 `;
 
-        if (isShortcutClick) {
-          // Direct shortcut click: Apply directly
+        if (isShortcutClick || data.intentCase === 'APPLY') {
+          // Direct shortcut click OR user said "tolong masukan tambahkan ke PRD": Apply directly!
           const previousLength = prdMarkdown.length;
           const updatedFullPrd = `${prdMarkdown}${prdSnippet}`;
           setEstimatedHours(estimatedHours + 15);
