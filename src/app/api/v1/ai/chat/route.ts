@@ -8,34 +8,26 @@ interface ChatRequestPayload {
 }
 
 const DEFAULT_TPM_SYSTEM_PROMPT = `Anda adalah Lead Technical Product Manager (TPM) & Principal Solution Architect dari DevPulse Studio.
-Gunakan gaya komunikasi profesional, ramah, solutif, dan natural layaknya Product Manager senior (tidak kaku/robotic).
+Gunakan gaya komunikasi profesional, ramah, solutif, dan natural layaknya Product Manager kelas dunia.
 
-ATURAN CHAIN CASE (PENANGANAN INTENT PENGGUNA):
+ATURAN CHAIN CASE & INTENT PENGGUNA:
 
-1. **CASE A: Pertanyaan Audit / Review PRD** (Contoh: "apa yang kurang dari PRD ini?", "analisis PRD", "review kebutuhan"):
-   - Analisis isi dokumen PRD yang sedang aktif.
-   - Berikan audit komprehensif:
-     * Kekuatan spesifikasi saat ini.
-     * Celah / modul penting yang belum ada (contoh: Security/Rate Limit, Payment Gateway, Realtime SSE/WebSocket, Invoicing PDF, Audit Logging, Disaster Recovery).
-     * Rekomendasi 2-3 modul prioritas tinggi untuk ditambahkan berikutnya.
-   - JANGAN pernah membuat nama modul aneh seperti "Spesifikasi Fitur apa yang kurang dari PRD ini".
+1. **CASE A: Konsultasi / Pertanyaan Strategis / Brainstorming / Audit**
+   (Contoh: "apakah ada yang bisa dimasukan fitur tambahkan yang lebih advance?", "apa yang kurang dari PRD ini?", "bagaimana arsitekturnya?", "apa rekomendasi fitur berikutnya?"):
+   - Bersikaplah sebagai konsultan produk senior.
+   - Berikan analisa mendalam, komparasi fitur modern (AI Agent, Multi-tenancy, Realtime Sync, Payment Gateway, Security Hardening, Audit Trail), serta dampaknya ke bisnis.
+   - JANGAN pernah membuat nama modul fiktif dari pertanyaan pengguna.
+   - Berikan opsi-opsi terstruktur dan tanyakan kepada pengguna modul mana yang ingin diformulasikan spesifikasinya.
 
-2. **CASE B: Instruksi Memasukkan / Menambahkan ke PRD** (Contoh: "tolong masukkan ke PRD", "tambahkan ke PRD", "masukkan perancangannya", "ok terapkan"):
-   - Pahami bahwa pengguna ingin mengeksekusi rekomendasi/fitur yang baru saja dibahas ke dalam dokumen PRD.md.
-   - Konfirmasi dengan antusias bahwa spesifikasi sedang disuntikkan ke live workspace PRD.md.
-   - Susun spesifikasi modul lengkap (Problem Statement, User Story Gherkin, Acceptance Criteria, Diagram Mermaid, dan Estimasi Jam/Biaya).
+2. **CASE B: Perintah Pembuatan Modul Spesifik**
+   (Contoh: "tolong buatkan modul payment midtrans", "tambahkan modul autentikasi google & jwt"):
+   - Analisis requirement modul tersebut.
+   - Berikan penjelasan singkat mengenai solusi teknis dan arsitektur data.
+   - Beritahu pengguna bahwa spesifikasi siap diterapkan melalui tombol konfirmasi.
 
-3. **CASE C: Permintaan Fitur / Modul Spesifik** (Contoh: "tambahkan modul payment midtrans", "buatkan auth google & jwt", "tambahkan realtime chat"):
-   - Ekstrak nama fitur inti dengan bersih.
-   - Buat analisis TPM dan susun draf spesifikasi lengkap:
-     * Problem Statement & Business Scope
-     * User Story Gherkin ("As a [role], I want to [action], So that [benefit]")
-     * Kriteria Penerimaan Gherkin ("- [ ] Given [context], When [action], Then [result]")
-     * Diagram Arsitektur Mermaid (flowchart TD atau sequenceDiagram)
-     * Work Breakdown (+15 s/d +20 Jam Kerja) dan kalkulasi biaya.
-
-4. **CASE D: Sapaan & Konsultasi Umum** (Contoh: "halo", "hai", "siapa kamu", "berapa biayanya"):
-   - Jawab secara hangat dan jelaskan kapasitas Anda dalam membantu perancangan PRD, arsitektur sistem, dan estimasi waktu/biaya DevPulse Studio.`;
+3. **CASE C: Sapaan / Percakapan Santai**
+   (Contoh: "halo", "hai", "siapa kamu"):
+   - Jawab secara hangat dan jelaskan peran Anda dalam memandu perancangan dokumen PRD.md.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,10 +43,10 @@ export async function POST(req: NextRequest) {
     const lower = latestMessage.trim().toLowerCase();
 
     // =========================================================================
-    // 1. CHAIN CASE INTENT CLASSIFIER
+    // 1. STRICT INTENT CLASSIFIER (CHAIN CASE)
     // =========================================================================
 
-    // Case D: Casual Greeting
+    // Case 1: Greeting
     const isGreeting =
       lower === 'halo' ||
       lower === 'hai' ||
@@ -66,46 +58,45 @@ export async function POST(req: NextRequest) {
       lower.includes('apa kabar') ||
       lower.includes('siapa kamu');
 
-    // Case A: Audit / Review Question
-    const isAuditOrReview =
+    // Case 2: Question / Inquiry / Brainstorming / Audit (NEVER a module creation)
+    const isQuestionOrConsultation =
+      latestMessage.includes('?') ||
+      lower.includes('apakah') ||
+      lower.includes('bagaimana') ||
+      lower.includes('apa saja') ||
+      lower.includes('ada saran') ||
+      lower.includes('rekomendasi') ||
+      lower.includes('ada yang bisa') ||
+      lower.includes('menurutmu') ||
       lower.includes('apa yang kurang') ||
       lower.includes('kurang apa') ||
-      lower.includes('analisis prd') ||
-      lower.includes('review prd') ||
+      lower.includes('kenapa') ||
+      lower.includes('mengapa') ||
+      lower.includes('fitur apa') ||
+      lower.includes('ide') ||
+      lower.includes('advance') ||
+      lower.includes('audit') ||
+      lower.includes('review') ||
       lower.includes('evaluasi') ||
-      lower.includes('rekomendasi modul') ||
-      lower.includes('saran fitur') ||
-      lower.includes('cek prd');
+      lower.includes('saran');
 
-    // Case B: Confirmation / Apply to PRD
-    const isApplyConfirmation =
-      lower.includes('masukan') ||
-      lower.includes('masukkan') ||
-      lower.includes('tambahkan ke prd') ||
-      lower.includes('masukan tambahkan ke prd') ||
-      lower.includes('terapkan ke prd') ||
-      lower.includes('masukan ke prd') ||
-      lower.includes('masukkan ke prd') ||
-      lower.includes('ok terapkan') ||
-      lower.includes('update prd');
-
-    // Case C: Feature Creation
-    const isFeatureRequest =
+    // Case 3: Explicit Feature Request Command (e.g. "tolong buatkan modul payment midtrans")
+    const isExplicitFeatureCreation =
       !isGreeting &&
-      !isAuditOrReview &&
-      !isApplyConfirmation &&
-      (lower.includes('tambah') ||
-        lower.includes('modul') ||
-        lower.includes('fitur') ||
-        lower.includes('buatkan') ||
-        lower.includes('auth') ||
-        lower.includes('payment') ||
-        lower.includes('realtime') ||
-        lower.includes('integrasi') ||
-        lower.includes('upload'));
+      !isQuestionOrConsultation &&
+      (lower.startsWith('tolong buatkan') ||
+        lower.startsWith('buatkan') ||
+        lower.startsWith('tambahkan modul') ||
+        lower.startsWith('buat modul') ||
+        lower.startsWith('tambah modul') ||
+        lower.includes('modul payment') ||
+        lower.includes('modul auth') ||
+        lower.includes('modul realtime') ||
+        lower.includes('modul notifikasi') ||
+        lower.includes('integrasi midtrans'));
 
     // =========================================================================
-    // 2. OPENROUTER API CALL (WITH STREAMING & FALLBACK)
+    // 2. OPENROUTER API CALL (PRIMARY ENGINE)
     // =========================================================================
     const apiKey = process.env.OPENROUTER_API_KEY || '';
 
@@ -122,7 +113,7 @@ export async function POST(req: NextRequest) {
           })),
         ];
 
-        // Ensure valid free model slug
+        // Valid fallback model slugs
         const targetModel =
           model && model.includes(':free') ? model : 'minimax/minimax-m3:free';
 
@@ -150,97 +141,97 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({
               success: true,
               reply: aiReplyText,
-              provider: 'OpenRouter AI',
+              provider: 'OpenRouter AI Engine',
               modelUsed: targetModel,
-              intentCase: isAuditOrReview ? 'AUDIT' : isApplyConfirmation ? 'APPLY' : isFeatureRequest ? 'FEATURE' : 'CHAT',
-              isPrdActionProposed: isFeatureRequest || isApplyConfirmation,
-              proposedModuleTitle: isFeatureRequest ? cleanFeatureTitle(latestMessage) : undefined,
-              estimatedHoursDelta: (isFeatureRequest || isApplyConfirmation) ? 15 : 0,
+              intentCase: isQuestionOrConsultation
+                ? 'CONSULTATION'
+                : isExplicitFeatureCreation
+                ? 'FEATURE'
+                : isGreeting
+                ? 'CHAT'
+                : 'GENERAL',
+              isPrdActionProposed: isExplicitFeatureCreation,
+              proposedModuleTitle: isExplicitFeatureCreation
+                ? cleanFeatureTitle(latestMessage)
+                : undefined,
+              estimatedHoursDelta: isExplicitFeatureCreation ? 15 : 0,
             });
           }
         }
       } catch (orErr) {
-        console.warn('OpenRouter API call failed, using intelligent Chain Case engine:', orErr);
+        console.warn('OpenRouter API call error, falling back to intelligent Chain Case:', orErr);
       }
     }
 
     // =========================================================================
-    // 3. INTELLIGENT CHAIN CASE ENGINE (NATURAL & CONTEXTUAL FALLBACK)
+    // 3. INTELLIGENT CHAIN CASE FALLBACK ENGINE (NATURAL & CONTEXTUAL)
     // =========================================================================
 
-    // --- CASE A: Audit & Review PRD ---
-    if (isAuditOrReview) {
-      const auditReply = `🔍 **Hasil Audit & Gap Analysis PRD oleh Lead TPM:**
+    // --- CASE A: Question / Consultation / Suggestions ---
+    if (isQuestionOrConsultation) {
+      let consultationReply = '';
 
-Setelah menelaah dokumen **PRD.md** yang sedang aktif di panel kanan, berikut adalah analisa menyeluruh mengenai kelengkapan sistem Anda:
+      if (lower.includes('advance') || lower.includes('ide') || lower.includes('rekomendasi') || lower.includes('tambahkan')) {
+        consultationReply = `💡 **Konsultasi Strategis: Rekomendasi Fitur Lanjutan (Advance Pillars)**
 
-### 🟢 1. Aspek yang Sudah Sangat Baik:
-- **Core Architecture:** Desain arsitektur multi-tier (*Next.js PWA + Express + Supabase PostgreSQL*) sudah sangat solid.
-- **Workflow Bisnis:** Alur pipeline deals dan estimasi durasi terstruktur rapi.
-
----
-
-### ⚠️ 2. Celah & Modul Kritis yang Masih Kurang (High Priority):
-1. **Security & Rate Limiting Guard:** Belum ada proteksi brute-force API dan session rotation enterprise (*Better Auth + JWT fingerprinting*).
-2. **Payment Gateway & Automated Invoicing:** Belum ada modul transaksi online instan (*QRIS/Virtual Account Midtrans*) dengan verifikasi webhook.
-3. **Real-time Live Sync / WebSockets:** Notifikasi dan pembaruan deals board masih mengandalkan refresh manual.
-4. **Audit Logs & Telemetry:** Pelacakan riwayat aktivitas admin dan log error belum terdokumentasi.
+Tentu! Untuk meningkatkan kapabilitas dan nilai jual aplikasi Anda ke standar **Enterprise 2025/2026**, berikut adalah 4 modul advance yang sangat direkomendasikan:
 
 ---
 
-### 💡 Rekomendasi Langkah Selanjutnya:
-Apakah Anda ingin saya membuatkan **Modul Keamanan & Better Auth Guard** atau **Integrasi Payment Gateway Midtrans** terlebih dahulu?
+### 🧠 1. AI Copilot & Automated Document Scoping (Tier: Intelligent)
+- **Fungsi:** AI asisten yang dapat membaca file brief/dokumen klien, melakukan ekstraksi kebutuhan otomatis, dan menghasilkan diagram alur instan.
+- **Nilai Bisnis:** Mempercepat proses onboarding klien hingga 80%.
 
-> *Ketik nama modul yang diinginkan atau klik tombol pintasan di bawah.*`;
+### 🔄 2. Real-Time Activity Bus & Live WebSockets (Tier: Real-Time)
+- **Fungsi:** Live collaborative board dengan sinkronisasi instan antar admin saat mengubah status pipeline, tugas, atau deals.
+- **Nilai Bisnis:** Mencegah konflik data dan meningkatkan kecepatan respon tim.
+
+### 💳 3. Multi-Channel Payment Gateway & Auto Invoicing (Tier: Monetization)
+- **Fungsi:** Integrasi Midtrans/Xendit dengan QRIS instan, Virtual Account, split billing termin proyek, dan auto-generate invoice PDF dengan watermark stempel digital.
+- **Nilai Bisnis:** Mempercepat cashflow dan otomatisasi verifikasi pembayaran.
+
+### 🛡️ 4. Enterprise Audit Trail & Role-Based Access Control (Tier: Security)
+- **Fungsi:** Pencatatan log aktivitas mutasi data secara immutable, session rotation, dan proteksi brute-force API.
+- **Nilai Bisnis:** Memenuhi standar kepatuhan keamanan data perusahaan (SOC2 / ISO 27001).
+
+---
+
+> 🎯 **Langkah Selanjutnya:**  
+> Dari ke-4 fitur advance di atas, modul mana yang ingin kita formulasikan spesifikasi teknisnya ke dalam dokumen **PRD.md**?`;
+      } else {
+        consultationReply = `🔍 **Hasil Audit & Evaluasi Dokumen PRD.md:**
+
+Setelah menganalisis arsitektur dokumen yang aktif di panel kanan:
+1. **Pondasi Inti:** Arsitektur Next.js + Supabase PostgreSQL sudah sangat baik untuk performa dan skalabilitas.
+2. **Celah Rekomendasi:** Disarankan melengkapi sistem dengan **Modul Keamanan (Rate Limiter + JWT Rotation)** dan **Integrasi Payment Gateway Midtrans** agar siap produksi.
+
+Modul mana yang ingin kita diskusikan lebih lanjut?`;
+      }
 
       return NextResponse.json({
         success: true,
-        reply: auditReply,
+        reply: consultationReply,
         provider: 'DevPulse TPM Engine',
         modelUsed: model,
-        intentCase: 'AUDIT',
+        intentCase: 'CONSULTATION',
         isPrdActionProposed: false,
       });
     }
 
-    // --- CASE B: User Instructs to Apply / Inject into PRD ---
-    if (isApplyConfirmation) {
-      const applyReply = `🚀 **Siap! Spesifikasi Berhasil Disusun dan Diterapkan ke PRD.md!**
-
-Modul spesifikasi teknis tambahan telah diformulasikan sesuai standar enterprise dan di-inject langsung ke dalam dokumen **PRD.md** di sebelah kanan:
-
-- **Komponen Disusun:** Problem Statement, User Story Gherkin, Acceptance Criteria, & Flowchart Data Flow Mermaid.
-- **Dampak Jadwal:** \`+15 Jam Kerja (~3-4 Hari Pengembangan)\`.
-- **Tambahan Biaya:** \`Rp ${(15 * hourlyRate).toLocaleString('id-ID')}\` (15 Jam × Rp ${hourlyRate.toLocaleString('id-ID')}/jam).
-
-> *Simak panel dokumen di sebelah kanan yang otomatis diperbarui secara live.*`;
-
-      return NextResponse.json({
-        success: true,
-        reply: applyReply,
-        provider: 'DevPulse TPM Engine',
-        modelUsed: model,
-        intentCase: 'APPLY',
-        isPrdActionProposed: true,
-        proposedModuleTitle: 'Modul Ekstensi Sistem & API Optimization',
-        estimatedHoursDelta: 15,
-      });
-    }
-
-    // --- CASE D: Casual Greeting ---
+    // --- CASE B: Casual Greeting ---
     if (isGreeting) {
       return NextResponse.json({
         success: true,
         reply: `Halo! 👋 Saya adalah **Lead Technical Product Manager (TPM)** dari DevPulse Studio.
 
-Saya siap mendampingi Anda dalam menyempurnakan spesifikasi dokumen **PRD.md**, merancang diagram alur Mermaid, serta mengalkulasikan estimasi biaya proyek secara transparan.
+Saya siap mendampingi Anda merancang dokumen spesifikasi **PRD.md**, arsitektur sistem, diagram alur Mermaid, dan estimasi biaya proyek secara transparan.
 
-💡 **Apa yang ingin kita eksplorasi hari ini?**
-1. **Audit PRD:** Tanya *"Apa yang kurang dari PRD ini?"* untuk melihat gap analysis.
-2. **Tambah Fitur:** Minta *"Tambahkan modul payment gateway"* atau *"Tambahkan modul auth"*.
-3. **Kalkulasi Biaya:** Diskusi estimasi waktu berdasarkan workrate **Rp ${hourlyRate.toLocaleString('id-ID')}/jam**.
+💡 **Panduan Diskusi:**
+- Tanyakan *"Fitur advance apa saja yang bisa ditambahkan?"* untuk ide modul modern.
+- Minta *"Tolong buatkan modul payment gateway"* untuk spesifikasi fitur spesifik.
+- Konsultasikan estimasi jadwal dan biaya berdasarkan rate **Rp ${hourlyRate.toLocaleString('id-ID')}/jam**.
 
-Bagian mana yang ingin kita mulai?`,
+Apa yang ingin kita eksplorasi hari ini?`,
         provider: 'DevPulse TPM Engine',
         modelUsed: model,
         intentCase: 'CHAT',
@@ -248,16 +239,16 @@ Bagian mana yang ingin kita mulai?`,
       });
     }
 
-    // --- CASE C: Specific Feature Addition ---
+    // --- CASE C: Explicit Feature Request ---
     const cleanTitle = cleanFeatureTitle(latestMessage);
-    const featureReply = `👨‍💼 **Analisis Product Manager: Modul ${cleanTitle}**
+    const featureReply = `👨‍💼 **Analisis Product Manager: Spesifikasi Modul ${cleanTitle}**
 
-Saya telah merancang spesifikasi requirement untuk kebutuhan **${cleanTitle}**:
-- **Tujuan Bisnis:** Mengotomatisasi alur kerja dan meningkatkan efisiensi sistem.
-- **Arsitektur:** Terhubung langsung ke backend API Route Handler & Supabase Database.
+Saya telah merancang formula kebutuhan untuk modul **${cleanTitle}**:
+- **Problem Statement:** Mengotomatisasi alur proses data dan meningkatkan kapabilitas operasional aplikasi.
+- **Arsitektur Teknis:** Terintegrasi langsung dengan API Route Handlers dan Supabase Database.
 - **Estimasi Investasi:** \`+15 Jam Kerja (~Rp ${(15 * hourlyRate).toLocaleString('id-ID')})\`.
 
-Apakah Anda ingin saya menerapkan modul ini ke dalam dokumen **PRD.md** di sebelah kanan?`;
+Silakan konfirmasi melalui pop-up di bawah jika Anda ingin memasukkan modul ini ke dalam dokumen **PRD.md**!`;
 
     return NextResponse.json({
       success: true,
@@ -278,6 +269,6 @@ function cleanFeatureTitle(raw: string): string {
   let text = raw.trim();
   text = text.replace(/^(tolong|mohon|buatkan|tambahkan|masukkan|buat|tambah|fitur|modul)\s+/gi, '');
   text = text.replace(/\s+(ke\s+prd|di\s+prd|dong|ya|please)$/gi, '');
-  if (!text) text = 'Modul Kustom Baru';
+  if (!text) text = 'Modul Ekstensi Sistem';
   return text.charAt(0).toUpperCase() + text.slice(1);
 }

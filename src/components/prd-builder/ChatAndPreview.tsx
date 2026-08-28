@@ -377,6 +377,15 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
     addChatMessage('ai', `✅ **Spesifikasi Modul "${prop.title}" Berhasil Diterapkan ke PRD.md!**\n\nPenambahan durasi: \`+${prop.hours} Jam Kerja\`. Dokumen live di panel kanan telah diperbarui.`);
   };
 
+  // Dismiss Proposal
+  const handleDismissProposal = (msgId: string) => {
+    setMessageProposals((prev) => {
+      const copy = { ...prev };
+      delete copy[msgId];
+      return copy;
+    });
+  };
+
   const handleSendMessage = async (textToSend?: string, isShortcutClick?: boolean) => {
     const text = textToSend || inputMessage;
     if (!text.trim() || isAiTyping || isPrdStreaming) return;
@@ -405,9 +414,8 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       addChatMessage('ai', aiReply);
       setIsAiTyping(false);
 
-      // 2. If PRD Action is proposed (e.g. shortcut clicked or feature requested)
+      // 2. If PRD Action is proposed (e.g. shortcut or feature creation)
       if (data.isPrdActionProposed) {
-        const lower = text.toLowerCase();
         const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
         const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
         const moduleName = data.proposedModuleTitle || text;
@@ -457,23 +465,15 @@ flowchart TD
 - **Investasi Tambahan:** Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)} (15 Jam × Rp ${new Intl.NumberFormat('id-ID').format(hourlyRate)}/jam)
 `;
 
-        if (isShortcutClick || data.intentCase === 'APPLY') {
-          // Direct shortcut click OR user said "tolong masukan tambahkan ke PRD": Apply directly!
-          const previousLength = prdMarkdown.length;
-          const updatedFullPrd = `${prdMarkdown}${prdSnippet}`;
-          setEstimatedHours(estimatedHours + 15);
-          startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik modul "${moduleName}"...`);
-        } else {
-          // Chat prompt: Store proposal and require User Confirmation
-          setMessageProposals((prev) => ({
-            ...prev,
-            [newMsgId]: {
-              title: moduleName,
-              prdAppend: prdSnippet,
-              hours: 15,
-            },
-          }));
-        }
+        // ALWAYS require user confirmation via Pop-up Card (NO auto-injection from text alone)
+        setMessageProposals((prev) => ({
+          ...prev,
+          [newMsgId]: {
+            title: moduleName,
+            prdAppend: prdSnippet,
+            hours: 15,
+          },
+        }));
       }
     } catch (err: any) {
       console.error('Chat error:', err);
@@ -646,31 +646,48 @@ flowchart TD
                     </div>
 
                     {/* Interactive Proposal Confirmation Button */}
+                    {/* Interactive Proposal Confirmation Pop-up Card */}
                     {isAi && proposal && (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="p-3 bg-gradient-to-r from-purple-950/70 via-indigo-950/70 to-slate-900 border border-purple-500/40 rounded-xl space-y-2 shadow-lg"
+                        initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className="p-3.5 bg-gradient-to-br from-slate-900 via-indigo-950/80 to-purple-950/90 border-2 border-cyan-500/50 rounded-2xl space-y-3 shadow-2xl shadow-cyan-500/10 backdrop-blur-md"
                       >
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-purple-200 font-bold flex items-center gap-1.5">
-                            <PlusCircle className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>Terapkan Modul ke PRD.md?</span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-extrabold text-xs flex items-center gap-1.5">
+                            <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                            <span>Konfirmasi Perancangan Modul PRD</span>
                           </span>
-                          <span className="text-[10px] text-cyan-300 font-mono">+{proposal.hours} Jam Kerja</span>
+                          <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-mono font-bold border border-cyan-500/40">
+                            +{proposal.hours} Jam (~{formatRupiah(proposal.hours * hourlyRate)})
+                          </span>
                         </div>
-                        <p className="text-[10px] text-slate-300">
-                          Spesifikasi untuk modul <strong className="text-white font-semibold">{proposal.title}</strong> siap di-inject ke dokumen panel kanan.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => handleApplyProposalToPrd(msg.id)}
-                          disabled={isPrdStreaming}
-                          className="w-full py-2 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white font-bold text-[11px] shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                          <span>✨ Konfirmasi & Terapkan ke PRD.md</span>
-                        </button>
+
+                        <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-200">
+                          <div className="text-cyan-300 font-bold mb-1">⚡ {proposal.title}</div>
+                          <p className="text-slate-400 text-[10px] leading-relaxed">
+                            Spesifikasi siap di-inject ke dokumen live: mencakup Problem Statement, User Stories Gherkin, Kriteria Penerimaan, dan Diagram Alur Data Flow Mermaid.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleApplyProposalToPrd(msg.id)}
+                            disabled={isPrdStreaming}
+                            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white font-bold text-xs shadow-lg hover:shadow-cyan-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                            <span>✨ Terapkan & Inject ke PRD.md</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDismissProposal(msg.id)}
+                            className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all cursor-pointer"
+                          >
+                            Batalkan
+                          </button>
+                        </div>
                       </motion.div>
                     )}
 
