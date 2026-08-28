@@ -190,8 +190,9 @@ const SHORTCUT_ITEMS: ShortcutItem[] = [
 ];
 
 interface ProposalData {
+  actionType: 'ADD' | 'REMOVE';
   title: string;
-  prdAppend: string;
+  prdAppend?: string;
   hours: number;
 }
 
@@ -351,18 +352,58 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 - **Skala Sistem:** \`${questionnaire.userScale}\`
 - **Estimasi Total:** \`${estimatedHours} Jam Kerja (${timelineFormat(estimatedHours)})\`
 
-> Anda dapat mengetik instruksi penambahan modul, berdiskusi mengenai arsitektur, atau memilih pintasan fitur di bawah. Dokumen PRD.md di panel kanan hanya akan diperbarui saat Anda menyetujuinya!`;
+> Anda dapat mengetik instruksi penambahan modul, meminta penghapusan modul, berdiskusi mengenai arsitektur, atau memilih pintasan fitur di bawah. Dokumen PRD.md di panel kanan hanya akan diperbarui saat Anda menyetujuinya!`;
       addChatMessage('ai', summaryText);
     }
   }, [questionnaire]);
 
-  // Execute PRD Module Injection upon User Confirmation
+  // Execute PRD Module Mutation upon User Confirmation
   const handleApplyProposalToPrd = (msgId: string) => {
     const prop = messageProposals[msgId];
     if (!prop || isPrdStreaming) return;
 
+    if (prop.actionType === 'REMOVE') {
+      let updated = prdMarkdown;
+      const cleanTarget = prop.title.toLowerCase().replace(/modul\s+/gi, '').trim();
+
+      // Strategy: Remove the section matching the target keyword
+      const sections = updated.split(/(?=\n\n###\s+)/g);
+      const filteredSections = sections.filter((sec) => {
+        const headingLine = sec.split('\n')[0] || '';
+        return !headingLine.toLowerCase().includes(cleanTarget);
+      });
+
+      if (filteredSections.length < sections.length) {
+        updated = filteredSections.join('');
+      } else {
+        const lines = updated.split('\n');
+        const filteredLines = lines.filter((line) => !line.toLowerCase().includes(cleanTarget));
+        updated = filteredLines.join('\n');
+      }
+
+      const newHours = Math.max(40, estimatedHours - 15);
+      setEstimatedHours(newHours);
+      setPrdMarkdown(updated);
+      setDisplayPrdMarkdown(updated);
+      setAppliedShortcuts(checkModulesInPrd(updated));
+      playSuccessChime();
+
+      setMessageProposals((prev) => {
+        const copy = { ...prev };
+        delete copy[msgId];
+        return copy;
+      });
+
+      addChatMessage(
+        'ai',
+        `🗑️ **Modul "${prop.title}" Berhasil Dihapus dari Dokumen PRD.md!**\n\nPenyesuaian jadwal: \`-15 Jam Kerja\`. Total estimasi biaya dan durasi proyek telah dikurangi secara otomatis.`
+      );
+      return;
+    }
+
+    // Standard ADD Action
     const previousLength = prdMarkdown.length;
-    const updatedFullPrd = `${prdMarkdown}${prop.prdAppend}`;
+    const updatedFullPrd = `${prdMarkdown}${prop.prdAppend || ''}`;
     setEstimatedHours(estimatedHours + prop.hours);
 
     startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik modul "${prop.title}"...`);
@@ -374,7 +415,10 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       return copy;
     });
 
-    addChatMessage('ai', `✅ **Spesifikasi Modul "${prop.title}" Berhasil Diterapkan ke PRD.md!**\n\nPenambahan durasi: \`+${prop.hours} Jam Kerja\`. Dokumen live di panel kanan telah diperbarui.`);
+    addChatMessage(
+      'ai',
+      `✅ **Spesifikasi Modul "${prop.title}" Berhasil Diterapkan ke PRD.md!**\n\nPenambahan durasi: \`+${prop.hours} Jam Kerja\`. Dokumen live di panel kanan telah diperbarui.`
+    );
   };
 
   // Dismiss Proposal
@@ -414,13 +458,16 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       addChatMessage('ai', aiReply);
       setIsAiTyping(false);
 
-      // 2. If PRD Action is proposed (e.g. shortcut or feature creation)
+      // 2. If PRD Action is proposed (e.g. ADD or REMOVE feature)
       if (data.isPrdActionProposed) {
         const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
         const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
         const moduleName = data.proposedModuleTitle || text;
+        const isRemove = data.actionType === 'REMOVE' || data.intentCase === 'REMOVE';
 
-        const prdSnippet = `\n\n### ${nextSubSec} Modul Spesifikasi: ${moduleName}
+        const prdSnippet = isRemove
+          ? ''
+          : `\n\n### ${nextSubSec} Modul Spesifikasi: ${moduleName}
 
 > **Problem Statement & Business Context:**
 > Pengguna memerlukan modul \`${moduleName}\` guna meningkatkan efisiensi operasional dan kapabilitas aplikasi.
@@ -469,9 +516,10 @@ flowchart TD
         setMessageProposals((prev) => ({
           ...prev,
           [newMsgId]: {
+            actionType: isRemove ? 'REMOVE' : 'ADD',
             title: moduleName,
             prdAppend: prdSnippet,
-            hours: 15,
+            hours: isRemove ? -15 : 15,
           },
         }));
       }
@@ -645,28 +693,57 @@ flowchart TD
                       )}
                     </div>
 
-                    {/* Interactive Proposal Confirmation Button */}
                     {/* Interactive Proposal Confirmation Pop-up Card */}
                     {isAi && proposal && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 5 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        className="p-3.5 bg-gradient-to-br from-slate-900 via-indigo-950/80 to-purple-950/90 border-2 border-cyan-500/50 rounded-2xl space-y-3 shadow-2xl shadow-cyan-500/10 backdrop-blur-md"
+                        className={`p-3.5 rounded-2xl space-y-3 shadow-2xl backdrop-blur-md border-2 ${
+                          proposal.actionType === 'REMOVE'
+                            ? 'bg-gradient-to-br from-slate-900 via-rose-950/70 to-slate-950 border-rose-500/60 shadow-rose-500/10'
+                            : 'bg-gradient-to-br from-slate-900 via-indigo-950/80 to-purple-950/90 border-cyan-500/50 shadow-cyan-500/10'
+                        }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-white font-extrabold text-xs flex items-center gap-1.5">
-                            <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
-                            <span>Konfirmasi Perancangan Modul PRD</span>
+                            {proposal.actionType === 'REMOVE' ? (
+                              <>
+                                <span className="text-rose-400">🗑️</span>
+                                <span className="text-rose-200">Konfirmasi Penghapusan Modul PRD</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                                <span>Konfirmasi Perancangan Modul PRD</span>
+                              </>
+                            )}
                           </span>
-                          <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-mono font-bold border border-cyan-500/40">
-                            +{proposal.hours} Jam (~{formatRupiah(proposal.hours * hourlyRate)})
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${
+                              proposal.actionType === 'REMOVE'
+                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                            }`}
+                          >
+                            {proposal.actionType === 'REMOVE'
+                              ? '-15 Jam Kerja'
+                              : `+${proposal.hours} Jam (~${formatRupiah(proposal.hours * hourlyRate)})`}
                           </span>
                         </div>
 
                         <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-200">
-                          <div className="text-cyan-300 font-bold mb-1">⚡ {proposal.title}</div>
+                          <div
+                            className={`font-bold mb-1 ${
+                              proposal.actionType === 'REMOVE' ? 'text-rose-400' : 'text-cyan-300'
+                            }`}
+                          >
+                            {proposal.actionType === 'REMOVE' ? '🗑️ Hapus: ' : '⚡ '}
+                            {proposal.title}
+                          </div>
                           <p className="text-slate-400 text-[10px] leading-relaxed">
-                            Spesifikasi siap di-inject ke dokumen live: mencakup Problem Statement, User Stories Gherkin, Kriteria Penerimaan, dan Diagram Alur Data Flow Mermaid.
+                            {proposal.actionType === 'REMOVE'
+                              ? 'Modul ini beserta User Story, Acceptance Criteria, dan Diagram alurnya akan dihapus dari dokumen PRD.md di panel kanan.'
+                              : 'Spesifikasi siap di-inject ke dokumen live: mencakup Problem Statement, User Stories Gherkin, Kriteria Penerimaan, dan Diagram Alur Data Flow Mermaid.'}
                           </p>
                         </div>
 
@@ -675,10 +752,20 @@ flowchart TD
                             type="button"
                             onClick={() => handleApplyProposalToPrd(msg.id)}
                             disabled={isPrdStreaming}
-                            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white font-bold text-xs shadow-lg hover:shadow-cyan-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            className={`flex-1 py-2.5 rounded-xl text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                              proposal.actionType === 'REMOVE'
+                                ? 'bg-gradient-to-r from-rose-600 via-red-600 to-amber-600 hover:shadow-rose-500/30'
+                                : 'bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:shadow-cyan-500/30'
+                            }`}
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                            <span>✨ Terapkan & Inject ke PRD.md</span>
+                            {proposal.actionType === 'REMOVE' ? (
+                              <span>🗑️ Konfirmasi Hapus dari PRD.md</span>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                                <span>✨ Terapkan & Inject ke PRD.md</span>
+                              </>
+                            )}
                           </button>
                           <button
                             type="button"

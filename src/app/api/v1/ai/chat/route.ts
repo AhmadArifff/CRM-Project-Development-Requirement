@@ -13,19 +13,23 @@ Gunakan gaya komunikasi profesional, ramah, solutif, dan natural layaknya Produc
 ATURAN CHAIN CASE & INTENT PENGGUNA:
 
 1. **CASE A: Konsultasi / Pertanyaan Strategis / Brainstorming / Audit**
-   (Contoh: "apakah ada yang bisa dimasukan fitur tambahkan yang lebih advance?", "apa yang kurang dari PRD ini?", "bagaimana arsitekturnya?", "apa rekomendasi fitur berikutnya?"):
+   (Contoh: "apakah ada yang bisa dimasukan fitur tambahkan yang lebih advance?", "apa yang kurang dari PRD ini?", "bagaimana arsitekturnya?"):
    - Bersikaplah sebagai konsultan produk senior.
    - Berikan analisa mendalam, komparasi fitur modern (AI Agent, Multi-tenancy, Realtime Sync, Payment Gateway, Security Hardening, Audit Trail), serta dampaknya ke bisnis.
    - JANGAN pernah membuat nama modul fiktif dari pertanyaan pengguna.
-   - Berikan opsi-opsi terstruktur dan tanyakan kepada pengguna modul mana yang ingin diformulasikan spesifikasinya.
 
-2. **CASE B: Perintah Pembuatan Modul Spesifik**
+2. **CASE B: Perintah Penambahan / Pembuatan Modul Baru**
    (Contoh: "tolong buatkan modul payment midtrans", "tambahkan modul autentikasi google & jwt"):
-   - Analisis requirement modul tersebut.
-   - Berikan penjelasan singkat mengenai solusi teknis dan arsitektur data.
+   - Analisis requirement modul tersebut dan susun draf teknis.
    - Beritahu pengguna bahwa spesifikasi siap diterapkan melalui tombol konfirmasi.
 
-3. **CASE C: Sapaan / Percakapan Santai**
+3. **CASE C: Perintah Penghapusan / Pengurangan Modul (Remove Content Point)**
+   (Contoh: "hapus modul payment", "hilangkan fitur chat websockets", "kurangi modul security", "batalkan modul 5.4"):
+   - Analisis modul yang ingin dipangkas dari PRD.md.
+   - Jelaskan dampak pengurangan scope dan reduksi jam kerja (-15 Jam).
+   - Tampilkan konfirmasi penghapusan modul.
+
+4. **CASE D: Sapaan / Percakapan Santai**
    (Contoh: "halo", "hai", "siapa kamu"):
    - Jawab secara hangat dan jelaskan peran Anda dalam memandu perancangan dokumen PRD.md.`;
 
@@ -58,7 +62,7 @@ export async function POST(req: NextRequest) {
       lower.includes('apa kabar') ||
       lower.includes('siapa kamu');
 
-    // Case 2: Question / Inquiry / Brainstorming / Audit (NEVER a module creation)
+    // Case 2: Question / Inquiry / Brainstorming / Audit (NEVER a module mutation)
     const isQuestionOrConsultation =
       latestMessage.includes('?') ||
       lower.includes('apakah') ||
@@ -80,10 +84,25 @@ export async function POST(req: NextRequest) {
       lower.includes('evaluasi') ||
       lower.includes('saran');
 
-    // Case 3: Explicit Feature Request Command (e.g. "tolong buatkan modul payment midtrans")
+    // Case 3: Removal / Deletion Request (e.g. "hapus modul payment", "hilangkan fitur chat")
+    const isRemoveOrDeleteIntent =
+      !isGreeting &&
+      !isQuestionOrConsultation &&
+      (lower.includes('hapus') ||
+        lower.includes('hilangkan') ||
+        lower.includes('buang') ||
+        lower.includes('delete') ||
+        lower.includes('remove') ||
+        lower.includes('kurangi modul') ||
+        lower.includes('jangan pakai') ||
+        lower.includes('batalkan modul') ||
+        lower.includes('pangkas'));
+
+    // Case 4: Explicit Feature Request Command (e.g. "tolong buatkan modul payment midtrans")
     const isExplicitFeatureCreation =
       !isGreeting &&
       !isQuestionOrConsultation &&
+      !isRemoveOrDeleteIntent &&
       (lower.startsWith('tolong buatkan') ||
         lower.startsWith('buatkan') ||
         lower.startsWith('tambahkan modul') ||
@@ -145,16 +164,21 @@ export async function POST(req: NextRequest) {
               modelUsed: targetModel,
               intentCase: isQuestionOrConsultation
                 ? 'CONSULTATION'
+                : isRemoveOrDeleteIntent
+                ? 'REMOVE'
                 : isExplicitFeatureCreation
                 ? 'FEATURE'
                 : isGreeting
                 ? 'CHAT'
                 : 'GENERAL',
-              isPrdActionProposed: isExplicitFeatureCreation,
-              proposedModuleTitle: isExplicitFeatureCreation
+              actionType: isRemoveOrDeleteIntent ? 'REMOVE' : isExplicitFeatureCreation ? 'ADD' : undefined,
+              isPrdActionProposed: isExplicitFeatureCreation || isRemoveOrDeleteIntent,
+              proposedModuleTitle: isRemoveOrDeleteIntent
+                ? cleanRemoveTitle(latestMessage)
+                : isExplicitFeatureCreation
                 ? cleanFeatureTitle(latestMessage)
                 : undefined,
-              estimatedHoursDelta: isExplicitFeatureCreation ? 15 : 0,
+              estimatedHoursDelta: isRemoveOrDeleteIntent ? -15 : isExplicitFeatureCreation ? 15 : 0,
             });
           }
         }
@@ -166,6 +190,30 @@ export async function POST(req: NextRequest) {
     // =========================================================================
     // 3. INTELLIGENT CHAIN CASE FALLBACK ENGINE (NATURAL & CONTEXTUAL)
     // =========================================================================
+
+    // --- CASE C: Remove / Delete Module Intent ---
+    if (isRemoveOrDeleteIntent) {
+      const removeTitle = cleanRemoveTitle(latestMessage);
+      const removeReply = `🗑️ **Analisis Product Manager: Penghapusan Modul ${removeTitle}**
+
+Saya telah menganalisis permintaan untuk menghapus modul **${removeTitle}** dari dokumen PRD.md:
+- **Dampak Scope:** Mempersingkat arsitektur dan memfokuskan MVP pada fitur inti.
+- **Reduksi Estimasi Waktu:** \`-15 Jam Kerja (-Rp ${(15 * hourlyRate).toLocaleString('id-ID')})\`.
+
+Silakan konfirmasi melalui pop-up di bawah jika Anda ingin mengeksekusi penghapusan modul ini dari dokumen **PRD.md**!`;
+
+      return NextResponse.json({
+        success: true,
+        reply: removeReply,
+        provider: 'DevPulse TPM Engine',
+        modelUsed: model,
+        intentCase: 'REMOVE',
+        actionType: 'REMOVE',
+        isPrdActionProposed: true,
+        proposedModuleTitle: removeTitle,
+        estimatedHoursDelta: -15,
+      });
+    }
 
     // --- CASE A: Question / Consultation / Suggestions ---
     if (isQuestionOrConsultation) {
@@ -224,12 +272,12 @@ Modul mana yang ingin kita diskusikan lebih lanjut?`;
         success: true,
         reply: `Halo! 👋 Saya adalah **Lead Technical Product Manager (TPM)** dari DevPulse Studio.
 
-Saya siap mendampingi Anda merancang dokumen spesifikasi **PRD.md**, arsitektur sistem, diagram alur Mermaid, dan estimasi biaya proyek secara transparan.
+Saya siap mendampingi Anda merancang, menyempurnakan, atau memangkas modul spesifikasi **PRD.md**, diagram alur Mermaid, dan estimasi biaya proyek secara transparan.
 
 💡 **Panduan Diskusi:**
 - Tanyakan *"Fitur advance apa saja yang bisa ditambahkan?"* untuk ide modul modern.
-- Minta *"Tolong buatkan modul payment gateway"* untuk spesifikasi fitur spesifik.
-- Konsultasikan estimasi jadwal dan biaya berdasarkan rate **Rp ${hourlyRate.toLocaleString('id-ID')}/jam**.
+- Minta *"Tolong buatkan modul payment gateway"* untuk spesifikasi fitur baru.
+- Perintahkan *"Hapus modul payment gateway"* untuk memangkas fitur dari PRD.md.
 
 Apa yang ingin kita eksplorasi hari ini?`,
         provider: 'DevPulse TPM Engine',
@@ -239,7 +287,7 @@ Apa yang ingin kita eksplorasi hari ini?`,
       });
     }
 
-    // --- CASE C: Explicit Feature Request ---
+    // --- CASE D: Explicit Feature Request ---
     const cleanTitle = cleanFeatureTitle(latestMessage);
     const featureReply = `👨‍💼 **Analisis Product Manager: Spesifikasi Modul ${cleanTitle}**
 
@@ -256,6 +304,7 @@ Silakan konfirmasi melalui pop-up di bawah jika Anda ingin memasukkan modul ini 
       provider: 'DevPulse TPM Engine',
       modelUsed: model,
       intentCase: 'FEATURE',
+      actionType: 'ADD',
       isPrdActionProposed: true,
       proposedModuleTitle: cleanTitle,
       estimatedHoursDelta: 15,
@@ -270,5 +319,14 @@ function cleanFeatureTitle(raw: string): string {
   text = text.replace(/^(tolong|mohon|buatkan|tambahkan|masukkan|buat|tambah|fitur|modul)\s+/gi, '');
   text = text.replace(/\s+(ke\s+prd|di\s+prd|dong|ya|please)$/gi, '');
   if (!text) text = 'Modul Ekstensi Sistem';
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function cleanRemoveTitle(raw: string): string {
+  let text = raw.trim();
+  text = text.replace(/^(tolong|mohon|hapus|hilangkan|buang|delete|remove|kurangi|batalkan|pangkas)\s+/gi, '');
+  text = text.replace(/^(modul|fitur|bagian|point|konten)\s+/gi, '');
+  text = text.replace(/\s+(dari\s+prd|di\s+prd|dong|ya|please)$/gi, '');
+  if (!text) text = 'Modul Terpilih';
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
