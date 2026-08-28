@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { OpenRouter } from '@openrouter/sdk';
 
 interface ChatRequestPayload {
   messages: Array<{ sender: 'ai' | 'user'; text: string }>;
@@ -32,7 +33,12 @@ PERAN & METODOLOGI PRODUCT MANAGER (/pm):
 export async function POST(req: NextRequest) {
   try {
     const body: ChatRequestPayload = await req.json();
-    const { messages = [], model = 'google/gemini-2.0-flash-exp:free', hourlyRate = 250000, currentPrd = '' } = body;
+    const {
+      messages = [],
+      model = 'poolside/laguna-s-2.1:free',
+      hourlyRate = 250000,
+      currentPrd = '',
+    } = body;
 
     const latestMessage = messages[messages.length - 1]?.text || '';
     const lower = latestMessage.trim().toLowerCase();
@@ -52,72 +58,77 @@ export async function POST(req: NextRequest) {
       lower.includes('terima kasih') ||
       lower.includes('makasih');
 
-    // 2. Prepare API call to OpenRouter
+    // 2. Prepare API call to OpenRouter via official @openrouter/sdk
     const apiKey = process.env.OPENROUTER_API_KEY || '';
 
     if (apiKey && apiKey.startsWith('sk-or-')) {
       try {
+        const openrouter = new OpenRouter({ apiKey });
+
         const openRouterMessages = [
           {
-            role: 'system',
+            role: 'system' as const,
             content: `${DEFAULT_TPM_SYSTEM_PROMPT}\n\nWorkrate saat ini: Rp ${hourlyRate.toLocaleString('id-ID')}/jam.\nDokumen PRD saat ini:\n${currentPrd.slice(0, 1500)}...`,
           },
           ...messages.map((m) => ({
-            role: m.sender === 'ai' ? 'assistant' : 'user',
+            role: (m.sender === 'ai' ? 'assistant' : 'user') as 'assistant' | 'user',
             content: m.text,
           })),
         ];
 
-        const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://devpulsestudio.dev',
-            'X-Title': 'DevPulse Studio CRM PRD Architect',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: model || 'google/gemini-2.0-flash-exp:free',
+        // Call OpenRouter SDK stream
+        const stream = await openrouter.chat.send({
+          chatRequest: {
+            model: model || 'poolside/laguna-s-2.1:free',
             messages: openRouterMessages,
-            temperature: 0.7,
-            max_tokens: 1500,
-          }),
+            stream: true,
+          },
         });
 
-        if (openRouterRes.ok) {
-          const aiData = await openRouterRes.json();
-          const aiReplyText = aiData.choices?.[0]?.message?.content || '';
+        let aiReplyText = '';
+        let reasoningTokens = 0;
 
-          if (aiReplyText) {
-            // Determine if OpenRouter response proposed a module that should be offered to inject
-            const shouldOfferPrd = !isGreetingOrCasual && (
-              lower.includes('tambah') ||
+        for await (const chunk of stream) {
+          const content = (chunk as any).choices?.[0]?.delta?.content;
+          if (content) {
+            aiReplyText += content;
+          }
+
+          if ((chunk as any).usage) {
+            reasoningTokens = (chunk as any).usage?.completionTokensDetails?.reasoningTokens || 0;
+          }
+        }
+
+        if (aiReplyText) {
+          // Determine if response proposed a module that should offer PRD injection
+          const shouldOfferPrd =
+            !isGreetingOrCasual &&
+            (lower.includes('tambah') ||
               lower.includes('modul') ||
               lower.includes('fitur') ||
               lower.includes('buatkan') ||
               lower.includes('auth') ||
               lower.includes('payment') ||
               lower.includes('realtime') ||
-              lower.includes('integrasi')
-            );
+              lower.includes('integrasi'));
 
-            return NextResponse.json({
-              success: true,
-              reply: aiReplyText,
-              provider: 'OpenRouter',
-              modelUsed: model,
-              isPrdActionProposed: shouldOfferPrd,
-              proposedModuleTitle: shouldOfferPrd ? latestMessage.slice(0, 40) : undefined,
-              estimatedHoursDelta: shouldOfferPrd ? 15 : 0,
-            });
-          }
+          return NextResponse.json({
+            success: true,
+            reply: aiReplyText,
+            provider: 'OpenRouter SDK',
+            modelUsed: model,
+            reasoningTokens,
+            isPrdActionProposed: shouldOfferPrd,
+            proposedModuleTitle: shouldOfferPrd ? latestMessage.slice(0, 40) : undefined,
+            estimatedHoursDelta: shouldOfferPrd ? 15 : 0,
+          });
         }
-      } catch (orErr) {
-        console.warn('OpenRouter API call fallback to heuristic engine:', orErr);
+      } catch (sdkErr) {
+        console.warn('OpenRouter SDK call error, fallback to HTTP/Heuristic:', sdkErr);
       }
     }
 
-    // 3. Fallback Heuristic TPM Engine (if offline or rate limit)
+    // 3. Fallback Heuristic TPM Engine (if offline or no key)
     if (isGreetingOrCasual) {
       return NextResponse.json({
         success: true,

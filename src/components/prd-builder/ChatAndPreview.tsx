@@ -39,6 +39,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // OpenRouter Free Models
 const OPENROUTER_MODELS = [
+  { id: 'poolside/laguna-s-2.1:free', name: 'Poolside Laguna S-2.1 (Free)', provider: 'Poolside' },
   { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Free)', provider: 'Google' },
   { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', provider: 'Meta' },
   { id: 'deepseek/deepseek-chat:free', name: 'DeepSeek Chat (Free)', provider: 'DeepSeek' },
@@ -214,7 +215,7 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // OpenRouter Model Selector State
-  const [selectedModel, setSelectedModel] = useState<string>('google/gemini-2.0-flash-exp:free');
+  const [selectedModel, setSelectedModel] = useState<string>('poolside/laguna-s-2.1:free');
   const [messageProposals, setMessageProposals] = useState<Record<string, ProposalData>>({});
 
   // Dynamic helper to check if a module is currently present in PRD markdown
