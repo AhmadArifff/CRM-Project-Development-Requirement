@@ -618,17 +618,7 @@ Step 1: Admin navigasi ke /admin/login
 
 ### Epic 11: Admin Panel — AI Assistant & API Key Management
 
-#### Story 11.1: Mengelola Provider AI & API Key
-**As a** admin/owner,
-**I want to** mengelola API Key dan pengaktifan provider AI (Google Gemini, OpenAI, Anthropic, Groq, DeepSeek) dari admin panel,
-**So that** saya bisa memilih provider mana yang aktif digunakan oleh AI PRD Builder pada Landing Page secara dinamis.
-
-**Priority:** P0 | **Estimate:** M
-
-**Acceptance Criteria:**
-- [ ] **Given** saya navigasi ke menu /admin/ai-assistant, **When** halaman dimuat, **Then** saya melihat daftar card provider AI: Google Gemini, OpenAI, Anthropic Claude, Groq, DeepSeek
-- [ ] **Given** saya ingin memasukkan API Key, **When** saya isi input API Key dan simpan, **Then** API Key tersimpan aman dengan enkripsi AES-256-GCM di database
-- [ ] **Given** API Key sudah tersimpan, **When** halaman dimuat ulang, **Then** API Key ditampilkan ter-masking (`sk-proj-****1234`) demi keamanan
+- [x] 11.1: Mengelola Provider AI & API Key — Support OpenRouter (`OPENROUTER_API_KEY`), Google Gemini, OpenAI, Anthropic Claude, Groq, DeepSeek dengan enkripsi AES-256-GCM & masking key (`sk-or-v1-****8a2`).
 - [ ] **Given** saya klik "Test Connection", **When** API berhasil terhubung, **Then** sistem otomatis memuat (auto-load) daftar model yang tersedia dari provider tersebut (contoh: `gemini-1.5-pro`, `gemini-1.5-flash`, `gpt-4o`, `gpt-4o-mini`, `claude-3-5-sonnet`, `deepseek-chat`)
 - [ ] **Given** daftar model termuat, **When** saya pilih model, **Then** model terpilih diset sebagai model aktif provider tersebut
 - [ ] **Given** ada switch toggle Active/Inactive, **When** saya toggle ke Active, **Then** provider diaktifkan. Jika saya set sebagai Default, **Then** landing page AI PRD Builder akan menggunakan provider & model ini
