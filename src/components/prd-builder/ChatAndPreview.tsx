@@ -533,29 +533,60 @@ Spesifikasi mengenai \`${text}\` sudah tercatat di dalam dokumen **PRD.md**. Tid
         const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
         const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
 
-        aiReply = `📝 **Fitur Khusus Berhasil Ditambahkan ke PRD (Bagian ${nextSubSec})**
+        aiReply = `👨‍💼 **Lead PM Analysis: Spesifikasi Modul Berhasil Ditambahkan ke PRD (Bagian ${nextSubSec})**
 
-Permintaan: \`${text}\` telah dianalisis dan diformulasikan menjadi spesifikasi teknis lengkap dalam dokumen **PRD.md**.
+Permintaan: \`${text}\` telah dianalisis sesuai standar **Technical Product Manager (/pm)** dan diformulasikan menjadi spesifikasi requirement enterprise di dokumen **PRD.md**:
 
-- **Status Integrasi:** 🟢 **Approved & Synced to DevPulse Studio Pro**
-- **Estimasi Tambahan:** +15 Jam Kerja.
+- **Struktur Disusun:** Problem Statement, User Story Gherkin, Acceptance Criteria, & Diagram Flowchart Mermaid.
+- **Status Scope:** 🟢 **Approved & Injected to Live PRD.md Workspace**
+- **Estimasi Tambahan:** +15 Jam Kerja (Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)}).
 
-> Simak simulasi pengetikan AI pada panel dokumen di sebelah kanan!`;
+> Perhatikan dokumen **PRD.md** pada panel kanan yang otomatis memperbarui susunan spesifikasi secara live!`;
+
         hoursAdd = 15;
-        prdAppend = `\n\n### ${nextSubSec} Modul Kustom: ${text}
-Modul spesifikasi teknis tambahan sesuai kebutuhan bisnis klien:
+        prdAppend = `\n\n### ${nextSubSec} Modul Spesifikasi: ${text}
+
+> **Problem Statement & Business Context:**
+> Pengguna memerlukan kemampuan untuk \`${text}\` guna meningkatkan efisiensi operasional dan pengalaman pengguna pada platform.
+
+#### User Story:
+**As a** Pengguna / Admin,  
+**I want to** menggunakan modul ${text},  
+**So that** alur kerja bisnis menjadi terotomatisasi, transparan, dan terukur.
+
+#### Kriteria Penerimaan (Acceptance Criteria):
+- [ ] **Given** pengguna mengakses modul '${text}', **When** aksi atau data diinputkan, **Then** sistem melakukan validasi & memproses data secara real-time.
+- [ ] **Given** data berhasil diproses, **When** transaksi selesai, **Then** database memperbarui state & memberikan notifikasi feedback visual.
+- [ ] **Given** terjadi kegagalan koneksi/server error, **When** API mengembalikan HTTP error, **Then** sistem menampilkan pesan kesalahan user-friendly tanpa crash.
+
+#### Rekomendasi Arsitektur Teknikal & Data Flow:
 
 \`\`\`mermaid
 flowchart TD
-    Req["Permintaan Klien: ${text}"] --> Process["Pemrosesan Logic & Controller"]
-    Process --> Val["Validasi Input & Security Guard"]
-    Val --> DB[("Penyimpanan Supabase DB")]
-    DB --> Out["Output Realtime & Konfirmasi"]
+    subgraph Client ["🖥️ Frontend Client Layer"]
+        UI["User Interface (${text})"]
+    end
+
+    subgraph Server ["⚙️ Backend API Controller"]
+        API["Next.js Route Handler / API Server"]
+        Val["Validation & Auth Security Guard"]
+    end
+
+    subgraph Storage ["🗄️ Database & Event Layer"]
+        DB[("Supabase PostgreSQL DB")]
+        Event["Realtime Dispatcher"]
+    end
+
+    UI -- "1. Request Action" --> API
+    API --> Val
+    Val -- "2. Query Data" --> DB
+    DB -- "3. Persist Record" --> Event
+    Event -- "4. Push Response" --> UI
 \`\`\`
 
-**Kriteria Penerimaan (Acceptance Criteria):**
-- [ ] **Given** pengguna menjalankan fungsi '${text}', **When** sistem memproses data, **Then** hasil tersimpan aman dan memberikan feedback instan.
-- [ ] **Given** terjadi kegagalan koneksi, **When** API menerima error, **Then** sistem menampilkan pesan kesalahan user-friendly.
+**Work Breakdown & Cost Estimate:**
+- **Estimasi Durasi:** +15 Jam Kerja
+- **Investasi Tambahan:** Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)} (15 Jam × Rp ${new Intl.NumberFormat('id-ID').format(hourlyRate)}/jam)
 `;
       }
 
