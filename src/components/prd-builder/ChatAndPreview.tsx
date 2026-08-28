@@ -359,6 +359,95 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
     }
   }, [questionnaire]);
 
+  // Intelligent Section 5 Inserter & PRD Structure Normalizer
+  const insertFeatureIntoPrd = (
+    currentPrd: string,
+    moduleName: string,
+    hoursDelta: number,
+    rate: number,
+    currentTotalHours: number
+  ): { updatedPrd: string; subSecTitle: string } => {
+    let prd = currentPrd;
+
+    // 1. Calculate dynamic 5.x numbering
+    const matches = prd.match(/###\s+5\.(\d+)/g) || [];
+    let maxSubNum = 2;
+    for (const m of matches) {
+      const num = parseInt(m.replace(/###\s+5\./, ''), 10);
+      if (!isNaN(num) && num > maxSubNum) maxSubNum = num;
+    }
+    const nextSubNum = maxSubNum + 1;
+    const subSecTitle = `5.${nextSubNum} User Story: ${moduleName}`;
+
+    // 2. Generate clean Gherkin & Mermaid specification
+    const snippet = `\n\n### ${subSecTitle}
+- **As a** Pengguna / Admin,
+- **I want to** menggunakan modul ${moduleName},
+- **So that** alur transaksi dan operasional aplikasi menjadi terotomatisasi, transparan, dan terukur.
+
+**Kriteria Penerimaan (Acceptance Criteria):**
+- [ ] **Given** pengguna mengakses modul '${moduleName}', **When** aksi atau data diinputkan, **Then** sistem melakukan validasi & memproses data secara real-time.
+- [ ] **Given** data berhasil diproses, **When** transaksi selesai, **Then** database memperbarui state & memberikan notifikasi feedback visual.
+- [ ] **Given** terjadi kegagalan server, **When** API mengembalikan HTTP error, **Then** sistem menampilkan pesan kesalahan user-friendly tanpa crash.
+
+#### Rekomendasi Arsitektur Teknikal & Data Flow:
+
+\`\`\`mermaid
+flowchart TD
+    subgraph Client ["🖥️ Frontend Layer"]
+        UI["User Interface (${moduleName})"]
+    end
+
+    subgraph Server ["⚙️ Backend API Controller"]
+        API["Next.js Route Handler / API Server"]
+        Val["Validation & Auth Security Guard"]
+    end
+
+    subgraph Storage ["🗄️ Database & Event Layer"]
+        DB[("Supabase PostgreSQL DB")]
+        Event["Realtime Dispatcher"]
+    end
+
+    UI -- "1. Request Action" --> API
+    API --> Val
+    Val -- "2. Query Data" --> DB
+    DB -- "3. Persist Record" --> Event
+    Event -- "4. Push Response" --> UI
+\`\`\`
+`;
+
+    // 3. Insert cleanly right before Section 6 (so Section 5 stays strictly sequential)
+    const sec6Regex = /(\n*---\n*##\s+6\.)/i;
+    const sec7Regex = /(\n*---\n*##\s+7\.)/i;
+
+    if (sec6Regex.test(prd)) {
+      prd = prd.replace(sec6Regex, `${snippet}\n\n--- \n\n## 6.`);
+    } else if (sec7Regex.test(prd)) {
+      prd = prd.replace(sec7Regex, `${snippet}\n\n--- \n\n## 7.`);
+    } else {
+      prd = `${prd}${snippet}`;
+    }
+
+    // 4. Update Section 7 Sprint Table & Total Formula if present
+    const newTotalHours = currentTotalHours + hoursDelta;
+    const newTotalCost = newTotalHours * rate;
+
+    // Update total hours in table row
+    prd = prd.replace(
+      /\|\s*\*\*TOTAL\*\*\s*\|\s*\*\*Total Estimasi Jam Kerja\*\*\s*\|\s*[^|]+\|\s*\*\*\d+\s*Jam\*\*\s*\|/gi,
+      `| **TOTAL** | **Total Estimasi Jam Kerja** | **Garansi Rate 100% Transparan** | **${newTotalHours} Jam** |`
+    );
+
+    // Update cost formula
+    const formattedCost = new Intl.NumberFormat('id-ID').format(newTotalCost);
+    prd = prd.replace(
+      /\$\$\\text\{Total Biaya\}\s*=\s*\d+\\text\{\s*Jam\}\s*\\times\s*\\text\{Rp\s*\}\s*[\d.]+\s*=\s*\\mathbf\{\\text\{Rp\s*\}[\d.]+\}\$\$/gi,
+      `$$\\text{Total Biaya} = ${newTotalHours}\\text{ Jam} \\times \\text{Rp } ${new Intl.NumberFormat('id-ID').format(rate)} = \\mathbf{\\text{Rp } ${formattedCost}}$$`
+    );
+
+    return { updatedPrd: prd, subSecTitle };
+  };
+
   // Execute PRD Module Mutation upon User Confirmation
   const handleApplyProposalToPrd = (msgId: string) => {
     const prop = messageProposals[msgId];
@@ -432,12 +521,19 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       return;
     }
 
-    // Standard ADD Action
+    // Standard ADD Action with Structured Insertion
+    const { updatedPrd, subSecTitle } = insertFeatureIntoPrd(
+      prdMarkdown,
+      prop.title,
+      prop.hours,
+      hourlyRate,
+      estimatedHours
+    );
+    const newHours = estimatedHours + prop.hours;
     const previousLength = prdMarkdown.length;
-    const updatedFullPrd = `${prdMarkdown}${prop.prdAppend || ''}`;
-    setEstimatedHours(estimatedHours + prop.hours);
+    setEstimatedHours(newHours);
 
-    startTypewriterPrd(updatedFullPrd, previousLength, `AI sedang mengetik modul "${prop.title}"...`);
+    startTypewriterPrd(updatedPrd, previousLength, `AI sedang menyusun modul "${subSecTitle}"...`);
 
     // Remove proposal after application
     setMessageProposals((prev) => {
@@ -448,7 +544,7 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 
     addChatMessage(
       'ai',
-      `✅ **Spesifikasi Modul "${prop.title}" Berhasil Diterapkan ke PRD.md!**\n\nPenambahan durasi: \`+${prop.hours} Jam Kerja\`. Dokumen live di panel kanan telah diperbarui.`
+      `✅ **Modul "${subSecTitle}" Berhasil Disusun & Disisipkan ke Section 5 PRD.md!**\n\nPenambahan durasi: \`+${prop.hours} Jam Kerja\`. Dokumen live di panel kanan dan nomor urut poin telah disinkronkan secara rapi.`
     );
   };
 
@@ -499,6 +595,30 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
       }
     }
 
+    // Check if user input is an explicit addition command
+    const isExplicitAddCommand =
+      (lowerUserInput.includes('tambah') ||
+        lowerUserInput.includes('buatkan') ||
+        lowerUserInput.includes('add') ||
+        lowerUserInput.includes('integrasi') ||
+        lowerUserInput.includes('integrasikan')) &&
+      !lowerUserInput.startsWith('apakah') &&
+      !cleanUserInput.includes('?');
+
+    let clientInferredAddTitle = '';
+    if (isExplicitAddCommand) {
+      const quoteMatch = cleanUserInput.match(/["'“]([^"'”]+)["'”]/);
+      if (quoteMatch) {
+        clientInferredAddTitle = quoteMatch[1].trim();
+      } else {
+        clientInferredAddTitle = cleanUserInput
+          .replace(/^(saya ingin|tolong|mohon)?\s*(tambahkan|tambah|buatkan|buat|add|integrasikan|integrasi)\s*(modul|fitur|section|bagian)?\s*/gi, '')
+          .replace(/["'!]/g, '')
+          .trim();
+        if (!clientInferredAddTitle) clientInferredAddTitle = 'Modul Ekstensi Baru';
+      }
+    }
+
     try {
       // 1. Call real OpenRouter AI Chat streaming endpoint
       const response = await fetch('/api/v1/ai/chat', {
@@ -538,11 +658,11 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
 
       setIsAiTyping(false);
 
-      // 2. Check if the final AI response has an action marker OR user requested removal
+      // 2. Check if the final AI response has an action marker OR user requested addition/removal
       const addMatch = fullAccumulatedText.match(/<<<ACTION:ADD:([^>]+)>>>/);
       const removeMatch = fullAccumulatedText.match(/<<<ACTION:REMOVE:([^>]+)>>>/);
 
-      if (removeMatch || clientInferredRemoveTitle) {
+      if (removeMatch || isExplicitRemoveCommand) {
         const targetTitle = (removeMatch ? removeMatch[1] : clientInferredRemoveTitle).trim();
         setMessageProposals((prev) => ({
           ...prev,
@@ -552,62 +672,13 @@ Saya telah menganalisis kebutuhan aplikasi dan menyusun dokumen PRD lengkap bers
             hours: -15,
           },
         }));
-      } else if (addMatch) {
-        const moduleName = addMatch[1].trim();
-        const existingSections = (prdMarkdown.match(/### 5\.\d+/g) || []).length;
-        const nextSubSec = `5.${Math.max(6, existingSections + 1)}`;
-
-        const prdSnippet = `\n\n### ${nextSubSec} Modul Spesifikasi: ${moduleName}
-
-> **Problem Statement & Business Context:**
-> Pengguna memerlukan modul \`${moduleName}\` guna meningkatkan efisiensi operasional dan kapabilitas aplikasi.
-
-#### User Story:
-**As a** Pengguna / Admin,  
-**I want to** menggunakan modul ${moduleName},  
-**So that** alur kerja bisnis menjadi terotomatisasi, transparan, dan terukur.
-
-#### Kriteria Penerimaan (Acceptance Criteria):
-- [ ] **Given** pengguna mengakses modul '${moduleName}', **When** aksi atau data diinputkan, **Then** sistem melakukan validasi & memproses data secara real-time.
-- [ ] **Given** data berhasil diproses, **When** transaksi selesai, **Then** database memperbarui state & memberikan notifikasi feedback visual.
-- [ ] **Given** terjadi kegagalan server, **When** API mengembalikan HTTP error, **Then** sistem menampilkan pesan kesalahan user-friendly tanpa crash.
-
-#### Rekomendasi Arsitektur Teknikal & Data Flow:
-
-\`\`\`mermaid
-flowchart TD
-    subgraph Client ["🖥️ Frontend Layer"]
-        UI["User Interface (${moduleName})"]
-    end
-
-    subgraph Server ["⚙️ Backend API Controller"]
-        API["Next.js Route Handler / API Server"]
-        Val["Validation & Auth Security Guard"]
-    end
-
-    subgraph Storage ["🗄️ Database & Event Layer"]
-        DB[("Supabase PostgreSQL DB")]
-        Event["Realtime Dispatcher"]
-    end
-
-    UI -- "1. Request Action" --> API
-    API --> Val
-    Val -- "2. Query Data" --> DB
-    DB -- "3. Persist Record" --> Event
-    Event -- "4. Push Response" --> UI
-\`\`\`
-
-**Work Breakdown & Cost Estimate:**
-- **Estimasi Durasi:** +15 Jam Kerja
-- **Investasi Tambahan:** Rp ${new Intl.NumberFormat('id-ID').format(15 * hourlyRate)} (15 Jam × Rp ${new Intl.NumberFormat('id-ID').format(hourlyRate)}/jam)
-`;
-
+      } else if (addMatch || isExplicitAddCommand) {
+        const moduleName = (addMatch ? addMatch[1] : clientInferredAddTitle).trim();
         setMessageProposals((prev) => ({
           ...prev,
           [tempAiMsgId]: {
             actionType: 'ADD',
             title: moduleName,
-            prdAppend: prdSnippet,
             hours: 15,
           },
         }));
