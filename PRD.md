@@ -619,22 +619,22 @@ Step 1: Admin navigasi ke /admin/login
 ### Epic 11: Admin Panel — AI Assistant & API Key Management
 
 - [x] 11.1: Mengelola Provider AI & API Key — Support OpenRouter (`OPENROUTER_API_KEY`), Google Gemini, OpenAI, Anthropic Claude, Groq, DeepSeek dengan enkripsi AES-256-GCM & masking key (`sk-or-v1-****8a2`).
-- [ ] **Given** saya klik "Test Connection", **When** API berhasil terhubung, **Then** sistem otomatis memuat (auto-load) daftar model yang tersedia dari provider tersebut (contoh: `gemini-1.5-pro`, `gemini-1.5-flash`, `gpt-4o`, `gpt-4o-mini`, `claude-3-5-sonnet`, `deepseek-chat`)
-- [ ] **Given** daftar model termuat, **When** saya pilih model, **Then** model terpilih diset sebagai model aktif provider tersebut
-- [ ] **Given** ada switch toggle Active/Inactive, **When** saya toggle ke Active, **Then** provider diaktifkan. Jika saya set sebagai Default, **Then** landing page AI PRD Builder akan menggunakan provider & model ini
-- [ ] **Given** tidak ada provider yang aktif, **When** user mengakses AI chat di landing page, **Then** sistem menampilkan warning ramah bahwa AI sedang pemeliharaan
+- [x] **Given** saya klik "Test Connection", **When** API berhasil terhubung, **Then** sistem otomatis memuat (auto-load) daftar model gratis OpenRouter (`google/gemini-2.0-flash-exp:free`, `meta-llama/llama-3.3-70b-instruct:free`, `deepseek/deepseek-chat:free`, `qwen/qwen-2.5-coder-32b-instruct:free`, `mistralai/mistral-7b-instruct:free`)
+- [x] **Given** daftar model termuat, **When** saya pilih model, **Then** model terpilih diset sebagai model aktif provider tersebut
+- [x] **Given** ada switch toggle Active/Inactive, **When** saya toggle ke Active, **Then** provider diaktifkan. Jika saya set sebagai Default, **Then** landing page AI PRD Builder akan menggunakan provider & model ini
+- [x] **Given** tidak ada provider yang aktif, **When** user mengakses AI chat di landing page, **Then** sistem menampilkan warning ramah bahwa AI sedang pemeliharaan
 
 **Security & Validation:**
 - API Key WAJIB dienkripsi server-side sebelum masuk database
-- Endpoint GET `/api/admin/ai-providers` WAJIB mengembalikan masked key, bukan plain-text API Key
+- Endpoint GET `/api/v1/ai/providers` WAJIB mengembalikan masked key, bukan plain-text API Key
 - Pengaturan provider HANYA bisa diakses oleh admin authenticated (JWT protected)
 
 #### Story 11.2: System Prompt Injection & Setting Rate Harga Dinamis
 **As a** admin/owner,
 **I want to** mengatur System Prompt / System Instructions, pembatasan scope topik (guardrails), dan rate harga pengembangan di admin panel,
 **So that** AI pada Landing Page hanya memproses percakapan seputar proyek aplikasi, menolak topik di luar proyek secara sopan, serta menjawab estimasi biaya sesuai aturan rate harga yang saya tentukan.
-- [ ] **Given** saya berada di menu /admin/ai-assistant, **When** saya berpindah ke tab "System Prompt & Rules", **Then** saya melihat editor System Prompt, Scope Guardrails, dan Setting Rate Harga
-- [ ] **Given** admin mengisi rate per jam, **When** disimpan, **Then** rate ini digunakan untuk mengkalkulasi estimasi biaya di AI chat dan Rate Calculator landing page
+- [x] **Given** saya berada di menu /admin/ai-assistant, **When** saya berpindah ke tab "System Prompt & Rules", **Then** saya melihat editor System Prompt (Lead AI Solution Architect), Scope Guardrails (Strict Topic Limit & No System Leak), dan Setting Rate Harga (Rp 250.000 / jam)
+- [x] **Given** admin mengisi rate per jam, **When** disimpan, **Then** rate ini di-inject ke AI chat dan Rate Calculator landing page untuk kalkulasi otomatis (Jam × Rate)
 
 ---
 
