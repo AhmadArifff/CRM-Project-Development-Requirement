@@ -6,7 +6,7 @@ import { HelpCircle, ChevronRight, ChevronLeft, Check, Sparkles, Send, Zap, Bot,
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
-  const { questionnaire, setQuestionnaireField } = usePrdStore();
+  const { questionnaire, setQuestionnaireField, buildPrdFromQuestionnaire } = usePrdStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [aiAppliedNotification, setAiAppliedNotification] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
       title: 'Apakah ada referensi aplikasi yang Anda sukai?',
       subtitle: 'Sebutkan nama aplikasi sebagai gambaran alur & tampilan.',
       type: 'text',
-      placeholder: 'Contoh: Mirip perpaduan Trello untuk tugas dan Notion untuk catatan, warna dark mode.',
+      placeholder: 'Contoh: Desain modern dark cyber glassmorphism dengan Kanban task board dan dokumentasi PRD otomatis.',
     },
     {
       key: 'budgetRange' as keyof QuestionnaireData,
@@ -123,7 +123,7 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
           if (category.includes('E-Commerce')) {
             essaySuggestion = 'System login user & profile, katalog produk dengan filter & pencarian, keranjang belanja, integrasi payment gateway Midtrans/Xendit, tracking order real-time, dan dashboard laporan penjualan.';
           } else if (category.includes('CRM')) {
-            essaySuggestion = 'Dashboard analytics KPI, Kanban pipeline deals, Trello task board per project, manajemen kontak lead, activity log sales, dan notifikasi real-time.';
+            essaySuggestion = 'Dashboard analytics KPI, Kanban pipeline deals, Task board per project, manajemen kontak lead, activity log sales, dan notifikasi real-time.';
           } else if (category.includes('SaaS')) {
             essaySuggestion = 'Authentication Better Auth + JWT, subscription plan management, user workspace dashboard, role-based access control (RBAC), dan export report PDF/Excel.';
           } else {
@@ -132,11 +132,11 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
         } else if (q.key === 'referenceApp') {
           const category = questionnaire.appCategory || 'CRM';
           if (category.includes('CRM') || category.includes('Task')) {
-            essaySuggestion = 'Perpaduan Trello untuk manajemen task, Linear untuk UI dark-mode modern, dan Notion untuk dokumentasi proyek.';
+            essaySuggestion = 'Platform terintegrasi dengan Kanban board untuk manajemen tugas, UI dark-mode modern, dan dokumentasi PRD otomatis.';
           } else if (category.includes('E-Commerce')) {
-            essaySuggestion = 'Tampilan katalog clean ala Tokopedia dengan checkout flow cepat seperti Shopify.';
+            essaySuggestion = 'Tampilan katalog interaktif responsif dengan alur checkout cepat dan integrasi payment gateway.';
           } else {
-            essaySuggestion = 'Antarmuka modern khas SaaS global seperti Linear.app dan Notion dengan tema dark mode.';
+            essaySuggestion = 'Antarmuka modern khas SaaS enterprise dengan tema dark cyber glassmorphism.';
           }
         }
 
@@ -153,6 +153,7 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      buildPrdFromQuestionnaire();
       onComplete();
     }
   };

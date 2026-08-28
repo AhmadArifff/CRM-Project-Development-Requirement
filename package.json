@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "server:dev": "tsx watch server/index.ts",
     "server:start": "node server/index.js",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "dev:all": "npx concurrently \"npm run server:dev\" \"npm run dev\""
+    "dev:all": "next dev"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -27,6 +28,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.28.0",
+    "mermaid": "^11.17.2",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
     "next": "16.3.0",

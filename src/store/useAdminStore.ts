@@ -209,7 +209,7 @@ const apiFetch = async (urlPath: string, options: RequestInit = {}) => {
     ...options.headers,
   };
   
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
   const url = urlPath.startsWith('http') ? urlPath : `${apiUrl}${urlPath}`;
 
   const res = await fetch(url, { ...options, headers });

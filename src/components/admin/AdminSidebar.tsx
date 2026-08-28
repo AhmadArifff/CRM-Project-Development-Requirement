@@ -30,7 +30,7 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
   const menuItems = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'Deals Pipeline', href: '/admin/deals', icon: Kanban, badge: 'Kanban' },
-    { label: 'Project Tasks', href: '/admin/tasks', icon: CheckSquare, badge: 'Trello' },
+    { label: 'Project Tasks', href: '/admin/tasks', icon: CheckSquare, badge: 'Tasks' },
     { label: 'Leads & Contacts', href: '/admin/leads', icon: Users, badgeCount: newLeadsCount },
     { label: 'Sales Activities', href: '/admin/activities', icon: Calendar },
     { label: 'Landing CMS', href: '/admin/landing-content', icon: LayoutTemplate, badge: 'CMS' },
