@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase Environment Configurations
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ydpmuauskndowontbfhx.supabase.co';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://glcmtzzhqparuwdlfqbt.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkcG11YXVza25kb3dvbnRiZmh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMDY1NzcsImV4cCI6MjEwMTU4MjU3N30.1Hk7XWcOnpXYf0RKWPVqw298tyPcyxLkTXvTAPAkBOo';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
