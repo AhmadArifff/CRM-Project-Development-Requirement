@@ -37,6 +37,7 @@ import {
   Printer,
   List,
   Compass,
+  ArrowDown,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -241,8 +242,12 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
 
   const scrollToSection = (secId: string) => {
     const el = document.getElementById(secId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el && previewScrollRef.current) {
+      const container = previewScrollRef.current;
+      const topPos = el.offsetTop - container.offsetTop - 16;
+      container.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
+    } else if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   };
 
@@ -281,10 +286,32 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [isPrdStreaming, setIsPrdStreaming] = useState(false);
   const [streamStatusText, setStreamStatusText] = useState<string>('');
   
-  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
+  const isAutoScrollEnabled = useRef<boolean>(true);
+  const [isUserScrolledUp, setIsUserScrolledUp] = useState<boolean>(false);
   const previewScrollRef = useRef<HTMLDivElement>(null);
   const streamingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const targetFullPrdRef = useRef<string>(prdMarkdown);
+
+  const handleChatScroll = () => {
+    if (!chatScrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatScrollContainerRef.current;
+    const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+    const nearBottom = distanceToBottom <= 80;
+    isAutoScrollEnabled.current = nearBottom;
+    setIsUserScrolledUp(!nearBottom);
+  };
+
+  const scrollChatToBottom = (force = false, smooth = false) => {
+    if (!chatScrollContainerRef.current) return;
+    if (force || isAutoScrollEnabled.current) {
+      const container = chatScrollContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto',
+      });
+    }
+  };
 
   // Sync display & reactive shortcuts with store whenever prdMarkdown changes (from wizard regenerate or reset)
   useEffect(() => {
@@ -294,9 +321,12 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
     }
   }, [prdMarkdown, isPrdStreaming]);
 
+  // Only scroll inside the chat container when message count or typing state changes — NEVER scroll the parent window!
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, isAiTyping]);
+    if (isAutoScrollEnabled.current && chatScrollContainerRef.current) {
+      scrollChatToBottom(false, false);
+    }
+  }, [chatMessages.length, isAiTyping]);
 
   // Clean up streaming timer on unmount
   useEffect(() => {
@@ -615,6 +645,9 @@ flowchart TD
     addChatMessage('user', text);
     if (!textToSend) setInputMessage('');
     setIsAiTyping(true);
+    isAutoScrollEnabled.current = true;
+    setIsUserScrolledUp(false);
+    setTimeout(() => scrollChatToBottom(true, true), 30);
 
     const tempAiMsgId = `ai-msg-${Date.now()}`;
     // Add empty placeholder message for live streaming
@@ -705,6 +738,11 @@ flowchart TD
 
         // Update the AI message in real time
         updateChatMessage(tempAiMsgId, cleanDisplayText);
+
+        // Keep internal chat container scrolled to bottom without scrolling window
+        if (isAutoScrollEnabled.current && chatScrollContainerRef.current) {
+          chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
+        }
       }
 
       setIsAiTyping(false);
@@ -882,7 +920,11 @@ flowchart TD
           </div>
 
           {/* Chat Message History */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4 text-xs bg-slate-950/60">
+          <div
+            ref={chatScrollContainerRef}
+            onScroll={handleChatScroll}
+            className="flex-1 p-4 overflow-y-auto space-y-4 text-xs bg-slate-950/60 relative scroll-smooth"
+          >
             {chatMessages.map((msg) => {
               const isAi = msg.sender === 'ai';
               const proposal = messageProposals[msg.id];
@@ -1036,7 +1078,24 @@ flowchart TD
                 </div>
               </div>
             )}
-            <div ref={chatBottomRef} />
+
+            {/* Floating button to jump to latest message when scrolled up */}
+            {isUserScrolledUp && (
+              <div className="sticky bottom-2 left-0 right-0 flex justify-center pointer-events-none z-20">
+                <button
+                  type="button"
+                  onClick={() => {
+                    isAutoScrollEnabled.current = true;
+                    setIsUserScrolledUp(false);
+                    scrollChatToBottom(true, true);
+                  }}
+                  className="pointer-events-auto px-3 py-1.5 rounded-full bg-blue-600/95 hover:bg-blue-500 text-cyan-200 text-[11px] font-bold shadow-xl border border-cyan-400/40 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer backdrop-blur-md"
+                >
+                  <ArrowDown className="w-3.5 h-3.5 text-cyan-300 animate-bounce" />
+                  <span>Ke Pesan Terbaru</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Quick Suggest Chips with Deduplication & Disabled State */}
