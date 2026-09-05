@@ -178,6 +178,15 @@ npm run build
 
 ---
 
+## 🚀 Panduan Deployment Vercel
+
+Aplikasi ini siap dideploy ke **Vercel** dengan arsitektur Fullstack Next.js 16 + Supabase PostgreSQL di region Singapore (`sin1`) untuk latensi ultra-rendah (<10ms).
+
+Silakan baca panduan lengkap dan salin cepat variabel lingkungan di:
+👉 **[VERCEL_ENV_SETUP.md](file:///c:/Users/ASUS/Documents/Web%20Dev/improving/CRM-Management-Project/VERCEL_ENV_SETUP.md)**
+
+---
+
 ## 🔀 Kebijakan Branching & Git Merge Rule (10-Commit Threshold)
 
 1. **Active Working Branch (`dev`)**: Seluruh penambahan fitur, bugfix, peningkatan UI/UX, dan pekerjaan harian **WAJIB** di-commit dan di-push ke branch `dev` (`git push origin dev`).
