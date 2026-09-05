@@ -246,8 +246,6 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
       const container = previewScrollRef.current;
       const topPos = el.offsetTop - container.offsetTop - 16;
       container.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
-    } else if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   };
 
@@ -287,29 +285,63 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [streamStatusText, setStreamStatusText] = useState<string>('');
   
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
-  const isAutoScrollEnabled = useRef<boolean>(true);
+  const isAutoScrollEnabled = useRef<boolean>(false);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState<boolean>(false);
+  const touchStartYRef = useRef<number>(0);
   const previewScrollRef = useRef<HTMLDivElement>(null);
   const streamingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const targetFullPrdRef = useRef<string>(prdMarkdown);
+
+  const handleChatWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.deltaY < 0) {
+      // User is scrolling UP: immediately disable auto-scroll with zero delay
+      isAutoScrollEnabled.current = false;
+      setIsUserScrolledUp(true);
+    } else if (e.deltaY > 0) {
+      // User scrolling DOWN: re-enable auto-scroll only if reaching near bottom (<= 25px)
+      if (chatScrollContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = chatScrollContainerRef.current;
+        const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+        if (distanceToBottom <= 25) {
+          isAutoScrollEnabled.current = true;
+          setIsUserScrolledUp(false);
+        }
+      }
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - touchStartYRef.current;
+    if (deltaY > 8) {
+      // Swiping down to see earlier messages: disable auto-scroll
+      isAutoScrollEnabled.current = false;
+      setIsUserScrolledUp(true);
+    }
+  };
 
   const handleChatScroll = () => {
     if (!chatScrollContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatScrollContainerRef.current;
     const distanceToBottom = scrollHeight - scrollTop - clientHeight;
-    const nearBottom = distanceToBottom <= 80;
-    isAutoScrollEnabled.current = nearBottom;
-    setIsUserScrolledUp(!nearBottom);
+    const nearBottom = distanceToBottom <= 25;
+    if (nearBottom) {
+      isAutoScrollEnabled.current = true;
+      setIsUserScrolledUp(false);
+    } else {
+      isAutoScrollEnabled.current = false;
+      setIsUserScrolledUp(true);
+    }
   };
 
-  const scrollChatToBottom = (force = false, smooth = false) => {
+  const scrollChatToBottom = (force = false) => {
     if (!chatScrollContainerRef.current) return;
     if (force || isAutoScrollEnabled.current) {
-      const container = chatScrollContainerRef.current;
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: smooth ? 'smooth' : 'auto',
-      });
+      chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
     }
   };
 
@@ -321,12 +353,12 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
     }
   }, [prdMarkdown, isPrdStreaming]);
 
-  // Only scroll inside the chat container when message count or typing state changes — NEVER scroll the parent window!
+  // Only scroll inside the chat container when user sends a new message and auto-scroll is allowed
   useEffect(() => {
     if (isAutoScrollEnabled.current && chatScrollContainerRef.current) {
-      scrollChatToBottom(false, false);
+      scrollChatToBottom(false);
     }
-  }, [chatMessages.length, isAiTyping]);
+  }, [chatMessages.length]);
 
   // Clean up streaming timer on unmount
   useEffect(() => {
@@ -645,9 +677,17 @@ flowchart TD
     addChatMessage('user', text);
     if (!textToSend) setInputMessage('');
     setIsAiTyping(true);
-    isAutoScrollEnabled.current = true;
-    setIsUserScrolledUp(false);
-    setTimeout(() => scrollChatToBottom(true, true), 30);
+
+    if (isShortcutClick) {
+      // Shortcut click: User explicitly requested NOT to scroll down! Keep current position intact!
+      isAutoScrollEnabled.current = false;
+      setIsUserScrolledUp(true);
+    } else {
+      // Regular user typed message: show their message at bottom, but user can freely scroll up anytime
+      isAutoScrollEnabled.current = true;
+      setIsUserScrolledUp(false);
+      scrollChatToBottom(true);
+    }
 
     const tempAiMsgId = `ai-msg-${Date.now()}`;
     // Add empty placeholder message for live streaming
@@ -857,7 +897,7 @@ flowchart TD
         
         {/* LEFT COLUMN: DevPulse AI Chat Window */}
         <div
-          className={`md:col-span-5 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl print-hide ${
+          className={`md:col-span-5 min-h-0 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl print-hide ${
             mobileTab === 'preview' ? 'hidden md:flex' : 'flex'
           }`}
         >
@@ -923,7 +963,10 @@ flowchart TD
           <div
             ref={chatScrollContainerRef}
             onScroll={handleChatScroll}
-            className="flex-1 p-4 overflow-y-auto space-y-4 text-xs bg-slate-950/60 relative scroll-smooth"
+            onWheel={handleChatWheel}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            className="flex-1 min-h-0 p-4 overflow-y-auto space-y-4 text-xs bg-slate-950/60 relative"
           >
             {chatMessages.map((msg) => {
               const isAi = msg.sender === 'ai';
@@ -1087,7 +1130,7 @@ flowchart TD
                   onClick={() => {
                     isAutoScrollEnabled.current = true;
                     setIsUserScrolledUp(false);
-                    scrollChatToBottom(true, true);
+                    scrollChatToBottom(true);
                   }}
                   className="pointer-events-auto px-3 py-1.5 rounded-full bg-blue-600/95 hover:bg-blue-500 text-cyan-200 text-[11px] font-bold shadow-xl border border-cyan-400/40 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer backdrop-blur-md"
                 >
@@ -1110,7 +1153,11 @@ flowchart TD
               return (
                 <button
                   key={sc.id}
-                  onClick={() => handleSendMessage(sc.prompt, true)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSendMessage(sc.prompt, true);
+                  }}
                   disabled={isApplied || isPrdStreaming || isAiTyping}
                   className={`px-3 py-1.5 rounded-full shrink-0 transition-all text-[11px] font-semibold flex items-center gap-1.5 ${
                     isApplied
