@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAdminStore, DealItem } from '@/store/useAdminStore';
 import {
   Kanban,
@@ -14,13 +14,32 @@ import {
   Calendar,
   X,
   Sparkles,
+  Trophy,
+  CheckCircle2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+interface ConfettiParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  rotation: number;
+  rotationSpeed: number;
+  opacity: number;
+}
 
 export default function DealsPipelinePage() {
   const { deals, moveDeal, addDeal } = useAdminStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedPrd, setSelectedPrd] = useState<DealItem | null>(null);
+  const [celebrationDeal, setCelebrationDeal] = useState<DealItem | null>(null);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const particlesRef = useRef<ConfettiParticle[]>([]);
+  const animationFrameRef = useRef<number | null>(null);
 
   const [newDeal, setNewDeal] = useState({
     title: '',
@@ -38,6 +57,94 @@ export default function DealsPipelinePage() {
     { key: 'NEGOTIATION', label: 'Negotiation', color: 'border-purple-500/50 text-purple-400 bg-purple-500/10' },
     { key: 'WON', label: 'Deal Won', color: 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10' },
   ];
+
+  // Confetti Animation Engine
+  const triggerWonConfetti = (deal: DealItem) => {
+    setCelebrationDeal(deal);
+    setTimeout(() => setCelebrationDeal(null), 5000);
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#00f2fe', '#38bdf8', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#ffffff'];
+    const particles: ConfettiParticle[] = [];
+
+    // Emit 120 confetti particles from center-bottom
+    for (let i = 0; i < 120; i++) {
+      const angle = (Math.PI / 4) + Math.random() * (Math.PI / 2); // between 45 and 135 deg
+      const speed = 12 + Math.random() * 16;
+      particles.push({
+        x: canvas.width * 0.5 + (Math.random() - 0.5) * 200,
+        y: canvas.height * 0.7,
+        vx: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
+        vy: -Math.sin(angle) * speed,
+        size: 6 + Math.random() * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 12,
+        opacity: 1,
+      });
+    }
+
+    particlesRef.current = particles;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let alive = false;
+      for (const p of particlesRef.current) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35; // gravity
+        p.vx *= 0.98; // drag
+        p.rotation += p.rotationSpeed;
+        p.opacity -= 0.007;
+
+        if (p.opacity > 0 && p.y < canvas.height + 50) {
+          alive = true;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(p.opacity, 0);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          ctx.restore();
+        }
+      }
+
+      if (alive) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(animate);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  const handleMoveStage = (deal: DealItem, targetStage: DealItem['stage']) => {
+    moveDeal(deal.id, targetStage);
+    if (targetStage === 'WON') {
+      triggerWonConfetti(deal);
+    }
+  };
 
   const handleCreateDeal = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +168,42 @@ export default function DealsPipelinePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Invisible Confetti Fullscreen Overlay */}
+      <canvas
+        ref={canvasRef}
+        className="pointer-events-none fixed inset-0 z-50 w-full h-full"
+      />
+
+      {/* Celebration Toast Banner when deal reaches WON */}
+      <AnimatePresence>
+        {celebrationDeal && (
+          <motion.div
+            initial={{ opacity: 0, y: -40, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -40, scale: 0.9 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-cyan-950 border-2 border-emerald-400/80 shadow-2xl shadow-emerald-500/30 flex items-center gap-4 max-w-md w-full backdrop-blur-xl"
+          >
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-400/50 shadow-inner">
+              <Trophy className="w-6 h-6 text-amber-300 animate-bounce" />
+            </div>
+            <div className="flex-1">
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block">
+                🎉 DEAL WON CELEBRATION!
+              </span>
+              <h4 className="text-sm font-extrabold text-white">{celebrationDeal.title}</h4>
+              <p className="text-xs text-cyan-300 font-mono font-bold">{formatRupiah(celebrationDeal.value)}</p>
+            </div>
+            <button
+              onClick={() => setCelebrationDeal(null)}
+              className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -70,13 +212,13 @@ export default function DealsPipelinePage() {
             <span>Deals Pipeline <span className="gradient-text-cyan">Kanban Board</span></span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Kelola tahapan negosiasi deal proyek dari New Lead hingga Deal Won.
+            Kelola tahapan negosiasi deal proyek dari New Lead hingga Deal Won dengan pergerakan interaktif.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs shadow-lg hover:shadow-cyan-500/30 transition-all glow-button"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs shadow-lg hover:shadow-cyan-500/30 transition-all glow-button cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Tambah Deal Baru</span>
@@ -130,7 +272,7 @@ export default function DealsPipelinePage() {
                       {deal.prdFileUrl && (
                         <button
                           onClick={() => setSelectedPrd(deal)}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/15 text-cyan-300 text-[10px] font-bold border border-blue-500/30"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/15 text-cyan-300 text-[10px] font-bold border border-blue-500/30 cursor-pointer"
                         >
                           <FileText className="w-3 h-3" />
                           <span>PRD.md</span>
@@ -143,10 +285,10 @@ export default function DealsPipelinePage() {
                       <button
                         onClick={() => {
                           const idx = stages.findIndex((s) => s.key === deal.stage);
-                          if (idx > 0) moveDeal(deal.id, stages[idx - 1].key);
+                          if (idx > 0) handleMoveStage(deal, stages[idx - 1].key);
                         }}
                         disabled={deal.stage === 'NEW_LEAD'}
-                        className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30"
+                        className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
                         title="Geser ke Stage Sebelumnya"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" />
@@ -157,10 +299,10 @@ export default function DealsPipelinePage() {
                       <button
                         onClick={() => {
                           const idx = stages.findIndex((s) => s.key === deal.stage);
-                          if (idx < stages.length - 1) moveDeal(deal.id, stages[idx + 1].key);
+                          if (idx < stages.length - 1) handleMoveStage(deal, stages[idx + 1].key);
                         }}
                         disabled={deal.stage === 'WON'}
-                        className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30"
+                        className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
                         title="Geser ke Stage Selanjutnya"
                       >
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -189,7 +331,7 @@ export default function DealsPipelinePage() {
                   <Kanban className="w-5 h-5 text-cyan-400" />
                   <span>Tambah Deal Proyek Baru</span>
                 </h3>
-                <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
+                <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -260,13 +402,13 @@ export default function DealsPipelinePage() {
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:scale-105 transition-all"
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:scale-105 transition-all cursor-pointer"
                   >
                     Simpan Deal
                   </button>

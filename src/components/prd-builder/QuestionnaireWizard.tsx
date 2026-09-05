@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usePrdStore, QuestionnaireData } from '@/store/usePrdStore';
-import { HelpCircle, ChevronRight, ChevronLeft, Check, Sparkles, Send, Zap, Bot, ThumbsUp } from 'lucide-react';
+import { HelpCircle, ChevronRight, ChevronLeft, Check, Sparkles, Send, Zap, Bot, ThumbsUp, Keyboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
@@ -94,6 +94,63 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
   ];
 
   const q = questions[currentStep];
+  const currentValue = (questionnaire[q.key] as string) || '';
+
+  const handleNext = useCallback(() => {
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      buildPrdFromQuestionnaire();
+      onComplete();
+    }
+  }, [currentStep, questions.length, buildPrdFromQuestionnaire, onComplete]);
+
+  const handlePrev = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  }, [currentStep]);
+
+  // Keyboard navigation shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTextarea = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT';
+
+      if (isTextarea) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          if (currentValue.trim()) handleNext();
+        }
+        return;
+      }
+
+      // Options shortcut (1-6)
+      if (q.type === 'options' && q.options) {
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= q.options.length) {
+          e.preventDefault();
+          setQuestionnaireField(q.key, q.options[num - 1]);
+          return;
+        }
+      }
+
+      // Enter key for Next
+      if (e.key === 'Enter' && currentValue.trim()) {
+        e.preventDefault();
+        handleNext();
+      }
+
+      // Backspace / ArrowLeft for Prev
+      if ((e.key === 'Backspace' || e.key === 'ArrowLeft') && currentStep > 0) {
+        e.preventDefault();
+        handlePrev();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [q, currentStep, currentValue, handleNext, handlePrev, setQuestionnaireField]);
 
   // AI Recommendation Engine Logic per step based on previous answers
   const handleGetAiRecommendation = () => {
@@ -118,7 +175,6 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
 
         if (q.key === 'keyFeatures') {
           const category = questionnaire.appCategory || 'Aplikasi CRM';
-          const target = questionnaire.targetAudience || 'B2B & Admin';
           
           if (category.includes('E-Commerce')) {
             essaySuggestion = 'System login user & profile, katalog produk dengan filter & pencarian, keranjang belanja, integrasi payment gateway Midtrans/Xendit, tracking order real-time, dan dashboard laporan penjualan.';
@@ -149,29 +205,15 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
     }, 800);
   };
 
-  const handleNext = () => {
-    if (currentStep < questions.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      buildPrdFromQuestionnaire();
-      onComplete();
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const currentValue = questionnaire[q.key];
-
   return (
     <div className="max-w-2xl mx-auto glass-card rounded-2xl p-6 sm:p-8 border-slate-700/80 shadow-2xl relative">
       {/* Progress Bar */}
       <div className="mb-6">
         <div className="flex justify-between items-center text-xs font-semibold text-slate-400 mb-2">
-          <span>Pertanyaan Requirement {currentStep + 1} dari {questions.length}</span>
+          <span className="flex items-center gap-1.5">
+            <Keyboard className="w-3.5 h-3.5 text-cyan-400 hidden sm:inline" />
+            Pertanyaan Requirement {currentStep + 1} dari {questions.length}
+          </span>
           <span className="text-cyan-400 font-mono font-bold">{Math.round(((currentStep + 1) / questions.length) * 100)}% Complete</span>
         </div>
         <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -206,7 +248,7 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
               type="button"
               onClick={handleGetAiRecommendation}
               disabled={isAiGenerating}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600/30 to-blue-600/30 hover:from-purple-600/40 hover:to-blue-600/40 text-cyan-300 border border-purple-500/40 text-xs font-bold shrink-0 transition-all shadow-md shadow-purple-900/20 active:scale-95 glow-button"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600/30 to-blue-600/30 hover:from-purple-600/40 hover:to-blue-600/40 text-cyan-300 border border-purple-500/40 text-xs font-bold shrink-0 transition-all shadow-md shadow-purple-900/20 active:scale-95 glow-button cursor-pointer"
             >
               <Sparkles className={`w-3.5 h-3.5 text-amber-400 ${isAiGenerating ? 'animate-spin' : 'animate-pulse'}`} />
               <span>{isAiGenerating ? 'AI Menganalisis...' : '✨ Rekomendasi AI'}</span>
@@ -236,7 +278,7 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
                     key={idx}
                     type="button"
                     onClick={() => setQuestionnaireField(q.key, opt)}
-                    className={`w-full p-4 rounded-xl text-left text-xs sm:text-sm font-semibold transition-all flex items-center justify-between border relative overflow-hidden ${
+                    className={`w-full p-4 rounded-xl text-left text-xs sm:text-sm font-semibold transition-all flex items-center justify-between border relative overflow-hidden group cursor-pointer ${
                       isSelected
                         ? 'bg-blue-600/25 border-cyan-500 text-white ring-1 ring-cyan-500/50 shadow-md'
                         : isAiRecommended
@@ -245,6 +287,14 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
                     }`}
                   >
                     <div className="flex items-center gap-3">
+                      {/* Keyboard shortcut key indicator */}
+                      <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-mono font-bold transition-colors ${
+                        isSelected 
+                          ? 'bg-cyan-500 text-slate-950' 
+                          : 'bg-slate-800/80 text-slate-400 group-hover:text-cyan-300 group-hover:bg-slate-700 border border-slate-700/60'
+                      }`}>
+                        {idx + 1}
+                      </span>
                       <span>{opt}</span>
                       {isAiRecommended && !isSelected && (
                         <span className="inline-flex items-center gap-1 text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-bold border border-purple-500/40 animate-pulse">
@@ -277,20 +327,23 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
                   className="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 leading-relaxed"
                 />
               </div>
-              <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                <Zap className="w-3 h-3 text-amber-400" />
-                <span>Klik tombol <strong className="text-cyan-300 font-semibold">"✨ Rekomendasi AI"</strong> di atas jika Anda ingin AI menyusun teks uraian ini otomatis!</span>
-              </p>
+              <div className="text-[11px] text-slate-400 flex items-center justify-between gap-1.5 flex-wrap">
+                <span className="flex items-center gap-1.5">
+                  <Zap className="w-3 h-3 text-amber-400" />
+                  <span>Klik <strong className="text-cyan-300 font-semibold">"✨ Rekomendasi AI"</strong> untuk isi cepat otomatis!</span>
+                </span>
+                <span className="text-slate-500 font-mono text-[10px]">Ctrl + Enter ↵ untuk lanjut</span>
+              </div>
             </div>
           )}
 
-          {/* Action Buttons */}
+          {/* Action Buttons & Shortcut Legend */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-800">
             <button
               type="button"
               onClick={handlePrev}
               disabled={currentStep === 0}
-              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 currentStep === 0
                   ? 'opacity-0 pointer-events-none'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -298,13 +351,22 @@ export const QuestionnaireWizard: React.FC<{ onComplete: () => void }> = ({ onCo
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Sebelumnya</span>
+              <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-400 rounded border border-slate-700">Bksp</kbd>
             </button>
+
+            <div className="hidden md:flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+              <span>Tekan</span>
+              <kbd className="px-1.5 py-0.5 bg-slate-800 text-cyan-400 rounded border border-slate-700 font-bold">1-6</kbd>
+              <span>pilih opsi,</span>
+              <kbd className="px-1.5 py-0.5 bg-slate-800 text-cyan-400 rounded border border-slate-700 font-bold">Enter ↵</kbd>
+              <span>lanjut</span>
+            </div>
 
             <button
               type="button"
               onClick={handleNext}
               disabled={!currentValue.trim()}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white font-bold text-xs sm:text-sm shadow-lg transition-all ${
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer ${
                 !currentValue.trim()
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:shadow-cyan-500/30 hover:scale-[1.02] active:scale-[0.98] glow-button'

@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export const AdminHeader: React.FC<{ onToggleSidebar: () => void }> = ({ onToggleSidebar }) => {
+export const AdminHeader: React.FC<{
+  onToggleSidebar: () => void;
+  onOpenCommandPalette?: () => void;
+}> = ({ onToggleSidebar, onOpenCommandPalette }) => {
   const pathname = usePathname();
   const { currentUser, notifications, markAsRead, markAllAsRead } = useAdminStore();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -46,7 +47,7 @@ export const AdminHeader: React.FC<{ onToggleSidebar: () => void }> = ({ onToggl
       <div className="flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -68,14 +69,17 @@ export const AdminHeader: React.FC<{ onToggleSidebar: () => void }> = ({ onToggl
 
       {/* Right Actions: Quick Search, Public View Link, Notification Bell, User Menu */}
       <div className="flex items-center gap-3">
-        {/* Quick Search Button */}
+        {/* Quick Search Spotlight Button */}
         <button
-          onClick={() => setIsSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 text-xs transition-colors"
+          onClick={onOpenCommandPalette}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 text-xs transition-colors cursor-pointer"
+          title="Buka Command Palette (Ctrl + K / Cmd + K)"
         >
-          <Search className="w-3.5 h-3.5" />
-          <span>Cari leads, deals, tasks...</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">⌘K</kbd>
+          <Search className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="hidden md:inline">Cari leads, deals, tasks...</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-cyan-300 border border-slate-700 font-bold">
+            ⌘K
+          </kbd>
         </button>
 
         {/* View Public Landing Page */}
@@ -92,7 +96,7 @@ export const AdminHeader: React.FC<{ onToggleSidebar: () => void }> = ({ onToggl
         <div className="relative">
           <button
             onClick={() => setIsNotifOpen(!isNotifOpen)}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors relative"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors relative cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
@@ -123,7 +127,7 @@ export const AdminHeader: React.FC<{ onToggleSidebar: () => void }> = ({ onToggl
 
                   <button
                     onClick={markAllAsRead}
-                    className="text-[11px] text-cyan-400 hover:underline font-semibold"
+                    className="text-[11px] text-cyan-400 hover:underline font-semibold cursor-pointer"
                   >
                     Tandai Semua Dibaca
                   </button>
@@ -162,46 +166,6 @@ export const AdminHeader: React.FC<{ onToggleSidebar: () => void }> = ({ onToggl
           />
         </Link>
       </div>
-
-      {/* Quick Search Modal */}
-      <AnimatePresence>
-        {isSearchOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-xl glass-card rounded-2xl p-4 border-slate-700 shadow-2xl space-y-4"
-            >
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-800">
-                <Search className="w-4 h-4 text-cyan-400" />
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Ketik pencarian leads, deals, atau tasks..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent text-white text-sm focus:outline-none"
-                />
-                <button onClick={() => setIsSearchOpen(false)} className="text-xs text-slate-400 hover:text-white">ESC</button>
-              </div>
-
-              <div className="text-xs text-slate-400 space-y-2 max-h-60 overflow-y-auto">
-                <span className="text-[10px] uppercase font-bold text-slate-500">Pencarian Cepat</span>
-                <Link href="/admin/leads" onClick={() => setIsSearchOpen(false)} className="block p-2 rounded-lg hover:bg-slate-900 text-slate-200">
-                  📄 Budi Santoso (PT Retail Bangun) — Leads Baru
-                </Link>
-                <Link href="/admin/deals" onClick={() => setIsSearchOpen(false)} className="block p-2 rounded-lg hover:bg-slate-900 text-slate-200">
-                  💼 Aplikasi E-Commerce SuperApp — Rp 45.000.000
-                </Link>
-                <Link href="/admin/tasks" onClick={() => setIsSearchOpen(false)} className="block p-2 rounded-lg hover:bg-slate-900 text-slate-200">
-                  ✅ Integrasi Supabase Auth & JWT Middleware — In Progress
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </header>
   );
 };

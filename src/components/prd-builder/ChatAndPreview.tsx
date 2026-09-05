@@ -34,6 +34,9 @@ import {
   Lock,
   Cpu,
   PlusCircle,
+  Printer,
+  List,
+  Compass,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -57,19 +60,25 @@ const DevPulseMarkdownComponents = {
       </h1>
     </div>
   ),
-  h2: ({ children }: any) => (
-    <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border-l-4 border-cyan-400 border border-slate-800/80 px-4 py-2.5 my-6 rounded-r-xl shadow-md">
-      <h2 className="text-base sm:text-lg font-extrabold text-white tracking-wide flex items-center justify-between">
-        <span className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400" />
-          <span>{children}</span>
-        </span>
-        <span className="text-[10px] font-mono font-normal text-slate-500 uppercase tracking-widest">
-          SECTION
-        </span>
-      </h2>
-    </div>
-  ),
+  h2: ({ children }: any) => {
+    const textContent = typeof children === 'string' ? children : Array.isArray(children) ? children.join('') : String(children || '');
+    const match = textContent.match(/^(\d+)\./);
+    const secId = match ? `section-${match[1]}` : `sec-${textContent.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+
+    return (
+      <div id={secId} className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border-l-4 border-cyan-400 border border-slate-800/80 px-4 py-2.5 my-6 rounded-r-xl shadow-md scroll-mt-6 print-break-inside-avoid">
+        <h2 className="text-base sm:text-lg font-extrabold text-white tracking-wide flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400" />
+            <span>{children}</span>
+          </span>
+          <span className="text-[10px] font-mono font-normal text-slate-500 uppercase tracking-widest">
+            SECTION
+          </span>
+        </h2>
+      </div>
+    );
+  },
   h3: ({ children }: any) => (
     <h3 className="text-sm font-bold text-cyan-300 mt-5 mb-2.5 flex items-center gap-2 border-b border-slate-800/60 pb-1.5">
       <ChevronRight className="w-4 h-4 text-cyan-400 shrink-0" />
@@ -216,6 +225,30 @@ export const ChatAndPreview: React.FC<{ onOpenSubmission: () => void }> = ({ onO
   const [copied, setCopied] = useState(false);
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview'>('chat');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isTocOpen, setIsTocOpen] = useState(false);
+
+  // TOC standard sections
+  const TOC_SECTIONS = [
+    { id: 'section-1', title: '1. Ringkasan' },
+    { id: 'section-2', title: '2. Arsitektur' },
+    { id: 'section-3', title: '3. User Journey' },
+    { id: 'section-4', title: '4. Database' },
+    { id: 'section-5', title: '5. User Stories' },
+    { id: 'section-6', title: '6. Tech Stack' },
+    { id: 'section-7', title: '7. Biaya' },
+    { id: 'section-8', title: '8. Standar NFR' },
+  ];
+
+  const scrollToSection = (secId: string) => {
+    const el = document.getElementById(secId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handlePrintPdf = () => {
+    window.print();
+  };
 
   // OpenRouter Model Selector State
   const [selectedModel, setSelectedModel] = useState<string>('minimax/minimax-m3:free');
@@ -786,7 +819,7 @@ flowchart TD
         
         {/* LEFT COLUMN: DevPulse AI Chat Window */}
         <div
-          className={`md:col-span-5 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl ${
+          className={`md:col-span-5 flex flex-col glass-card rounded-2xl border-slate-700/80 overflow-hidden shadow-2xl print-hide ${
             mobileTab === 'preview' ? 'hidden md:flex' : 'flex'
           }`}
         >
@@ -1080,7 +1113,7 @@ flowchart TD
           }`}
         >
           {/* DevPulse Header Bar */}
-          <div className="px-4 py-3 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between">
+          <div className="px-4 py-3 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between print-hide">
             <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
               <BookOpen className="w-4 h-4 text-cyan-400" />
               <span className="text-slate-400">Workspace /</span>
@@ -1098,7 +1131,7 @@ flowchart TD
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {isPrdStreaming && (
                 <button
                   type="button"
@@ -1107,9 +1140,35 @@ flowchart TD
                   title="Lewati animasi ketikan"
                 >
                   <FastForward className="w-3.5 h-3.5" />
-                  <span>Lewati Animasi</span>
+                  <span className="hidden sm:inline">Lewati</span>
                 </button>
               )}
+
+              {/* TOC Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsTocOpen(!isTocOpen)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  isTocOpen
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                }`}
+                title="Daftar Isi PRD (Quick Jump)"
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Daftar Isi</span>
+              </button>
+
+              {/* Print / PDF Export Button */}
+              <button
+                type="button"
+                onClick={handlePrintPdf}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-colors cursor-pointer"
+                title="Cetak atau Simpan sebagai PDF"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">PDF</span>
+              </button>
 
               <button
                 onClick={handleCopyMarkdown}
@@ -1117,7 +1176,7 @@ flowchart TD
                 title="Copy Markdown"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
               </button>
 
               <button
@@ -1125,7 +1184,7 @@ flowchart TD
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600/20 text-cyan-300 hover:bg-blue-600/30 border border-blue-500/30 text-xs font-semibold transition-colors cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Export .md</span>
+                <span className="hidden sm:inline">Export .md</span>
               </button>
 
               <button
@@ -1138,6 +1197,32 @@ flowchart TD
             </div>
           </div>
 
+          {/* Quick-Jump Table of Contents Bar */}
+          <AnimatePresence>
+            {isTocOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-4 py-2.5 bg-slate-950/90 border-b border-cyan-500/20 flex items-center gap-1.5 overflow-x-auto text-[11px] print-hide"
+              >
+                <span className="text-slate-500 shrink-0 font-medium flex items-center gap-1 mr-1">
+                  <List className="w-3 h-3 text-cyan-400" />
+                  <span>Lompat ke:</span>
+                </span>
+                {TOC_SECTIONS.map((sec) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => scrollToSection(sec.id)}
+                    className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-cyan-950/60 hover:text-cyan-300 hover:border-cyan-500/40 text-slate-300 border border-slate-800 shrink-0 transition-all font-medium cursor-pointer"
+                  >
+                    {sec.title}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Streaming Live Alert Banner */}
           <AnimatePresence>
             {isPrdStreaming && (
@@ -1145,7 +1230,7 @@ flowchart TD
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-950 via-cyan-950 to-indigo-950 border-b border-cyan-500/30 text-xs text-cyan-200 flex items-center justify-between"
+                className="px-4 py-2 bg-gradient-to-r from-blue-950 via-cyan-950 to-indigo-950 border-b border-cyan-500/30 text-xs text-cyan-200 flex items-center justify-between print-hide"
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-spin" />
@@ -1223,7 +1308,7 @@ flowchart TD
           </div>
 
           {/* Action Footer Bar */}
-          <div className="p-4 bg-slate-900/95 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="p-4 bg-slate-900/95 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 print-hide">
             <div className="text-xs">
               <span className="text-slate-400 block text-[10px]">Total Estimasi Biaya Project:</span>
               <span className="text-lg font-extrabold text-cyan-400">{formatRupiah(totalCost)}</span>

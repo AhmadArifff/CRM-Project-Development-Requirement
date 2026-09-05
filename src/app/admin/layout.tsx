@@ -5,13 +5,28 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAdminStore } from '@/store/useAdminStore';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { CommandPalette } from '@/components/admin/CommandPalette';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const { isAuthenticated, login, setUser, fetchFromSupabase } = useAdminStore();
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // Global Ctrl + K / Cmd + K listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // On mount: check localStorage for existing token & validate with backend
   useEffect(() => {
@@ -87,11 +102,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col lg:pl-64 min-w-0">
-        <AdminHeader onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <AdminHeader
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        />
         <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto overflow-x-hidden">
           {children}
         </main>
       </div>
+
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
     </div>
   );
 }

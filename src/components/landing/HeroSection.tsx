@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import {
@@ -18,6 +18,8 @@ import {
   Zap,
   ArrowRight,
   FileText,
+  Database,
+  Cpu,
 } from 'lucide-react';
 import { useLandingContentStore } from '@/store/useLandingContentStore';
 
@@ -38,8 +40,17 @@ const iconMap: Record<string, React.ElementType> = {
 
 export const HeroSection: React.FC = () => {
   const { hero } = useLandingContentStore();
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const BadgeIconComponent = iconMap[hero.badgeIcon] || Zap;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const { currentTarget, clientX, clientY } = e;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const x = (clientX - left) / width - 0.5;
+    const y = (clientY - top) / height - 0.5;
+    setMousePos({ x, y });
+  };
 
   // Stagger variants for feature cards
   const containerVariants: Variants = {
@@ -56,11 +67,66 @@ export const HeroSection: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-12 pb-20 md:pt-24 md:pb-32 overflow-hidden">
-      {/* Advanced Mesh Glow Background */}
+    <section
+      onMouseMove={handleMouseMove}
+      className="relative pt-12 pb-20 md:pt-24 md:pb-32 overflow-hidden"
+    >
+      {/* Advanced Interactive Mouse-reactive Parallax Glow Background */}
+      <motion.div
+        animate={{
+          x: mousePos.x * 40,
+          y: mousePos.y * 40,
+        }}
+        transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+        className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-600/15 rounded-full blur-[130px] pointer-events-none -z-10"
+      />
+      <motion.div
+        animate={{
+          x: mousePos.x * -50,
+          y: mousePos.y * -50,
+        }}
+        transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+        className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none -z-10"
+      />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] pointer-events-none -z-10" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse duration-1000" />
-      <div className="absolute top-1/4 left-0 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse duration-1000 delay-500" />
+
+      {/* Floating Interactive Tech Badges (Hidden on mobile) */}
+      <motion.div
+        animate={{
+          y: [0, -10, 0],
+          x: mousePos.x * 20,
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        className="hidden lg:flex items-center gap-2 absolute top-28 left-8 px-3.5 py-2 rounded-2xl bg-slate-900/80 border border-cyan-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(34,211,238,0.15)] text-xs font-mono text-cyan-300 pointer-events-none"
+      >
+        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+        <Code className="w-3.5 h-3.5 text-cyan-400" />
+        <span>Next.js 16 + React 19</span>
+      </motion.div>
+
+      <motion.div
+        animate={{
+          y: [0, 12, 0],
+          x: mousePos.x * -25,
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="hidden lg:flex items-center gap-2 absolute top-32 right-8 px-3.5 py-2 rounded-2xl bg-slate-900/80 border border-purple-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.15)] text-xs font-mono text-purple-300 pointer-events-none"
+      >
+        <Database className="w-3.5 h-3.5 text-purple-400" />
+        <span>Supabase PostgreSQL + RLS</span>
+      </motion.div>
+
+      <motion.div
+        animate={{
+          y: [0, -8, 0],
+          x: mousePos.x * 15,
+        }}
+        transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+        className="hidden xl:flex items-center gap-2 absolute bottom-24 left-16 px-3.5 py-2 rounded-2xl bg-slate-900/80 border border-emerald-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(16,185,129,0.15)] text-xs font-mono text-emerald-300 pointer-events-none"
+      >
+        <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+        <span>OpenRouter AI Architecture</span>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-4xl mx-auto">
